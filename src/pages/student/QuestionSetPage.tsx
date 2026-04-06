@@ -84,6 +84,7 @@ export function QuestionSetPage() {
   if (!questionSet) return <div className="error-container"><p>문제 세트를 찾을 수 없습니다.</p><Button variant="outline" onClick={() => navigate('/student')}>홈으로</Button></div>
 
   const isExpired = questionSet.dueAt && new Date(questionSet.dueAt) < new Date()
+  const unansweredCount = questionSet.questions.filter((q) => answers[q.id] === undefined).length
 
   return (
     <div className="question-set-page">
@@ -95,6 +96,15 @@ export function QuestionSetPage() {
       {error && <div className="error-message">{error}</div>}
       {isExpired && <div className="expired-message"><p>마감된 문제 세트입니다.</p></div>}
 
+      {!isExpired && (
+        <div className="progress-summary">
+          <p>
+            현재 <strong>{questionSet.questions.length - unansweredCount}</strong> / <strong>{questionSet.questions.length}</strong> 문항에 응답했습니다.
+          </p>
+          <p className="progress-helper">미응답 문항 수: {unansweredCount}개</p>
+        </div>
+      )}
+
       <div className="questions-list">
         {questionSet.questions.map((question, qIndex) => (
           <QuestionCard key={question.id} question={question} index={qIndex + 1} selectedAnswer={answers[question.id]} onSelect={handleSelectAnswer} disabled={!!isExpired || submitting} />
@@ -103,6 +113,7 @@ export function QuestionSetPage() {
 
       {!isExpired && (
         <div className="submit-actions">
+          {submitting && <p className="submit-message">답안을 제출하고 채점 중입니다. 잠시만 기다려주세요.</p>}
           <Button variant="primary" loading={submitting} onClick={handleSubmit} disabled={questionSet.questions.some((q) => answers[q.id] === undefined)}>제출하기</Button>
         </div>
       )}
