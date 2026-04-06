@@ -6,7 +6,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, ProtectedRoute, RoleBasedHome } from './auth'
 import { Layout } from './components'
-import { LoginPage, UnauthorizedPage, TeacherHomePage, MaterialUploadPage, MaterialStatusPage } from './pages'
+import { LoginPage, UnauthorizedPage, TeacherHomePage, MaterialUploadPage, MaterialStatusPage, QuestionGeneratePage, QuestionReviewPage } from './pages'
 import './App.css'
 
 /**
@@ -52,6 +52,22 @@ function App() {
             element={
               <ProtectedRoute roles={['TEACHER']}>
                 <MaterialStatusPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/materials/:materialId/generate"
+            element={
+              <ProtectedRoute roles={['TEACHER']}>
+                <QuestionGeneratePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/question-sets/:questionSetId/review"
+            element={
+              <ProtectedRoute roles={['TEACHER']}>
+                <QuestionReviewPage />
               </ProtectedRoute>
             }
           />
