@@ -1,6 +1,6 @@
 /**
  * 카드 스타일
- * 디자인 토큰 기반 카드 스타일
+ * 디자인 토큰 기반 카드 스타일 - 세련된 패널 디자인
  */
 
 .card {
@@ -8,22 +8,35 @@
   flex-direction: column;
   border-radius: 0.75rem;
   overflow: hidden;
+  background: #ffffff;
+  transition: all 200ms ease;
 }
 
 /* 변형 */
 .card-default {
   background: #ffffff;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.card-default:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .card-outlined {
   background: #ffffff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e5e5e5;
 }
 
 .card-elevated {
   background: #ffffff;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.card-elevated:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
 }
 
 /* 패딩 */
@@ -40,22 +53,97 @@
 }
 
 .card-padding-lg {
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
-/* 내부 구조 */
+/* 낮은 패딩 변형 */
+.card-padding-compact {
+  padding: 0.625rem 0.875rem;
+}
+
+/* 낮은 구조 - 개선된 디자인 */
 .card-header {
-  padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.card-header-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #171717;
+  letter-spacing: -0.01em;
 }
 
 .card-body {
-  padding: 1rem;
+  padding: 1.25rem;
   flex: 1;
 }
 
 .card-footer {
-  padding: 1rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* 카드 상태 변형 */
+.card-interactive {
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  border-color: #d4d4d4;
+}
+
+.card-selected {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb, 0 2px 8px rgba(37, 99, 235, 0.1);
+}
+
+.card-error {
+  border-color: #ef4444;
+}
+
+/* 액션 카드 */
+.action-card {
+  position: relative;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.action-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+  border: 2px solid transparent;
+  transition: all 200ms ease;
+  pointer-events: none;
+}
+
+.action-card:hover::before {
+  border-color: #e5e5e5;
+}
+
+.action-card-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
 }
