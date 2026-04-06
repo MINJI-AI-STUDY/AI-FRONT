@@ -80,6 +80,16 @@ export function QAPage() {
       {response && (
         <Card className="response-card">
           <CardBody>
+            {!response.insufficientEvidence && response.grounded && response.evidenceSnippets.length > 0 && (
+              <div className="result-badge correct" style={{ marginBottom: '0.75rem', display: 'inline-flex' }}>
+                자료 근거 응답
+              </div>
+            )}
+            {response.insufficientEvidence && (
+              <div className="result-badge wrong" style={{ marginBottom: '0.75rem', display: 'inline-flex' }}>
+                근거 부족 안내
+              </div>
+            )}
             <h3 className="response-title">답변</h3>
             <p className="response-answer">{response.answer}</p>
 
