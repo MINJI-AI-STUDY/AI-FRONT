@@ -43,10 +43,21 @@ export function MaterialStatusPage() {
   useEffect(() => {
     if (!materialId || !token) return
 
+    let intervalId: number | undefined
+
     const fetchMaterial = async () => {
       try {
         const data = await getMaterial(materialId, token)
         setMaterial(data)
+
+        if (data.status === 'PROCESSING' || data.status === 'UPLOADED') {
+          if (!intervalId) {
+            intervalId = window.setInterval(fetchMaterial, 3000)
+          }
+        } else if (intervalId) {
+          window.clearInterval(intervalId)
+          intervalId = undefined
+        }
       } catch (err) {
         console.error('자료 조회 실패:', err)
         setError('자료 정보를 가져오는데 실패했습니다.')
@@ -56,6 +67,12 @@ export function MaterialStatusPage() {
     }
 
     fetchMaterial()
+
+    return () => {
+      if (intervalId) {
+        window.clearInterval(intervalId)
+      }
+    }
   }, [materialId, token])
 
   /**
@@ -117,7 +134,7 @@ export function MaterialStatusPage() {
 
           {material.status === 'PROCESSING' && (
             <div className="processing-message">
-              <p>자료를 처리 중입니다. 잠시 후 다시 확인해주세요.</p>
+              <p>자료를 처리 중입니다. 3초마다 상태를 자동으로 다시 확인합니다.</p>
             </div>
           )}
         </CardBody>
