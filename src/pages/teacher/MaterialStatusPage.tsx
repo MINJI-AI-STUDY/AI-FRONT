@@ -129,6 +129,7 @@ export function MaterialStatusPage() {
           {material.status === 'READY' && (
             <div className="ready-actions">
               <p className="ready-message">자료가 준비되었습니다. 분석이 완료된 상태입니다.</p>
+              <Link to={`/teacher/materials/${material.materialId}/workspace`}><Button variant="primary">공통 워크스페이스 열기</Button></Link>
             </div>
           )}
 

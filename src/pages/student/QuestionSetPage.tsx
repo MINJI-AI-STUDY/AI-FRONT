@@ -71,6 +71,7 @@ export function QuestionSetPage() {
       const result = await submitAnswers(distributionCode, submitData, token)
       sessionStorage.setItem('latest_submission_id', result.submissionId)
       sessionStorage.setItem('latest_material_id', questionSet.materialId)
+      sessionStorage.setItem('latest_distribution_code', distributionCode)
       navigate(`/student/submissions/${result.submissionId}`)
     } catch (err) {
       console.error('답안 제출 실패:', err)
