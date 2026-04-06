@@ -101,5 +101,20 @@ export function post<T>(
   })
 }
 
+/**
+ * PATCH 요청
+ */
+export function patch<T>(
+  endpoint: string,
+  data?: unknown,
+  token?: string,
+): Promise<T> {
+  return request<T>(endpoint, {
+    method: 'PATCH',
+    body: data ? JSON.stringify(data) : undefined,
+    token,
+  })
+}
+
 // API 기본 URL 낵�
 export { API_BASE_URL }
