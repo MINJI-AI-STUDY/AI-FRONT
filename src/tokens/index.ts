@@ -1,39 +1,39 @@
 /**
  * 디자인 토큰 정의
- * 학생이 먼저 쓰는 가벼운 UI를 기준으로 색상/간격/타이포를 재사용합니다.
+ * Inflearn 스타일의 온라인 강의 플랫폼 UI를 기준으로 색상/간격/타이포를 재사용합니다.
  */
 
-// 색상 토큰
+// 색상 토큰 - 차분한 블루 액센트로 변경
 export const colors = {
-  // 기본 색상
+  // 기본 색상 - 전문적인 블루 팔레트
   primary: {
-    50: '#f5f3ff',
-    100: '#ede9fe',
-    200: '#ddd6fe',
-    300: '#c4b5fd',
-    400: '#a78bfa',
-    500: '#8b5cf6',
-    600: '#7c3aed',
-    700: '#6d28d9',
-    800: '#5b21b6',
-    900: '#4c1d95',
+    50: '#eff6ff',
+    100: '#dbeafe',
+    200: '#bfdbfe',
+    300: '#93c5fd',
+    400: '#60a5fa',
+    500: '#3b82f6',
+    600: '#2563eb',
+    700: '#1d4ed8',
+    800: '#1e40af',
+    900: '#1e3a8a',
   },
-  // 중립 색상
+  // 중립 색상 - 더 부드러운 그레이
   neutral: {
-    50: '#f9fafb',
-    100: '#f3f4f6',
-    200: '#e5e7eb',
-    300: '#d1d5db',
-    400: '#9ca3af',
-    500: '#6b7280',
-    600: '#4b5563',
-    700: '#374151',
-    800: '#1f2937',
-    900: '#111827',
+    50: '#fafafa',
+    100: '#f5f5f5',
+    200: '#e5e5e5',
+    300: '#d4d4d4',
+    400: '#a3a3a3',
+    500: '#737373',
+    600: '#525252',
+    700: '#404040',
+    800: '#262626',
+    900: '#171717',
   },
   // 시맨틱 색상
   semantic: {
-    success: '#10b981',
+    success: '#22c55e',
     warning: '#f59e0b',
     error: '#ef4444',
     info: '#3b82f6',
@@ -41,8 +41,10 @@ export const colors = {
   // 배경 색상
   background: {
     primary: '#ffffff',
-    secondary: '#f3f4f6',
-    sidebar: '#111827',
+    secondary: '#fafafa',
+    tertiary: '#f5f5f5',
+    sidebar: '#1e293b',
+    header: '#ffffff',
   },
 } as const
 
@@ -52,15 +54,21 @@ export const semanticTokens = {
     page: colors.background.secondary,
     card: colors.background.primary,
     sidebar: colors.background.sidebar,
+    header: colors.background.header,
+    panel: '#ffffff',
+    canvas: '#ffffff',
   },
   text: {
     primary: colors.neutral[900],
     secondary: colors.neutral[600],
+    tertiary: colors.neutral[500],
     inverse: colors.neutral[50],
+    muted: colors.neutral[400],
   },
   border: {
     default: colors.neutral[200],
     strong: colors.neutral[300],
+    subtle: 'rgba(0, 0, 0, 0.06)',
   },
   action: {
     primary: colors.primary[600],
@@ -69,11 +77,14 @@ export const semanticTokens = {
   },
 } as const
 
-// 간격 토큰 (4px 기준)
+// 간격 토큰 (4px 기준) - 더 정교한 간격
 export const spacing = {
   0: '0',
+  0.5: '0.125rem', // 2px
   1: '0.25rem', // 4px
+  1.5: '0.375rem', // 6px
   2: '0.5rem', // 8px
+  2.5: '0.625rem', // 10px
   3: '0.75rem', // 12px
   4: '1rem', // 16px
   5: '1.25rem', // 20px
@@ -86,8 +97,8 @@ export const spacing = {
 // 타이포그래피 토큰
 export const typography = {
   fontFamily: {
-    sans: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    mono: '"JetBrains Mono", "Fira Code", monospace',
+    sans: 'Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif',
+    mono: '"JetBrains Mono", "Fira Code", "Pretendard Mono", monospace',
   },
   fontSize: {
     xs: '0.75rem', // 12px
@@ -115,20 +126,24 @@ export const typography = {
 // 테두리 반경 토큰
 export const borderRadius = {
   none: '0',
-  sm: '0.25rem', // 4px
+  sm: '0.375rem', // 6px
   md: '0.5rem', // 8px
   lg: '0.75rem', // 12px
   xl: '1rem', // 16px
-  '2xl': '1.5rem', // 24px
+  '2xl': '1.25rem', // 20px
   full: '9999px',
 } as const
 
-// 그림자 토큰
+// 그림자 토큰 - 더 절제된 그림자
 export const shadows = {
-  sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-  md: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-  lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-  xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+  sm: '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
+  md: '0 1px 3px 0 rgba(0, 0, 0, 0.08)',
+  lg: '0 4px 6px -1px rgba(0, 0, 0, 0.06)',
+  xl: '0 8px 16px -4px rgba(0, 0, 0, 0.08)',
+  '2xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+  panel: '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)',
+  card: '0 2px 8px rgba(0, 0, 0, 0.04)',
+  elevated: '0 4px 12px rgba(0, 0, 0, 0.05)',
 } as const
 
 // 전환 토큰
