@@ -17,6 +17,7 @@ export function TeacherHomePage() {
   return (
     <div className="teacher-home">
       <div className="page-header">
+        <div className="workspace-chip">교사 워크스페이스</div>
         <h1 className="page-title">교사 홈</h1>
         <p className="page-description">
           안녕하세요, {user?.displayName}님. 자료 업로드와 분석 상태 확인을 시작하세요.
@@ -26,6 +27,7 @@ export function TeacherHomePage() {
       <div className="action-cards">
         <Card className="action-card">
           <CardBody>
+            <div className="action-meta">문서 업로드 · 분석 시작</div>
             <h3 className="action-title">자료 업로드</h3>
             <p className="action-description">PDF 자료를 업로드하고 AI 분석을 요청합니다.</p>
             <Link to="/teacher/materials/new">

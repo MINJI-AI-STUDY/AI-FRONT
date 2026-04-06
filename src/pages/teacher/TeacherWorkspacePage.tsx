@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
-import { Button, Card, CardBody, MaterialDocumentViewer } from '../../components'
+import { Button, Card, CardBody, MaterialDocumentViewer, Modal } from '../../components'
 import { generateQuestions, getMaterial } from '../../api/teacher'
 import type { GenerateQuestionsRequest, MaterialSummaryResponse, QuestionSetResponse } from '../../api/teacher'
 import '../WorkspacePages.css'
@@ -23,6 +23,7 @@ export function TeacherWorkspacePage() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isJsonModalOpen, setIsJsonModalOpen] = useState(false)
 
   useEffect(() => {
     if (!materialId || !token) return
@@ -117,12 +118,28 @@ export function TeacherWorkspacePage() {
 
           <Card className="workspace-card workspace-json-card">
             <CardBody>
-              <h3 className="workspace-card-title">생성 결과 JSON</h3>
+              <div className="workspace-panel-inline-header">
+                <h3 className="workspace-card-title">생성 결과 JSON</h3>
+                {generatedJson && (
+                  <Button variant="ghost" size="sm" onClick={() => setIsJsonModalOpen(true)}>
+                    크게 보기
+                  </Button>
+                )}
+              </div>
               {generatedJson ? <pre className="workspace-json-view">{generatedJson}</pre> : <p className="workspace-empty">문제를 생성하면 구조화된 결과가 여기에 표시됩니다.</p>}
             </CardBody>
           </Card>
         </aside>
       </div>
+
+      <Modal
+        isOpen={isJsonModalOpen}
+        onClose={() => setIsJsonModalOpen(false)}
+        title="생성 결과 JSON"
+        size="xl"
+      >
+        {generatedJson ? <pre className="workspace-json-view workspace-json-view-modal">{generatedJson}</pre> : null}
+      </Modal>
     </div>
   )
 }

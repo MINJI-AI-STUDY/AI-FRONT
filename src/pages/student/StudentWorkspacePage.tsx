@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
-import { Button, Card, CardBody, MaterialDocumentViewer } from '../../components'
+import { Button, Card, CardBody, MaterialDocumentViewer, Modal } from '../../components'
 import { askQuestion, getQuestionSet, submitAnswers } from '../../api/student'
 import type { QaResponse, StudentQuestionSetResponse } from '../../api/student'
 import '../WorkspacePages.css'
@@ -28,6 +28,7 @@ export function StudentWorkspacePage() {
   const [submitting, setSubmitting] = useState(false)
   const [asking, setAsking] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false)
 
   useEffect(() => {
     if (!distributionCode || !token) return
@@ -122,7 +123,12 @@ export function StudentWorkspacePage() {
         <aside className="workspace-side student-side">
           <Card className="workspace-card">
             <CardBody>
-              <h3 className="workspace-card-title">빠른 문제 풀이</h3>
+              <div className="workspace-panel-inline-header">
+                <h3 className="workspace-card-title">빠른 문제 풀이</h3>
+                <Button variant="ghost" size="sm" onClick={() => setIsQuizModalOpen(true)}>
+                  집중 모드
+                </Button>
+              </div>
               <div className="workspace-questions-list">
                 {questionSet.questions.map((item, index) => (
                   <div key={item.id} className="workspace-question-item">
@@ -170,6 +176,36 @@ export function StudentWorkspacePage() {
           </Card>
         </aside>
       </div>
+
+      <Modal
+        isOpen={isQuizModalOpen}
+        onClose={() => setIsQuizModalOpen(false)}
+        title="집중 문제 풀이"
+        size="xl"
+      >
+        <div className="workspace-modal-quiz-layout">
+          <div className="workspace-questions-list">
+            {questionSet.questions.map((item, index) => (
+              <div key={item.id} className={`workspace-question-item ${answers[item.id] !== undefined ? 'completed' : ''}`}>
+                <div className="workspace-question-number">문제 {index + 1}</div>
+                <p className="workspace-question-title">{item.stem}</p>
+                <div className="workspace-options-grid">
+                  {item.options.map((option, optionIndex) => (
+                    <button key={optionIndex} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
+                      <span>{String.fromCharCode(65 + optionIndex)}</span>
+                      <span>{option}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="workspace-modal-quiz-actions">
+            <Button variant="outline" onClick={() => setIsQuizModalOpen(false)}>닫기</Button>
+            <Button loading={submitting} onClick={handleSubmit}>정답 제출하기</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
