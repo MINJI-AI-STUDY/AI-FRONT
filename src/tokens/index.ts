@@ -46,6 +46,29 @@ export const colors = {
   },
 } as const
 
+// 시맨틱 토큰 별칭
+export const semanticTokens = {
+  surface: {
+    page: colors.background.secondary,
+    card: colors.background.primary,
+    sidebar: colors.background.sidebar,
+  },
+  text: {
+    primary: colors.neutral[900],
+    secondary: colors.neutral[600],
+    inverse: colors.neutral[50],
+  },
+  border: {
+    default: colors.neutral[200],
+    strong: colors.neutral[300],
+  },
+  action: {
+    primary: colors.primary[600],
+    primaryHover: colors.primary[700],
+    ghost: 'rgba(255, 255, 255, 0.08)',
+  },
+} as const
+
 // 간격 토큰 (4px 기준)
 export const spacing = {
   0: '0',
@@ -117,6 +140,7 @@ export const transitions = {
 
 // 타입 정의
 export type ColorToken = typeof colors
+export type SemanticToken = typeof semanticTokens
 export type SpacingToken = keyof typeof spacing
 export type FontSizeToken = keyof typeof typography.fontSize
 export type BorderRadiusToken = keyof typeof borderRadius
