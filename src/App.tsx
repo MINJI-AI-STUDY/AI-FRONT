@@ -6,7 +6,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, ProtectedRoute, RoleBasedHome } from './auth'
 import { Layout } from './components'
-import { LoginPage, UnauthorizedPage, TeacherHomePage, MaterialUploadPage, MaterialStatusPage, QuestionGeneratePage, QuestionReviewPage, StudentHomePage, QuestionSetPage, SubmissionResultPage } from './pages'
+import { LoginPage, UnauthorizedPage, TeacherHomePage, MaterialUploadPage, MaterialStatusPage, QuestionGeneratePage, QuestionReviewPage, TeacherDashboardPage, StudentHomePage, QuestionSetPage, SubmissionResultPage, OperatorOverviewPage } from './pages'
 import './App.css'
 
 /**
@@ -71,11 +71,19 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/teacher/question-sets/:questionSetId/dashboard"
+            element={
+              <ProtectedRoute roles={['TEACHER']}>
+                <TeacherDashboardPage />
+              </ProtectedRoute>
+            }
+          />
 
           <Route path="/student" element={<ProtectedRoute roles={['STUDENT']}><StudentHomePage /></ProtectedRoute>} />
           <Route path="/student/question-sets/:distributionCode" element={<ProtectedRoute roles={['STUDENT']}><QuestionSetPage /></ProtectedRoute>} />
           <Route path="/student/submissions/:submissionId" element={<ProtectedRoute roles={['STUDENT']}><SubmissionResultPage /></ProtectedRoute>} />
-          <Route path="/operator" element={<ProtectedRoute roles={['OPERATOR']}><Navigate to="/login" replace /></ProtectedRoute>} />
+          <Route path="/operator" element={<ProtectedRoute roles={['OPERATOR']}><OperatorOverviewPage /></ProtectedRoute>} />
 
           {/* 404 리다이렉트 */}
           <Route path="*" element={<Navigate to="/" replace />} />

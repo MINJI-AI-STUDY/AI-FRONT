@@ -1,0 +1,8 @@
+/**
+ * 운영자 페이지 스타일
+ */
+
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.summary-card { text-align: center; }
+.summary-title { margin: 0 0 0.75rem; font-size: 1rem; color: #374151; }
+.summary-value { margin: 0; font-size: 2rem; font-weight: 700; color: #7c3aed; }

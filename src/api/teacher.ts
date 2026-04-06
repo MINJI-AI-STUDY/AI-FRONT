@@ -159,3 +159,34 @@ export async function publishQuestionSet(
 ): Promise<QuestionSetResponse> {
   return post<QuestionSetResponse>(`/api/teacher/question-sets/${questionSetId}/publish`, request, token)
 }
+
+// ==================== 대시보드 관련 타입 ====================
+
+export interface TeacherStudentScore {
+  studentId: string
+  score: number
+}
+
+export interface QuestionAccuracy {
+  questionId: string
+  accuracyRate: number
+}
+
+export interface WeakConceptTag {
+  tag: string
+  count: number
+}
+
+export interface TeacherDashboardResponse {
+  studentScores: TeacherStudentScore[]
+  questionAccuracy: QuestionAccuracy[]
+  weakConceptTags: WeakConceptTag[]
+}
+
+/** 교사 대시보드 조회 API */
+export async function getTeacherDashboard(
+  questionSetId: string,
+  token: string,
+): Promise<TeacherDashboardResponse> {
+  return get<TeacherDashboardResponse>(`/api/teacher/question-sets/${questionSetId}/dashboard`, token)
+}
