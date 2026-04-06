@@ -18,6 +18,7 @@ export function SubmissionResultPage() {
 
   const { submissionId } = useParams<{ submissionId: string }>()
   const { token } = useAuth()
+  const latestMaterialId = sessionStorage.getItem('latest_material_id')
 
   useEffect(() => {
     if (!submissionId || !token) return
@@ -92,7 +93,12 @@ export function SubmissionResultPage() {
         </Card>
       )}
 
-      <div className="page-actions"><Link to="/student"><Button variant="outline">홈으로</Button></Link></div>
+      <div className="page-actions">
+        {latestMaterialId && (
+          <Link to={`/student/materials/${latestMaterialId}/qa`}><Button variant="primary">같은 자료로 질문하기</Button></Link>
+        )}
+        <Link to="/student"><Button variant="outline">홈으로</Button></Link>
+      </div>
     </div>
   )
 }

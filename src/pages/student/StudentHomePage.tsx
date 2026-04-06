@@ -14,6 +14,7 @@ import './StudentPages.css'
 export function StudentHomePage() {
   const { user } = useAuth()
   const latestSubmissionId = sessionStorage.getItem('latest_submission_id')
+  const latestMaterialId = sessionStorage.getItem('latest_material_id')
 
   return (
     <div className="student-home">
@@ -39,6 +40,16 @@ export function StudentHomePage() {
             <p className="action-description">가장 최근에 제출한 문제 세트의 결과와 해설을 확인합니다.</p>
             <Link to={latestSubmissionId ? `/student/submissions/${latestSubmissionId}` : '/student/join'}>
               <Button variant="outline">{latestSubmissionId ? '최근 결과 보기' : '먼저 문제 참여'}</Button>
+            </Link>
+          </CardBody>
+        </Card>
+
+        <Card className="action-card">
+          <CardBody>
+            <h3 className="action-title">자료 기반 AI 질의응답</h3>
+            <p className="action-description">가장 최근에 풀이한 자료를 기준으로 질문할 수 있습니다.</p>
+            <Link to={latestMaterialId ? `/student/materials/${latestMaterialId}/qa` : '/student'}>
+              <Button variant="outline" disabled={!latestMaterialId}>{latestMaterialId ? '자료 질문하기' : '먼저 문제 참여'}</Button>
             </Link>
           </CardBody>
         </Card>
