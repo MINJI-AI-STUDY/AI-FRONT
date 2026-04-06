@@ -37,9 +37,14 @@ export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // 사용자 정보가 없으면 로그인 페이지로 리다이렉트
+  // 토큰은 있지만 사용자 정보가 아직 복원되지 않았다면 로딩 상태를 유지
   if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner" />
+        <p>사용자 정보를 확인 중...</p>
+      </div>
+    )
   }
 
   // 역할이 지정되어 있고, 사용자 역할이 허용되지 않으면 접근 거부

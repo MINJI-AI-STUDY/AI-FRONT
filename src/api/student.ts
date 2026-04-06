@@ -13,6 +13,7 @@ export interface StudentQuestionResponse {
 
 export interface StudentQuestionSetResponse {
   questionSetId: string
+  materialId: string
   title: string
   dueAt: string | null
   questions: StudentQuestionResponse[]

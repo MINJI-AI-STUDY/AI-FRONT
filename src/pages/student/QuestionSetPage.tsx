@@ -70,6 +70,7 @@ export function QuestionSetPage() {
       }
       const result = await submitAnswers(distributionCode, submitData, token)
       sessionStorage.setItem('latest_submission_id', result.submissionId)
+      sessionStorage.setItem('latest_material_id', questionSet.materialId)
       navigate(`/student/submissions/${result.submissionId}`)
     } catch (err) {
       console.error('답안 제출 실패:', err)
@@ -91,6 +92,7 @@ export function QuestionSetPage() {
       <div className="page-header">
         <h1 className="page-title">{questionSet.title}</h1>
         {questionSet.dueAt && <p className="deadline">마감: {new Date(questionSet.dueAt).toLocaleString()}</p>}
+        <p className="page-description">자료 ID: {questionSet.materialId}</p>
       </div>
 
       {error && <div className="error-message">{error}</div>}
