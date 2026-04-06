@@ -6,7 +6,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, ProtectedRoute, RoleBasedHome } from './auth'
 import { Layout } from './components'
-import { LoginPage, UnauthorizedPage, TeacherHomePage, MaterialUploadPage, MaterialStatusPage, QuestionGeneratePage, QuestionReviewPage, TeacherDashboardPage, StudentHomePage, QuestionSetPage, SubmissionResultPage, OperatorOverviewPage } from './pages'
+import { LoginPage, UnauthorizedPage, TeacherHomePage, MaterialUploadPage, MaterialStatusPage, QuestionGeneratePage, QuestionReviewPage, TeacherDashboardPage, StudentHomePage, QuestionSetPage, SubmissionResultPage, QAPage, OperatorOverviewPage } from './pages'
 import './App.css'
 
 /**
@@ -83,6 +83,7 @@ function App() {
           <Route path="/student" element={<ProtectedRoute roles={['STUDENT']}><StudentHomePage /></ProtectedRoute>} />
           <Route path="/student/question-sets/:distributionCode" element={<ProtectedRoute roles={['STUDENT']}><QuestionSetPage /></ProtectedRoute>} />
           <Route path="/student/submissions/:submissionId" element={<ProtectedRoute roles={['STUDENT']}><SubmissionResultPage /></ProtectedRoute>} />
+          <Route path="/student/materials/:materialId/qa" element={<ProtectedRoute roles={['STUDENT']}><QAPage /></ProtectedRoute>} />
           <Route path="/operator" element={<ProtectedRoute roles={['OPERATOR']}><OperatorOverviewPage /></ProtectedRoute>} />
 
           {/* 404 리다이렉트 */}
