@@ -75,7 +75,8 @@ export function TeacherWorkspacePage() {
   return (
     <div className="workspace-page teacher-workspace-page">
       <div className="workspace-header">
-        <div>
+        <div className="workspace-header-content">
+          <div className="workspace-section-meta">교사 · 문서 뷰어 및 문제 출제</div>
           <h1 className="page-title">{material.title}</h1>
           <p className="page-description">같은 자료를 보면서 문제를 생성·검토·배포합니다.</p>
         </div>
@@ -93,13 +94,35 @@ export function TeacherWorkspacePage() {
 
       <div className="workspace-layout">
         <section className="workspace-main">
+          <div className="workspace-main-header">
+            <div className="workspace-main-title">
+              <div className="workspace-main-title-icon">
+                <span className="material-symbols-outlined">menu_book</span>
+              </div>
+              <div>
+                <div className="workspace-main-eyebrow">학습 자료</div>
+                <div>{material.title}</div>
+              </div>
+            </div>
+            <div className="workspace-main-toolbar">
+              <button className="workspace-tool-button" type="button" aria-label="search">
+                <span className="material-symbols-outlined">search</span>
+              </button>
+              <button className="workspace-tool-button" type="button" aria-label="print">
+                <span className="material-symbols-outlined">print</span>
+              </button>
+            </div>
+          </div>
           <MaterialDocumentViewer materialId={materialId} token={token} />
         </section>
 
         <aside className="workspace-side teacher-side">
           <Card className="workspace-card">
             <CardBody>
-              <h3 className="workspace-card-title">문제 생성 설정</h3>
+              <div className="workspace-panel-inline-header">
+                <h3 className="workspace-card-title">문제 생성 설정</h3>
+                <span className="workspace-mini-chip">AI</span>
+              </div>
               <div className="form-group">
                 <label className="input-label">문항 수</label>
                 <input className="number-input" type="number" min={1} max={10} value={questionCount} onChange={(e) => setQuestionCount(Number(e.target.value))} />
