@@ -6,7 +6,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, ProtectedRoute, RoleBasedHome } from './auth'
 import { Layout } from './components'
-import { LoginPage, UnauthorizedPage } from './pages'
+import { LoginPage, UnauthorizedPage, TeacherHomePage, MaterialUploadPage, MaterialStatusPage } from './pages'
 import './App.css'
 
 /**
@@ -31,7 +31,33 @@ function App() {
             }
           />
 
-          {/* TODO: F2-F6 기능 구현 시 추가될 라우트 */}
+          <Route
+            path="/teacher"
+            element={
+              <ProtectedRoute roles={['TEACHER']}>
+                <TeacherHomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/materials/new"
+            element={
+              <ProtectedRoute roles={['TEACHER']}>
+                <MaterialUploadPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/materials/:materialId"
+            element={
+              <ProtectedRoute roles={['TEACHER']}>
+                <MaterialStatusPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/student" element={<ProtectedRoute roles={['STUDENT']}><Navigate to="/login" replace /></ProtectedRoute>} />
+          <Route path="/operator" element={<ProtectedRoute roles={['OPERATOR']}><Navigate to="/login" replace /></ProtectedRoute>} />
 
           {/* 404 리다이렉트 */}
           <Route path="*" element={<Navigate to="/" replace />} />
