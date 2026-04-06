@@ -19,6 +19,7 @@ export function SubmissionResultPage() {
   const { submissionId } = useParams<{ submissionId: string }>()
   const { token } = useAuth()
   const latestMaterialId = sessionStorage.getItem('latest_material_id')
+  const latestDistributionCode = sessionStorage.getItem('latest_distribution_code')
 
   useEffect(() => {
     if (!submissionId || !token) return
@@ -95,7 +96,7 @@ export function SubmissionResultPage() {
 
       <div className="page-actions">
         {latestMaterialId && (
-          <Link to={`/student/materials/${latestMaterialId}/qa`}><Button variant="primary">같은 자료로 질문하기</Button></Link>
+          <Link to={latestDistributionCode ? `/student/question-sets/${latestDistributionCode}/workspace` : `/student/materials/${latestMaterialId}/qa`}><Button variant="primary">같은 자료로 질문하기</Button></Link>
         )}
         <Link to="/student"><Button variant="outline">홈으로</Button></Link>
       </div>

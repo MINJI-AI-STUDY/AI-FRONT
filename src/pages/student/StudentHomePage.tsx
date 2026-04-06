@@ -48,7 +48,7 @@ export function StudentHomePage() {
           <CardBody>
             <h3 className="action-title">자료 기반 AI 질의응답</h3>
             <p className="action-description">가장 최근에 풀이한 자료를 기준으로 질문할 수 있습니다.</p>
-            <Link to={latestMaterialId ? `/student/materials/${latestMaterialId}/qa` : '/student'}>
+            <Link to={latestSubmissionId ? `/student/question-sets/${sessionStorage.getItem('latest_distribution_code') ?? ''}/workspace` : '/student'}>
               <Button variant="outline" disabled={!latestMaterialId}>{latestMaterialId ? '자료 질문하기' : '먼저 문제 참여'}</Button>
             </Link>
           </CardBody>
