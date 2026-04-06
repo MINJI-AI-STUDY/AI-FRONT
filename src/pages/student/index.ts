@@ -5,3 +5,4 @@
 export { StudentHomePage } from './StudentHomePage'
 export { QuestionSetPage } from './QuestionSetPage'
 export { SubmissionResultPage } from './SubmissionResultPage'
+export { QAPage } from './QAPage'

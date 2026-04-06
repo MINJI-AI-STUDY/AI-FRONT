@@ -71,3 +71,25 @@ export async function getSubmissionResult(
 ): Promise<StudentResultResponse> {
   return get<StudentResultResponse>(`/api/student/submissions/${submissionId}/result`, token)
 }
+
+// ==================== 질의응답 관련 타입 ====================
+
+export interface QaResponse {
+  answer: string
+  evidenceSnippets: string[]
+  grounded: boolean
+  insufficientEvidence: boolean
+}
+
+export interface AskQuestionRequest {
+  question: string
+}
+
+/** 질의응답 API */
+export async function askQuestion(
+  materialId: string,
+  data: AskQuestionRequest,
+  token: string,
+): Promise<QaResponse> {
+  return post<QaResponse>(`/api/student/materials/${materialId}/qa`, data, token)
+}
