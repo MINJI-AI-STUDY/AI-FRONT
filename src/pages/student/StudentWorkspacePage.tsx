@@ -104,7 +104,8 @@ export function StudentWorkspacePage() {
   return (
     <div className="workspace-page student-workspace-page">
       <div className="workspace-header">
-        <div>
+        <div className="workspace-header-content">
+          <div className="workspace-section-meta">학생 · 학습 보조 및 문제 풀이</div>
           <h1 className="page-title">{questionSet.title}</h1>
           <p className="page-description">같은 자료를 보면서 문제를 풀고, 바로 질문할 수 있습니다.</p>
         </div>
@@ -117,6 +118,25 @@ export function StudentWorkspacePage() {
 
       <div className="workspace-layout">
         <section className="workspace-main">
+          <div className="workspace-main-header">
+            <div className="workspace-main-title">
+              <div className="workspace-main-title-icon">
+                <span className="material-symbols-outlined">auto_stories</span>
+              </div>
+              <div>
+                <div className="workspace-main-eyebrow">학습 문서</div>
+                <div>{questionSet.title}</div>
+              </div>
+            </div>
+            <div className="workspace-main-toolbar">
+              <button className="workspace-tool-button" type="button" aria-label="bookmark">
+                <span className="material-symbols-outlined">bookmark</span>
+              </button>
+              <button className="workspace-tool-button" type="button" aria-label="search">
+                <span className="material-symbols-outlined">search</span>
+              </button>
+            </div>
+          </div>
           <MaterialDocumentViewer materialId={questionSet.materialId} token={token} />
         </section>
 
@@ -125,6 +145,7 @@ export function StudentWorkspacePage() {
             <CardBody>
               <div className="workspace-panel-inline-header">
                 <h3 className="workspace-card-title">빠른 문제 풀이</h3>
+                <span className="workspace-mini-chip">QUIZ</span>
                 <Button variant="ghost" size="sm" onClick={() => setIsQuizModalOpen(true)}>
                   집중 모드
                 </Button>
@@ -150,7 +171,10 @@ export function StudentWorkspacePage() {
 
           <Card className="workspace-card workspace-chat-card">
             <CardBody>
-              <h3 className="workspace-card-title">자료 기반 AI 질문</h3>
+              <div className="workspace-panel-inline-header">
+                <h3 className="workspace-card-title">자료 기반 AI 질문</h3>
+                <span className="workspace-mini-chip">LIVE</span>
+              </div>
               <div className="workspace-chat-area">
                 {qaResponse ? (
                   <>
