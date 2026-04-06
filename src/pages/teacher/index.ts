@@ -5,3 +5,5 @@
 export { TeacherHomePage } from './TeacherHomePage'
 export { MaterialUploadPage } from './MaterialUploadPage'
 export { MaterialStatusPage } from './MaterialStatusPage'
+export { QuestionGeneratePage } from './QuestionGeneratePage'
+export { QuestionReviewPage } from './QuestionReviewPage'
