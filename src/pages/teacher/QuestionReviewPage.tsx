@@ -24,6 +24,7 @@ export function QuestionReviewPage() {
   const [publishing, setPublishing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [distributionCode, setDistributionCode] = useState<string | null>(null)
+  const [copyMessage, setCopyMessage] = useState<string | null>(null)
 
   const { questionSetId } = useParams<{ questionSetId: string }>()
   const { token } = useAuth()
@@ -81,6 +82,21 @@ export function QuestionReviewPage() {
     }
   }
 
+  /**
+   * 배포 코드를 클립보드에 복사합니다.
+   */
+  const handleCopyCode = async () => {
+    if (!distributionCode) return
+
+    try {
+      await navigator.clipboard.writeText(distributionCode)
+      setCopyMessage('배포 코드를 복사했습니다.')
+    } catch (err) {
+      console.error('코드 복사 실패:', err)
+      setCopyMessage('코드 복사에 실패했습니다.')
+    }
+  }
+
   if (loading) return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
   if (error && !questionSet) return <div className="error-container"><p>{error}</p><Button variant="outline" onClick={() => navigate('/teacher')}>목록으로</Button></div>
   if (!questionSet) return <div className="error-container"><p>문제 세트를 찾을 수 없습니다.</p><Button variant="outline" onClick={() => navigate('/teacher')}>목록으로</Button></div>
@@ -94,7 +110,10 @@ export function QuestionReviewPage() {
               <h2>배포 완료</h2>
               <p>학생들에게 다음 코드를 공유하세요:</p>
               <div className="distribution-code-box"><code className="distribution-code">{distributionCode}</code></div>
+              <p className="ready-message">이제 학생은 배포 코드로 문제 세트에 입장할 수 있습니다.</p>
+              {copyMessage && <p className="file-info">{copyMessage}</p>}
               <div className="publish-actions">
+                <Button variant="secondary" onClick={handleCopyCode}>코드 복사</Button>
                 <Button variant="outline" onClick={() => navigate('/teacher')}>목록으로</Button>
               </div>
             </div>
