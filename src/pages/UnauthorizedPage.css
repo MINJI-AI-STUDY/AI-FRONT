@@ -1,0 +1,49 @@
+/**
+ * 접근 거부 페이지 스타일
+ */
+
+.unauthorized-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background: #f3f4f6;
+}
+
+.unauthorized-card {
+  width: 100%;
+  max-width: 28rem;
+  text-align: center;
+}
+
+.unauthorized-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.unauthorized-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  color: #111827;
+}
+
+.unauthorized-description {
+  margin: 0 0 1rem;
+  color: #6b7280;
+}
+
+.unauthorized-info {
+  margin: 0 0 1.5rem;
+  padding: 0.75rem;
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.unauthorized-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
