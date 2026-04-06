@@ -1,0 +1,100 @@
+/**
+ * 레이아웃 스타일
+ * 디자인 토큰 기반 레이아웃 스타일
+ */
+
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #111827;
+  color: #f9fafb;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebar-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-link {
+  color: #e5e7eb;
+  text-decoration: none;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.625rem;
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 150ms ease;
+}
+
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-link.active {
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+.sidebar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.875rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.875rem;
+  margin-top: auto;
+}
+
+.content {
+  padding: 2.5rem;
+  background: #f3f4f6;
+  overflow-y: auto;
+}
+
+.page-container {
+  max-width: 48rem;
+  padding: 2rem;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.page-title {
+  margin: 0 0 0.75rem;
+  font-size: 2rem;
+  color: #111827;
+}
+
+.page-description {
+  margin: 0 0 1.5rem;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 1.25rem;
+  }
+}
