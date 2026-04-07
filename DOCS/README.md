@@ -4,14 +4,14 @@
 - AI-FRONT 저장소 내부에서만 프론트 아키텍처, UI/UX, API 소비, 요구사항, 정책 문서를 관리합니다.
 
 ## 문서 읽기 순서
-1. `01_overview/README.md`
-2. `02_architecture/README.md`
-3. `03_requirements/README.md`
-4. `04_ui/README.md`
-5. `05_api_consumption/README.md`
-6. `06_components/README.md`
-7. `07_adr/README.md`
-8. `08_plans/README.md`
+1. `01_개요/README.md`
+2. `02_아키텍처/README.md`
+3. `03_요구사항/README.md`
+4. `04_UI명세/README.md`
+5. `05_API소비명세/README.md`
+6. `06_컴포넌트명세/README.md`
+7. `07_의사결정기록/README.md`
+8. `08_계획/README.md`
 
 ## 원칙
 - AI-FRONT 관련 문서는 이 저장소의 `DOCS/`에서만 관리합니다.
