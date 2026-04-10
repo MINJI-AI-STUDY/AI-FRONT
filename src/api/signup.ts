@@ -40,6 +40,8 @@ export interface SignupRequestResponse {
   studentRealName: string | null
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
   rejectionReason: string | null
+  provisionedLoginId: string | null
+  provisionedTempPassword: string | null
 }
 
 export interface ReviewSignupRequest {

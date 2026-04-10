@@ -26,8 +26,11 @@ export function SignupApprovalPage() {
 
   const handleReview = async (signupRequestId: string, approve: boolean) => {
     if (!token) return
-    await reviewSignupRequest(signupRequestId, { approve, rejectionReason: approve ? null : '학교 운영자 반려' }, token)
-    setRequests((prev) => prev.filter((item) => item.signupRequestId !== signupRequestId))
+    const reviewed = await reviewSignupRequest(signupRequestId, { approve, rejectionReason: approve ? null : '학교 운영자 반려' }, token)
+    setRequests((prev) => prev.map((item) => item.signupRequestId === signupRequestId ? reviewed : item).filter((item) => item.status === 'PENDING'))
+    if (approve && reviewed.provisionedLoginId) {
+      alert(`승인 완료\n로그인 ID: ${reviewed.provisionedLoginId}\n초기 비밀번호: ${reviewed.provisionedTempPassword ?? '기존 비밀번호 사용'}`)
+    }
   }
 
   return (
