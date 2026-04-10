@@ -19,6 +19,8 @@ export function StudentHomePage() {
   const latestMaterialId = sessionStorage.getItem('latest_material_id')
   const [materials, setMaterials] = useState<StudentMaterialSummaryResponse[]>([])
   const [channels, setChannels] = useState<ChannelResponse[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!token) return
@@ -30,11 +32,20 @@ export function StudentHomePage() {
         setChannels(channelData)
       } catch (err) {
         console.error('학생 자료 목록 조회 실패:', err)
+        setError('학생 홈 데이터를 불러오는데 실패했습니다.')
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchMaterials()
   }, [token])
+
+  if (loading) return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
+
+  if (error) {
+    return <div className="error-container"><p>{error}</p></div>
+  }
 
   return (
     <div className="student-home">
@@ -82,7 +93,9 @@ export function StudentHomePage() {
       <div style={{ marginTop: '2rem' }}>
         <h2 className="page-title" style={{ fontSize: '1.125rem' }}>채널 입장</h2>
         <div className="action-cards" style={{ marginBottom: '1rem' }}>
-          {channels.map((channel) => (
+          {channels.length === 0 ? (
+            <Card className="action-card"><CardBody><h3 className="action-title">참여 가능한 채널이 없습니다</h3><p className="action-description">교사가 채널을 만들면 여기에 표시됩니다.</p></CardBody></Card>
+          ) : channels.map((channel) => (
             <Card className="action-card" key={channel.channelId}>
               <CardBody>
                 <div className="action-meta">채널</div>
