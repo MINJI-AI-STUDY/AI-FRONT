@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody } from '../../components'
-import { getMaterials, getTeacherChannels, type ChannelResponse, type MaterialSummaryResponse } from '../../api/teacher'
+import { createChannel, getMaterials, getTeacherChannels, type ChannelResponse, type MaterialSummaryResponse } from '../../api/teacher'
 import './TeacherPages.css'
 
 /**
@@ -19,6 +19,8 @@ export function TeacherHomePage() {
   const [channels, setChannels] = useState<ChannelResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [newChannelName, setNewChannelName] = useState('')
+  const [creatingChannel, setCreatingChannel] = useState(false)
 
   useEffect(() => {
     if (!token) return
@@ -43,6 +45,21 @@ export function TeacherHomePage() {
 
   if (error) {
     return <div className="error-container"><p>{error}</p></div>
+  }
+
+  const handleCreateFirstChannel = async () => {
+    if (!token || !newChannelName.trim()) return
+    setCreatingChannel(true)
+    try {
+      const created = await createChannel({ name: newChannelName.trim(), description: '교사 홈에서 생성한 채널', sortOrder: channels.length + 1 }, token)
+      setChannels((prev) => [...prev, created])
+      setNewChannelName('')
+    } catch (err) {
+      console.error('채널 생성 실패:', err)
+      setError('채널 생성에 실패했습니다.')
+    } finally {
+      setCreatingChannel(false)
+    }
   }
 
   return (
@@ -72,7 +89,16 @@ export function TeacherHomePage() {
         <h2 className="page-title" style={{ fontSize: '1.125rem' }}>채널 워크스페이스</h2>
         <div className="action-cards">
           {channels.length === 0 ? (
-            <Card className="action-card"><CardBody><h3 className="action-title">생성된 채널이 없습니다</h3><p className="action-description">첫 채널을 만들면 워크스페이스가 여기에 표시됩니다.</p></CardBody></Card>
+            <Card className="action-card">
+              <CardBody>
+                <h3 className="action-title">생성된 채널이 없습니다</h3>
+                <p className="action-description">첫 채널을 만들면 워크스페이스가 여기에 표시됩니다.</p>
+                <div className="form-group" style={{ marginTop: '1rem' }}>
+                  <input className="number-input" value={newChannelName} onChange={(e) => setNewChannelName(e.target.value)} placeholder="첫 채널 이름" />
+                </div>
+                <Button variant="primary" loading={creatingChannel} onClick={handleCreateFirstChannel}>첫 채널 만들기</Button>
+              </CardBody>
+            </Card>
           ) : channels.map((channel) => (
             <Card className="action-card" key={channel.channelId}>
               <CardBody>
