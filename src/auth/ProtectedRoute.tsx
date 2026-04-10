@@ -5,8 +5,9 @@
 
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { useAuth } from './context'
-import type { Role } from './context'
+import { useAuth } from './useAuth'
+import type { Role } from '../api/auth'
+import { roleHomePaths } from './roleHomePaths'
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -53,15 +54,6 @@ export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
   }
 
   return <>{children}</>
-}
-
-/**
- * 역할별 홈 경로 매핑
- */
-export const roleHomePaths: Record<Role, string> = {
-  TEACHER: '/teacher',
-  STUDENT: '/student',
-  OPERATOR: '/operator',
 }
 
 /**

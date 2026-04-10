@@ -4,43 +4,13 @@
  */
 
 import {
-  createContext,
-  useContext,
   useState,
   useEffect,
 } from 'react'
 import type { ReactNode } from 'react'
-import { getCurrentUser, logout as logoutApi, refreshToken as refreshAccessToken, type Role } from '../api/auth'
+import { getCurrentUser, logout as logoutApi, refreshToken as refreshAccessToken } from '../api/auth'
 import { ApiError } from '../api/client'
-
-/**
- * 사용자 정보 타입
- * 백엔드 MeResponse와 일치: userId, role, displayName
- */
-export interface User {
-  userId: string
-  schoolId: string
-  classroomId: string | null
-  role: Role
-  displayName: string
-}
-
-/**
- * 인증 컨텍스트 값 타입
- */
-interface AuthContextValue {
-  user: User | null
-  token: string | null
-  refreshToken: string | null
-  loading: boolean
-  error: string | null
-  login: (accessToken: string, refreshToken: string) => Promise<void>
-  logout: () => Promise<void>
-  clearError: () => void
-}
-
-// 인증 컨텍스트 생성
-const AuthContext = createContext<AuthContextValue | null>(null)
+import { AuthContext, type User } from './AuthContext'
 
 // 세션 스토리지 키
 const TOKEN_KEY = 'auth_token'
@@ -161,17 +131,3 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 }
 
-/**
- * 인증 컨텍스트 훅
- * 인증 상태에 접근하기 위한 커스텀 훅입니다.
- */
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth는 AuthProvider 낵�에서 사용해야 합니다.')
-  }
-  return context
-}
-
-// Role 타입 재낵�
-export type { Role }
