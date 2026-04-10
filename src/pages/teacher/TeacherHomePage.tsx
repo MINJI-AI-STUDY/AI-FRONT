@@ -6,7 +6,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../auth'
-import { Button, Card, CardBody } from '../../components'
+import { Button, Card, CardBody, TeacherDocumentDashboardModal } from '../../components'
 import { createChannel, getMaterials, getTeacherChannels, type ChannelResponse, type MaterialSummaryResponse } from '../../api/teacher'
 import './TeacherPages.css'
 
@@ -21,6 +21,7 @@ export function TeacherHomePage() {
   const [error, setError] = useState<string | null>(null)
   const [newChannelName, setNewChannelName] = useState('')
   const [creatingChannel, setCreatingChannel] = useState(false)
+  const [modalMaterialId, setModalMaterialId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!token) return
@@ -123,12 +124,16 @@ export function TeacherHomePage() {
                 <div className="action-meta">문서 #{material.docNo} · {material.status}</div>
                 <h3 className="action-title">{material.title}</h3>
                 <p className="action-description">{material.description || '설명 없음'}</p>
-                <Link to={`/teacher/materials/${material.materialId}`}><Button variant="outline">상세 보기</Button></Link>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <Link to={`/teacher/materials/${material.materialId}`}><Button variant="outline">상세 보기</Button></Link>
+                  <Button variant="ghost" onClick={() => setModalMaterialId(material.materialId)}>모달 보기</Button>
+                </div>
               </CardBody>
             </Card>
           ))}
         </div>
       </div>
+      <TeacherDocumentDashboardModal materialId={modalMaterialId} token={token ?? ''} isOpen={!!modalMaterialId} onClose={() => setModalMaterialId(null)} />
     </div>
   )
 }
