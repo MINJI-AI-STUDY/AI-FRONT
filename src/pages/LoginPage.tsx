@@ -36,7 +36,7 @@ export function LoginPage() {
 
     try {
       const response = await loginApi({ loginId, password })
-      await login(response.accessToken)
+      await login(response.accessToken, response.refreshToken)
       const homePath = roleHomePaths[response.role]
       navigate(from || homePath, { replace: true })
     } catch (err) {
@@ -55,7 +55,7 @@ export function LoginPage() {
     setError(null)
     try {
       const response = await loginApi({ loginId: demoLoginId, password: demoPassword })
-      await login(response.accessToken)
+      await login(response.accessToken, response.refreshToken)
       const homePath = roleHomePaths[response.role]
       navigate(from || homePath, { replace: true })
     } catch (err) {

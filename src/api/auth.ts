@@ -25,6 +25,18 @@ export interface LoginRequest {
  */
 export interface LoginResponse {
   accessToken: string
+  refreshToken: string
+  role: Role
+  displayName: string
+}
+
+export interface RefreshTokenRequest {
+  refreshToken: string
+}
+
+export interface TokenResponse {
+  accessToken: string
+  refreshToken: string
   role: Role
   displayName: string
 }
@@ -35,6 +47,8 @@ export interface LoginResponse {
  */
 export interface MeResponse {
   userId: string
+  schoolId: string
+  classroomId: string | null
   role: Role
   displayName: string
 }
@@ -57,4 +71,12 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
  */
 export async function getCurrentUser(token: string): Promise<MeResponse> {
   return get<MeResponse>('/api/auth/me', token)
+}
+
+export async function refreshToken(refreshToken: string): Promise<TokenResponse> {
+  return post<TokenResponse>('/api/auth/refresh', { refreshToken })
+}
+
+export async function logout(refreshToken: string): Promise<void> {
+  return post<void>('/api/auth/logout', { refreshToken })
 }
