@@ -11,6 +11,12 @@ export interface OperatorOverviewResponse {
   completionRate: number
 }
 
+export interface SchoolMasterSyncResponse {
+  importedCount: number
+  updatedCount: number
+  totalCount: number
+}
+
 export interface SchoolResponse {
   schoolId: string
   name: string
@@ -95,4 +101,8 @@ export async function createAdminUser(data: CreateAdminUserRequest, token: strin
 
 export async function updateAdminUser(userId: string, data: UpdateAdminUserRequest, token: string): Promise<AdminUserResponse> {
   return patch<AdminUserResponse>(`/api/operator/users/${userId}`, data, token)
+}
+
+export async function syncSchoolMaster(token: string): Promise<SchoolMasterSyncResponse> {
+  return post<SchoolMasterSyncResponse>('/api/operator/schools/sync-master', undefined, token)
 }
