@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
-import { Card, CardBody, Button } from '../../components'
+import { Card, CardBody, Button, TeacherQuestionSetDashboardModal } from '../../components'
 import { getDocumentDashboard } from '../../api/teacher'
 import type { DocumentDashboardResponse } from '../../api/teacher'
 import './TeacherPages.css'
@@ -12,6 +12,7 @@ export function TeacherDocumentDashboardPage() {
   const [dashboard, setDashboard] = useState<DocumentDashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [modalQuestionSetId, setModalQuestionSetId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!materialId || !token) return
@@ -72,7 +73,12 @@ export function TeacherDocumentDashboardPage() {
                       <td>{item.status}</td>
                       <td>{item.questionCount}</td>
                       <td>{item.distributionCode ?? '-'}</td>
-                      <td><Link to={`/teacher/question-sets/${item.questionSetId}/dashboard`}>문제세트 대시보드</Link></td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          <Link to={`/teacher/question-sets/${item.questionSetId}/dashboard`}>문제세트 대시보드</Link>
+                          <Button variant="ghost" onClick={() => setModalQuestionSetId(item.questionSetId)}>모달 보기</Button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -104,6 +110,7 @@ export function TeacherDocumentDashboardPage() {
       <div className="page-actions">
         <Link to={`/teacher/materials/${dashboard.material.materialId}`}><Button variant="outline">문서 상태로 돌아가기</Button></Link>
       </div>
+      <TeacherQuestionSetDashboardModal questionSetId={modalQuestionSetId} token={token ?? ''} isOpen={!!modalQuestionSetId} onClose={() => setModalQuestionSetId(null)} />
     </div>
   )
 }

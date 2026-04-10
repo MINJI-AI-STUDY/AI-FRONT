@@ -6,7 +6,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../auth'
-import { Button, Card, CardBody } from '../../components'
+import { Button, Card, CardBody, SubmissionResultModal } from '../../components'
 import { getStudentChannels, getStudentMaterials, type ChannelResponse, type StudentMaterialSummaryResponse } from '../../api/student'
 import './StudentPages.css'
 
@@ -21,6 +21,7 @@ export function StudentHomePage() {
   const [channels, setChannels] = useState<ChannelResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false)
 
   useEffect(() => {
     if (!token) return
@@ -72,9 +73,12 @@ export function StudentHomePage() {
             <div className="action-meta">최근 제출 결과</div>
             <h3 className="action-title">결과 확인</h3>
             <p className="action-description">가장 최근에 제출한 문제 세트의 결과와 해설을 확인합니다.</p>
-            <Link to={latestSubmissionId ? `/student/submissions/${latestSubmissionId}` : '/student/join'}>
-              <Button variant="outline">{latestSubmissionId ? '최근 결과 보기' : '먼저 문제 참여'}</Button>
-            </Link>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <Link to={latestSubmissionId ? `/student/submissions/${latestSubmissionId}` : '/student/join'}>
+                <Button variant="outline">{latestSubmissionId ? '최근 결과 보기' : '먼저 문제 참여'}</Button>
+              </Link>
+              {latestSubmissionId && <Button variant="ghost" onClick={() => setIsResultModalOpen(true)}>모달로 보기</Button>}
+            </div>
           </CardBody>
         </Card>
 
@@ -130,6 +134,7 @@ export function StudentHomePage() {
           ))}
         </div>
       </div>
+      <SubmissionResultModal submissionId={latestSubmissionId} token={token ?? ''} isOpen={isResultModalOpen} onClose={() => setIsResultModalOpen(false)} />
     </div>
   )
 }
