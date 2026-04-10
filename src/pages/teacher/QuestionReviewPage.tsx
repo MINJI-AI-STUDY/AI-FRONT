@@ -25,6 +25,7 @@ export function QuestionReviewPage() {
   const [error, setError] = useState<string | null>(null)
   const [distributionCode, setDistributionCode] = useState<string | null>(null)
   const [copyMessage, setCopyMessage] = useState<string | null>(null)
+  const [dueAt, setDueAt] = useState('')
 
   const { questionSetId } = useParams<{ questionSetId: string }>()
   const { token } = useAuth()
@@ -71,7 +72,8 @@ export function QuestionReviewPage() {
     setPublishing(true)
     setError(null)
     try {
-      const result = await publishQuestionSet(questionSetId, token)
+      const normalizedDueAt = dueAt ? `${dueAt}:00` : undefined
+      const result = await publishQuestionSet(questionSetId, token, normalizedDueAt ? { dueAt: normalizedDueAt } : undefined)
       setQuestionSet(result)
       setDistributionCode(result.distributionCode)
     } catch (err) {
@@ -111,6 +113,7 @@ export function QuestionReviewPage() {
               <p>학생들에게 다음 코드를 공유하세요:</p>
               <div className="distribution-code-box"><code className="distribution-code">{distributionCode}</code></div>
               <p className="ready-message">이제 학생은 배포 코드로 문제 세트에 입장할 수 있습니다.</p>
+              {questionSet.dueAt && <p className="file-info">마감: {new Date(questionSet.dueAt).toLocaleString()}</p>}
               {copyMessage && <p className="file-info">{copyMessage}</p>}
               <div className="publish-actions">
                 <Button variant="secondary" onClick={handleCopyCode}>코드 복사</Button>
@@ -143,6 +146,10 @@ export function QuestionReviewPage() {
       <Card className="publish-card">
         <CardBody>
           <div className="publish-info"><p>총 <strong>{questionSet.questions.length}</strong>개 문제 중 <strong>{activeQuestions.length}</strong>개가 배포됩니다.</p></div>
+          <div className="form-group" style={{ marginTop: '1rem' }}>
+            <label className="input-label">마감 일시 (선택)</label>
+            <input className="number-input" type="datetime-local" value={dueAt} onChange={(event) => setDueAt(event.target.value)} />
+          </div>
           <div className="publish-actions">
             <Button variant="outline" onClick={() => navigate('/teacher')}>취소</Button>
             <Button variant="primary" loading={publishing} onClick={handlePublish} disabled={activeQuestions.length === 0}>배포</Button>

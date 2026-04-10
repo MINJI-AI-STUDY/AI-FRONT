@@ -71,6 +71,79 @@
   align-items: start;
 }
 
+.channel-shell {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.channel-content-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.channel-sidebar-panel {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.channel-sidebar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.channel-sidebar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.625rem;
+  text-decoration: none;
+  color: inherit;
+  background: #fafafa;
+}
+
+.channel-sidebar-item.active {
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.channel-sidebar-name {
+  font-weight: 700;
+  color: #111827;
+}
+
+.channel-sidebar-description {
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.channel-layout {
+  grid-template-columns: minmax(0, 1fr) 420px;
+}
+
+.compact-chat-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.workspace-chat-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 /* 메인 콘텐츠 영역 - 깨끗한 흰색 캔버스 */
 .workspace-main {
   min-height: 720px;

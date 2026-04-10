@@ -6,7 +6,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, ProtectedRoute, RoleBasedHome } from './auth'
 import { Layout } from './components'
-import { LoginPage, UnauthorizedPage, TeacherHomePage, MaterialUploadPage, MaterialStatusPage, TeacherWorkspacePage, QuestionGeneratePage, QuestionReviewPage, TeacherDashboardPage, StudentHomePage, JoinPage, StudentWorkspacePage, QuestionSetPage, SubmissionResultPage, QAPage, OperatorOverviewPage } from './pages'
+import { LoginPage, UnauthorizedPage, TeacherHomePage, TeacherChannelWorkspacePage, MaterialUploadPage, MaterialStatusPage, TeacherWorkspacePage, QuestionGeneratePage, QuestionReviewPage, TeacherDashboardPage, TeacherDocumentDashboardPage, StudentHomePage, StudentChannelWorkspacePage, JoinPage, StudentWorkspacePage, QuestionSetPage, SubmissionResultPage, QAPage, OperatorOverviewPage } from './pages'
 import './App.css'
 
 /**
@@ -56,10 +56,26 @@ function App() {
             }
           />
           <Route
+            path="/teacher/channels/:channelId"
+            element={
+              <ProtectedRoute roles={['TEACHER']}>
+                <TeacherChannelWorkspacePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/teacher/materials/:materialId/workspace"
             element={
               <ProtectedRoute roles={['TEACHER']}>
                 <TeacherWorkspacePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/teacher/materials/:materialId/dashboard"
+            element={
+              <ProtectedRoute roles={['TEACHER']}>
+                <TeacherDocumentDashboardPage />
               </ProtectedRoute>
             }
           />
@@ -90,6 +106,7 @@ function App() {
 
           <Route path="/student" element={<ProtectedRoute roles={['STUDENT']}><StudentHomePage /></ProtectedRoute>} />
           <Route path="/student/join" element={<ProtectedRoute roles={['STUDENT']}><JoinPage /></ProtectedRoute>} />
+          <Route path="/student/channels/:channelId" element={<ProtectedRoute roles={['STUDENT']}><StudentChannelWorkspacePage /></ProtectedRoute>} />
           <Route path="/student/question-sets/:distributionCode/workspace" element={<ProtectedRoute roles={['STUDENT']}><StudentWorkspacePage /></ProtectedRoute>} />
           <Route path="/student/question-sets/:distributionCode" element={<ProtectedRoute roles={['STUDENT']}><QuestionSetPage /></ProtectedRoute>} />
           <Route path="/student/submissions/:submissionId" element={<ProtectedRoute roles={['STUDENT']}><SubmissionResultPage /></ProtectedRoute>} />
