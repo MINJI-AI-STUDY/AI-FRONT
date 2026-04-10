@@ -28,12 +28,6 @@ function TopNav() {
     <header className="topbar">
       <div className="topbar-left">
         <div className="brand font-headline">The Academic Atelier</div>
-        <nav className="topbar-nav">
-          <TopNavLink href="#" active>Home</TopNavLink>
-          <TopNavLink href="#">Library</TopNavLink>
-          <TopNavLink href="#">Assignments</TopNavLink>
-          <TopNavLink href="#">Settings</TopNavLink>
-        </nav>
       </div>
       <div className="topbar-actions">
         <button className="icon-button" type="button" aria-label="notifications">
@@ -45,20 +39,6 @@ function TopNav() {
         <div className="topbar-avatar">JD</div>
       </div>
     </header>
-  )
-}
-
-interface TopNavLinkProps {
-  href: string
-  active?: boolean
-  children: ReactNode
-}
-
-function TopNavLink({ href, active = false, children }: TopNavLinkProps) {
-  return (
-    <a href={href} className={`topbar-link ${active ? 'active' : ''}`}>
-      {children}
-    </a>
   )
 }
 
