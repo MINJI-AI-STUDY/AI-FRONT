@@ -4,12 +4,13 @@
  */
 
 import { useState } from 'react'
+import { useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
-import { Button, Card, CardBody } from '../../components'
-import { askQuestion } from '../../api/student'
-import type { QaResponse } from '../../api/student'
+import { Button, Card, CardBody, MaterialDocumentViewer } from '../../components'
+import { askQuestion, getMyQaLogs } from '../../api/student'
+import type { QaResponse, StudentQaLogResponse } from '../../api/student'
 import './StudentPages.css'
 
 export function QAPage() {
@@ -17,9 +18,25 @@ export function QAPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [response, setResponse] = useState<QaResponse | null>(null)
+  const [history, setHistory] = useState<StudentQaLogResponse[]>([])
 
   const { materialId } = useParams<{ materialId: string }>()
   const { token } = useAuth()
+
+  useEffect(() => {
+    if (!materialId || !token) return
+
+    const fetchLogs = async () => {
+      try {
+        const logs = await getMyQaLogs(materialId, token)
+        setHistory(logs)
+      } catch (err) {
+        console.error('질문 이력 조회 실패:', err)
+      }
+    }
+
+    fetchLogs()
+  }, [materialId, token])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -44,6 +61,8 @@ export function QAPage() {
     try {
       const result = await askQuestion(materialId, { question: trimmedQuestion }, token)
       setResponse(result)
+      const logs = await getMyQaLogs(materialId, token)
+      setHistory(logs)
     } catch (err) {
       console.error('질의응답 실패:', err)
       setError('답변을 가져오는데 실패했습니다.')
@@ -58,6 +77,17 @@ export function QAPage() {
         <h1 className="page-title">자료 기반 AI 질의응답</h1>
         <p className="page-description">자료를 기반으로 한 질문에 답변합니다. 근거가 부족한 경우 안내됩니다.</p>
       </div>
+
+      {materialId && token && (
+        <Card className="response-card">
+          <CardBody>
+            <h3 className="response-title">학습 문서</h3>
+            <div style={{ minHeight: '480px' }}>
+              <MaterialDocumentViewer materialId={materialId} token={token} />
+            </div>
+          </CardBody>
+        </Card>
+      )}
 
       <Card>
         <CardBody>
@@ -114,6 +144,24 @@ export function QAPage() {
           </CardBody>
         </Card>
       )}
+
+      <Card className="response-card">
+        <CardBody>
+          <h3 className="response-title">내 질문 이력</h3>
+          {history.length === 0 ? (
+            <p className="page-description">아직 질문 이력이 없습니다.</p>
+          ) : (
+            <div className="evidence-list">
+              {history.map((log) => (
+                <div key={log.qaLogId} className="evidence-item">
+                  <p className="response-answer" style={{ fontWeight: 600 }}>{log.question}</p>
+                  <p className="response-answer">{log.answer}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardBody>
+      </Card>
     </div>
   )
 }

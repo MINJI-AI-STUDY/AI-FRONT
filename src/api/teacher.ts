@@ -11,6 +11,8 @@ export type MaterialStatus = 'UPLOADED' | 'PROCESSING' | 'READY' | 'FAILED'
 /** 자료 요약 응답 타입 */
 export interface MaterialSummaryResponse {
   materialId: string
+  docNo: number
+  schoolId: string
   title: string
   description: string
   status: MaterialStatus
@@ -19,6 +21,7 @@ export interface MaterialSummaryResponse {
 
 /** 자료 업로드 요청 타입 */
 export interface UploadMaterialRequest {
+  channelId?: string
   title: string
   description?: string
 }
@@ -33,6 +36,9 @@ export async function uploadMaterial(
 ): Promise<MaterialSummaryResponse> {
   const formData = new FormData()
   formData.append('file', file)
+  if (data.channelId) {
+    formData.append('channelId', data.channelId)
+  }
   formData.append('title', data.title)
   if (data.description) {
     formData.append('description', data.description)
@@ -64,6 +70,10 @@ export async function getMaterial(
   token: string,
 ): Promise<MaterialSummaryResponse> {
   return get<MaterialSummaryResponse>(`/api/teacher/materials/${materialId}`, token)
+}
+
+export async function getMaterials(token: string): Promise<MaterialSummaryResponse[]> {
+  return get<MaterialSummaryResponse[]>('/api/teacher/materials', token)
 }
 
 /**
@@ -189,4 +199,122 @@ export async function getTeacherDashboard(
   token: string,
 ): Promise<TeacherDashboardResponse> {
   return get<TeacherDashboardResponse>(`/api/teacher/question-sets/${questionSetId}/dashboard`, token)
+}
+
+export interface DocumentQuestionSetSummary {
+  questionSetId: string
+  status: 'REVIEW_REQUIRED' | 'PUBLISHED' | 'CLOSED'
+  distributionCode: string | null
+  dueAt: string | null
+  questionCount: number
+  createdAt: string
+}
+
+export interface TeacherQaLogResponse {
+  qaLogId: string
+  materialId: string
+  studentId: string
+  question: string
+  answer: string
+  grounded: boolean
+  status: string
+  createdAt: string
+  evidenceSnippets: string[]
+}
+
+export interface DocumentDashboardResponse {
+  material: MaterialSummaryResponse
+  questionSetCount: number
+  questionCount: number
+  submissionCount: number
+  participantCount: number
+  averageScore: number
+  qaCount: number
+  generatedQuestionSets: DocumentQuestionSetSummary[]
+  recentQaLogs: TeacherQaLogResponse[]
+}
+
+export async function getDocumentDashboard(
+  materialId: string,
+  token: string,
+): Promise<DocumentDashboardResponse> {
+  return get<DocumentDashboardResponse>(`/api/teacher/materials/${materialId}/dashboard`, token)
+}
+
+export async function getTeacherQaLogs(
+  materialId: string,
+  token: string,
+): Promise<TeacherQaLogResponse[]> {
+  return get<TeacherQaLogResponse[]>(`/api/teacher/materials/${materialId}/qa-logs`, token)
+}
+
+export async function getQuestionSetsByMaterial(
+  materialId: string,
+  token: string,
+): Promise<QuestionSetResponse[]> {
+  return get<QuestionSetResponse[]>(`/api/teacher/materials/${materialId}/question-sets`, token)
+}
+
+export interface ChannelResponse {
+  channelId: string
+  schoolId: string
+  name: string
+  description: string | null
+  sortOrder: number
+  active: boolean
+}
+
+export interface CreateChannelRequest {
+  name: string
+  description?: string
+  sortOrder: number
+}
+
+export interface UpdateChannelRequest {
+  name: string
+  description?: string
+  sortOrder: number
+  active: boolean
+}
+
+export interface ChannelParticipantResponse {
+  userId: string
+  displayName: string
+  role: 'TEACHER' | 'STUDENT' | 'OPERATOR'
+}
+
+export interface ChannelMessageResponse {
+  messageId: string
+  userId: string
+  displayName: string
+  role: 'TEACHER' | 'STUDENT' | 'OPERATOR'
+  content: string
+  createdAt: string
+}
+
+export interface ChannelWorkspaceResponse {
+  channel: ChannelResponse
+  materials: MaterialSummaryResponse[]
+  recentMessages: ChannelMessageResponse[]
+  participants: ChannelParticipantResponse[]
+}
+
+export async function getTeacherChannels(token: string): Promise<ChannelResponse[]> {
+  return get<ChannelResponse[]>('/api/teacher/channels', token)
+}
+
+export async function createChannel(data: CreateChannelRequest, token: string): Promise<ChannelResponse> {
+  return post<ChannelResponse>('/api/teacher/channels', data, token)
+}
+
+export async function updateChannel(channelId: string, data: UpdateChannelRequest, token: string): Promise<ChannelResponse> {
+  return patch<ChannelResponse>(`/api/teacher/channels/${channelId}`, data, token)
+}
+
+export async function getTeacherChannelWorkspace(channelId: string, token: string): Promise<ChannelWorkspaceResponse> {
+  return get<ChannelWorkspaceResponse>(`/api/teacher/channels/${channelId}/workspace`, token)
+}
+
+export async function sendChannelMessage(channelId: string, content: string, token: string): Promise<ChannelMessageResponse> {
+  return post<ChannelMessageResponse>(`/api/channels/${channelId}/messages`, { content }, token)
 }

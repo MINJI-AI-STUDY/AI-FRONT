@@ -4,17 +4,37 @@
  */
 
 import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody } from '../../components'
+import { getStudentChannels, getStudentMaterials, type ChannelResponse, type StudentMaterialSummaryResponse } from '../../api/student'
 import './StudentPages.css'
 
 /**
  * 학생 홈 페이지 컴포넌트
  */
 export function StudentHomePage() {
-  const { user } = useAuth()
+  const { user, token } = useAuth()
   const latestSubmissionId = sessionStorage.getItem('latest_submission_id')
   const latestMaterialId = sessionStorage.getItem('latest_material_id')
+  const [materials, setMaterials] = useState<StudentMaterialSummaryResponse[]>([])
+  const [channels, setChannels] = useState<ChannelResponse[]>([])
+
+  useEffect(() => {
+    if (!token) return
+
+    const fetchMaterials = async () => {
+      try {
+        const [materialData, channelData] = await Promise.all([getStudentMaterials(token), getStudentChannels(token)])
+        setMaterials(materialData)
+        setChannels(channelData)
+      } catch (err) {
+        console.error('학생 자료 목록 조회 실패:', err)
+      }
+    }
+
+    fetchMaterials()
+  }, [token])
 
   return (
     <div className="student-home">
@@ -52,11 +72,50 @@ export function StudentHomePage() {
             <div className="action-meta">동일 자료 질문</div>
             <h3 className="action-title">자료 기반 AI 질의응답</h3>
             <p className="action-description">가장 최근에 풀이한 자료를 기준으로 질문할 수 있습니다.</p>
-            <Link to={latestSubmissionId ? `/student/question-sets/${sessionStorage.getItem('latest_distribution_code') ?? ''}/workspace` : '/student'}>
+            <Link to={latestMaterialId ? `/student/materials/${latestMaterialId}/qa` : '/student'}>
               <Button variant="outline" disabled={!latestMaterialId}>{latestMaterialId ? '자료 질문하기' : '먼저 문제 참여'}</Button>
             </Link>
           </CardBody>
         </Card>
+      </div>
+
+      <div style={{ marginTop: '2rem' }}>
+        <h2 className="page-title" style={{ fontSize: '1.125rem' }}>채널 입장</h2>
+        <div className="action-cards" style={{ marginBottom: '1rem' }}>
+          {channels.map((channel) => (
+            <Card className="action-card" key={channel.channelId}>
+              <CardBody>
+                <div className="action-meta">채널</div>
+                <h3 className="action-title"># {channel.name}</h3>
+                <p className="action-description">{channel.description || '채널 설명 없음'}</p>
+                <Link to={`/student/channels/${channel.channelId}`}><Button variant="outline">채널 입장</Button></Link>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+        <h2 className="page-title" style={{ fontSize: '1.125rem' }}>같은 학교 자료</h2>
+        <p className="page-description" style={{ marginBottom: '1rem' }}>교사가 업로드해 준비 완료된 PDF가 자동으로 표시됩니다.</p>
+        <div className="action-cards">
+          {materials.length === 0 ? (
+            <Card className="action-card">
+              <CardBody>
+                <h3 className="action-title">표시할 자료가 없습니다</h3>
+                <p className="action-description">교사가 PDF를 업로드하고 분석이 완료되면 여기에 자동으로 나타납니다.</p>
+              </CardBody>
+            </Card>
+          ) : materials.map((material) => (
+            <Card className="action-card" key={material.materialId}>
+              <CardBody>
+                <div className="action-meta">문서 #{material.docNo}</div>
+                <h3 className="action-title">{material.title}</h3>
+                <p className="action-description">{material.description || '설명 없음'}</p>
+                <Link to={`/student/materials/${material.materialId}/qa`}>
+                  <Button variant="outline">문서 보고 질문하기</Button>
+                </Link>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   )

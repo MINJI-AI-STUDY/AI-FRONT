@@ -114,6 +114,7 @@ export function MaterialStatusPage() {
       <Card>
         <CardBody>
           <div className="material-info">
+            <div className="info-row"><span className="info-label">문서 번호</span><span className="info-value">#{material.docNo}</span></div>
             <div className="info-row"><span className="info-label">자료 ID</span><span className="info-value">{material.materialId}</span></div>
             <div className="info-row"><span className="info-label">설명</span><span className="info-value">{material.description || '-'}</span></div>
             {material.failureReason && <div className="info-row"><span className="info-label">실패 사유</span><span className="info-value error-text">{material.failureReason}</span></div>}
@@ -129,7 +130,10 @@ export function MaterialStatusPage() {
           {material.status === 'READY' && (
             <div className="ready-actions">
               <p className="ready-message">자료가 준비되었습니다. 분석이 완료된 상태입니다.</p>
-              <Link to={`/teacher/materials/${material.materialId}/workspace`}><Button variant="primary">공통 워크스페이스 열기</Button></Link>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <Link to={`/teacher/materials/${material.materialId}/workspace`}><Button variant="primary">공통 워크스페이스 열기</Button></Link>
+                <Link to={`/teacher/materials/${material.materialId}/dashboard`}><Button variant="outline">문서 대시보드 보기</Button></Link>
+              </div>
             </div>
           )}
 
