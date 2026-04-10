@@ -3,3 +3,4 @@
  */
 
 export { OperatorOverviewPage } from './OperatorOverviewPage'
+export { SignupApprovalPage } from './SignupApprovalPage'
