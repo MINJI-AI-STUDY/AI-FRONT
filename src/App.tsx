@@ -6,7 +6,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, ProtectedRoute, RoleBasedHome } from './auth'
 import { Layout } from './components'
-import { LoginPage, UnauthorizedPage, TeacherHomePage, TeacherChannelWorkspacePage, MaterialUploadPage, MaterialStatusPage, TeacherWorkspacePage, QuestionGeneratePage, QuestionReviewPage, TeacherDashboardPage, TeacherDocumentDashboardPage, StudentHomePage, StudentChannelWorkspacePage, JoinPage, StudentWorkspacePage, QuestionSetPage, SubmissionResultPage, QAPage, OperatorOverviewPage } from './pages'
+import { LoginPage, TeacherSignupPage, StudentSignupPage, TermsPage, PrivacyNoticePage, StudentServiceNoticePage, UnauthorizedPage, TeacherHomePage, TeacherChannelWorkspacePage, MaterialUploadPage, MaterialStatusPage, TeacherWorkspacePage, QuestionGeneratePage, QuestionReviewPage, TeacherDashboardPage, TeacherDocumentDashboardPage, StudentHomePage, StudentChannelWorkspacePage, JoinPage, StudentWorkspacePage, QuestionSetPage, SubmissionResultPage, QAPage, OperatorOverviewPage, SignupApprovalPage } from './pages'
 import './App.css'
 
 /**
@@ -19,6 +19,11 @@ function App() {
         <Routes>
           {/* 공개 라우트 */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup/teacher" element={<TeacherSignupPage />} />
+          <Route path="/signup/student" element={<StudentSignupPage />} />
+          <Route path="/legal/terms" element={<TermsPage />} />
+          <Route path="/legal/privacy" element={<PrivacyNoticePage />} />
+          <Route path="/legal/student-notice" element={<StudentServiceNoticePage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
           {/* 역할 기반 홈 리다이렉트 */}
@@ -112,6 +117,7 @@ function App() {
           <Route path="/student/submissions/:submissionId" element={<ProtectedRoute roles={['STUDENT']}><SubmissionResultPage /></ProtectedRoute>} />
           <Route path="/student/materials/:materialId/qa" element={<ProtectedRoute roles={['STUDENT']}><QAPage /></ProtectedRoute>} />
           <Route path="/operator" element={<ProtectedRoute roles={['OPERATOR']}><OperatorOverviewPage /></ProtectedRoute>} />
+          <Route path="/operator/signup-requests" element={<ProtectedRoute roles={['OPERATOR']}><SignupApprovalPage /></ProtectedRoute>} />
 
           {/* 404 리다이렉트 */}
           <Route path="*" element={<Navigate to="/" replace />} />

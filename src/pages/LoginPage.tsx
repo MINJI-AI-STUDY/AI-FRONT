@@ -5,7 +5,7 @@
 
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth, roleHomePaths } from '../auth'
 import { Button, Input, Card, CardBody } from '../components'
 import { login as loginApi } from '../api/auth'
@@ -86,6 +86,14 @@ export function LoginPage() {
               <Button variant="outline" size="sm" onClick={() => handleDemoLogin('teacher', 'teacher123')} disabled={loading}>교사 데모</Button>
               <Button variant="outline" size="sm" onClick={() => handleDemoLogin('student', 'student123')} disabled={loading}>학생 데모</Button>
               <Button variant="outline" size="sm" onClick={() => handleDemoLogin('operator', 'operator123')} disabled={loading}>운영자 데모</Button>
+            </div>
+          </div>
+
+          <div className="demo-accounts">
+            <h3 className="demo-title">가입 요청</h3>
+            <div className="demo-buttons">
+              <Link to="/signup/teacher"><Button variant="outline" size="sm">교직원 가입</Button></Link>
+              <Link to="/signup/student"><Button variant="outline" size="sm">학생 가입</Button></Link>
             </div>
           </div>
         </CardBody>
