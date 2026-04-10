@@ -72,7 +72,8 @@ export function QuestionReviewPage() {
     setPublishing(true)
     setError(null)
     try {
-      const result = await publishQuestionSet(questionSetId, token, dueAt ? { dueAt: new Date(dueAt).toISOString() } : undefined)
+      const normalizedDueAt = dueAt ? `${dueAt}:00` : undefined
+      const result = await publishQuestionSet(questionSetId, token, normalizedDueAt ? { dueAt: normalizedDueAt } : undefined)
       setQuestionSet(result)
       setDistributionCode(result.distributionCode)
     } catch (err) {
