@@ -16,18 +16,27 @@ export function StudentChannelWorkspacePage() {
   const [message, setMessage] = useState('')
   const [question, setQuestion] = useState('')
   const [qaResponse, setQaResponse] = useState<QaResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!token || !channelId) return
     const load = async () => {
-      const [channelData, workspaceData] = await Promise.all([
-        getStudentChannels(token),
-        getStudentChannelWorkspace(channelId, token),
-      ])
-      setChannels(channelData)
-      setWorkspace(workspaceData)
-      setSelectedMaterial(workspaceData.materials[0] ?? null)
-      await enterChannel(channelId, token)
+      try {
+        const [channelData, workspaceData] = await Promise.all([
+          getStudentChannels(token),
+          getStudentChannelWorkspace(channelId, token),
+        ])
+        setChannels(channelData)
+        setWorkspace(workspaceData)
+        setSelectedMaterial(workspaceData.materials[0] ?? null)
+        await enterChannel(channelId, token)
+      } catch (err) {
+        console.error('학생 채널 워크스페이스 로드 실패:', err)
+        setError('채널 학습 화면을 불러오는데 실패했습니다.')
+      } finally {
+        setLoading(false)
+      }
     }
     load()
 
@@ -67,7 +76,9 @@ export function StudentChannelWorkspacePage() {
 
   const participantNames = useMemo(() => workspace?.participants.map((participant: ChannelParticipantResponse) => participant.displayName).join(', ') ?? '', [workspace])
 
-  if (!workspace || !token || !channelId) return null
+  if (loading) return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
+  if (error) return <div className="error-container"><p>{error}</p></div>
+  if (!workspace || !token || !channelId) return <div className="error-container"><p>채널 워크스페이스를 찾을 수 없습니다.</p></div>
 
   return (
     <div className="workspace-page student-workspace-page channel-workspace-page">

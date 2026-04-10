@@ -18,18 +18,27 @@ export function TeacherChannelWorkspacePage() {
   const [uploadTitle, setUploadTitle] = useState('')
   const [uploadDescription, setUploadDescription] = useState('')
   const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!token || !channelId) return
     const load = async () => {
-      const [channelData, workspaceData] = await Promise.all([
-        getTeacherChannels(token),
-        getTeacherChannelWorkspace(channelId, token),
-      ])
-      setChannels(channelData)
-      setWorkspace(workspaceData)
-      setSelectedMaterialId(workspaceData.materials[0]?.materialId ?? null)
-      await enterChannel(channelId, token)
+      try {
+        const [channelData, workspaceData] = await Promise.all([
+          getTeacherChannels(token),
+          getTeacherChannelWorkspace(channelId, token),
+        ])
+        setChannels(channelData)
+        setWorkspace(workspaceData)
+        setSelectedMaterialId(workspaceData.materials[0]?.materialId ?? null)
+        await enterChannel(channelId, token)
+      } catch (err) {
+        console.error('교사 채널 워크스페이스 로드 실패:', err)
+        setError('채널 운영 화면을 불러오는데 실패했습니다.')
+      } finally {
+        setLoading(false)
+      }
     }
     load()
     const interval = setInterval(() => heartbeatChannel(channelId, token), 15000)
@@ -85,7 +94,9 @@ export function TeacherChannelWorkspacePage() {
     setUploadFile(null)
   }
 
-  if (!workspace || !token || !channelId) return null
+  if (loading) return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
+  if (error) return <div className="error-container"><p>{error}</p></div>
+  if (!workspace || !token || !channelId) return <div className="error-container"><p>채널 운영 화면을 찾을 수 없습니다.</p></div>
 
   return (
     <div className="workspace-page teacher-workspace-page channel-workspace-page">
