@@ -6,7 +6,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, ProtectedRoute, RoleBasedHome } from './auth'
 import { Layout } from './components'
-import { LoginPage, TeacherSignupPage, StudentSignupPage, TermsPage, PrivacyNoticePage, StudentServiceNoticePage, UnauthorizedPage, TeacherHomePage, TeacherChannelWorkspacePage, MaterialUploadPage, MaterialStatusPage, TeacherWorkspacePage, QuestionGeneratePage, QuestionReviewPage, TeacherDashboardPage, TeacherDocumentDashboardPage, StudentHomePage, StudentChannelWorkspacePage, JoinPage, StudentWorkspacePage, QuestionSetPage, SubmissionResultPage, QAPage, OperatorOverviewPage, SignupApprovalPage } from './pages'
+import { LoginPage, TeacherSignupPage, StudentSignupPage, TermsPage, PrivacyNoticePage, StudentServiceNoticePage, UnauthorizedPage, TeacherHomePage, TeacherChannelWorkspacePage, MaterialUploadPage, MaterialStatusPage, TeacherWorkspacePage, QuestionGeneratePage, QuestionReviewPage, TeacherDashboardPage, TeacherDocumentDashboardPage, StudentHomePage, StudentChannelWorkspacePage, JoinPage, StudentWorkspacePage, QuestionSetPage, SubmissionResultPage, QAPage, OperatorOverviewPage, SignupApprovalPage, ProfilePage } from './pages'
 import './App.css'
 
 /**
@@ -118,6 +118,8 @@ function App() {
           <Route path="/student/materials/:materialId/qa" element={<ProtectedRoute roles={['STUDENT']}><QAPage /></ProtectedRoute>} />
           <Route path="/operator" element={<ProtectedRoute roles={['OPERATOR']}><OperatorOverviewPage /></ProtectedRoute>} />
           <Route path="/operator/signup-requests" element={<ProtectedRoute roles={['OPERATOR']}><SignupApprovalPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          {/* 404 리다이렉트 */}
 
           {/* 404 리다이렉트 */}
           <Route path="*" element={<Navigate to="/" replace />} />
