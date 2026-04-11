@@ -38,15 +38,9 @@ function TopNav() {
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <div className="brand font-headline">The Academic Atelier</div>
+        <div className="brand font-headline">Curator</div>
       </div>
       <div className="topbar-actions">
-        <button className="icon-button" type="button" aria-label="notifications">
-          <span className="material-symbols-outlined">notifications</span>
-        </button>
-        <button className="icon-button" type="button" aria-label="help">
-          <span className="material-symbols-outlined">help</span>
-        </button>
         <button
           className="topbar-avatar"
           type="button"
@@ -84,10 +78,6 @@ function FloatingRail() {
         )}
       </div>
       <div className="floating-rail-footer">
-        <a href="#" className="floating-footer-link">
-          <span className="material-symbols-outlined">help_outline</span>
-          <span>Help</span>
-        </a>
         <Link to="/legal/privacy" className="floating-footer-link">
           <span className="material-symbols-outlined">lock</span>
           <span>Privacy</span>
