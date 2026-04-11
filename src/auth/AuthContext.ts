@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import type { Role } from '../api/auth'
+import type { PrivacyConsentResponse, Role } from '../api/auth'
 
 export interface User {
   userId: string
@@ -7,6 +7,9 @@ export interface User {
   classroomId: string | null
   role: Role
   displayName: string
+  active: boolean
+  createdAt: string
+  privacyConsents: PrivacyConsentResponse[]
 }
 
 export interface AuthContextValue {
@@ -17,6 +20,7 @@ export interface AuthContextValue {
   error: string | null
   login: (accessToken: string, refreshToken: string) => Promise<void>
   logout: () => Promise<void>
+  refreshUser: () => Promise<void>
   clearError: () => void
 }
 
