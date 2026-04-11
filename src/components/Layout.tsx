@@ -4,7 +4,8 @@
  */
 
 import type { ReactNode } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../auth'
 import './Layout.css'
 
 interface LayoutProps {
@@ -24,6 +25,15 @@ export function Layout({ children }: LayoutProps) {
 }
 
 function TopNav() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  // Get initials from display name or fallback
+  const getInitials = (name: string | undefined) => {
+    if (!name) return '??'
+    return name.slice(0, 2).toUpperCase()
+  }
+
   return (
     <header className="topbar">
       <div className="topbar-left">
@@ -36,7 +46,15 @@ function TopNav() {
         <button className="icon-button" type="button" aria-label="help">
           <span className="material-symbols-outlined">help</span>
         </button>
-        <div className="topbar-avatar">JD</div>
+        <button
+          className="topbar-avatar"
+          type="button"
+          onClick={() => navigate('/profile')}
+          aria-label="프로필"
+          title="프로필"
+        >
+          {getInitials(user?.displayName)}
+        </button>
       </div>
     </header>
   )
@@ -61,10 +79,10 @@ function FloatingRail() {
           <span className="material-symbols-outlined">help_outline</span>
           <span>Help</span>
         </a>
-        <a href="#" className="floating-footer-link">
+        <Link to="/legal/privacy" className="floating-footer-link">
           <span className="material-symbols-outlined">lock</span>
           <span>Privacy</span>
-        </a>
+        </Link>
       </div>
     </nav>
   )

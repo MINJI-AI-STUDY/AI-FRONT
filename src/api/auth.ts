@@ -41,6 +41,13 @@ export interface TokenResponse {
   displayName: string
 }
 
+export interface PrivacyConsentResponse {
+  consentType: string
+  consented: boolean
+  consentedAt: string | null
+  updatedAt: string | null
+}
+
 /**
  * 현재 사용자 정보 응답 타입
  * 백엔드: userId, role, displayName
@@ -51,6 +58,14 @@ export interface MeResponse {
   classroomId: string | null
   role: Role
   displayName: string
+  active: boolean
+  createdAt: string
+  privacyConsents: PrivacyConsentResponse[]
+}
+
+export interface UpdatePrivacyConsentRequest {
+  consentType: string
+  consented: boolean
 }
 
 /**
@@ -71,6 +86,17 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
  */
 export async function getCurrentUser(token: string): Promise<MeResponse> {
   return get<MeResponse>('/api/auth/me', token)
+}
+
+export async function getPrivacyConsents(token: string): Promise<PrivacyConsentResponse[]> {
+  return get<PrivacyConsentResponse[]>('/api/auth/me/privacy-consent', token)
+}
+
+export async function updatePrivacyConsent(
+  request: UpdatePrivacyConsentRequest,
+  token: string
+): Promise<PrivacyConsentResponse> {
+  return post<PrivacyConsentResponse>('/api/auth/me/privacy-consent', request, token)
 }
 
 export async function refreshToken(refreshToken: string): Promise<TokenResponse> {

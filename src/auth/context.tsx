@@ -32,44 +32,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * 현재 사용자 정보 조회
    * 토큰이 있으면 사용자 정보를 가져옵니다.
    */
-  useEffect(() => {
-    if (!token) {
+  const fetchUser = async (accessToken = token) => {
+    if (!accessToken) {
       setUser(null)
       return
     }
 
-    const fetchUser = async () => {
-      setLoading(true)
-      setError(null)
+    setLoading(true)
+    setError(null)
 
-      try {
-        const userData = await getCurrentUser(token)
-        setUser(userData)
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 401 && refreshToken) {
-          try {
-            const refreshed = await refreshAccessToken(refreshToken)
-            sessionStorage.setItem(TOKEN_KEY, refreshed.accessToken)
-            sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshed.refreshToken)
-            setToken(refreshed.accessToken)
-            setRefreshToken(refreshed.refreshToken)
-            const retriedUser = await getCurrentUser(refreshed.accessToken)
-            setUser(retriedUser)
-            return
-          } catch (refreshErr) {
-            console.error('토큰 재발급 실패:', refreshErr)
-          }
+    try {
+      const userData = await getCurrentUser(accessToken)
+      setUser(userData)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401 && refreshToken) {
+        try {
+          const refreshed = await refreshAccessToken(refreshToken)
+          sessionStorage.setItem(TOKEN_KEY, refreshed.accessToken)
+          sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshed.refreshToken)
+          setToken(refreshed.accessToken)
+          setRefreshToken(refreshed.refreshToken)
+          const retriedUser = await getCurrentUser(refreshed.accessToken)
+          setUser(retriedUser)
+          return
+        } catch (refreshErr) {
+          console.error('토큰 재발급 실패:', refreshErr)
         }
-
-        console.error('사용자 정보 조회 실패:', err)
-        setError('사용자 정보를 가져오는데 실패했습니다.')
-        sessionStorage.removeItem(TOKEN_KEY)
-        sessionStorage.removeItem(REFRESH_TOKEN_KEY)
-        setToken(null)
-        setRefreshToken(null)
-      } finally {
-        setLoading(false)
       }
+
+      console.error('사용자 정보 조회 실패:', err)
+      setError('사용자 정보를 가져오는데 실패했습니다.')
+      sessionStorage.removeItem(TOKEN_KEY)
+      sessionStorage.removeItem(REFRESH_TOKEN_KEY)
+      setToken(null)
+      setRefreshToken(null)
+      setUser(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!token) {
+      setUser(null)
+      return
     }
 
     fetchUser()
@@ -123,6 +129,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error,
         login,
         logout,
+        refreshUser: async () => {
+          await fetchUser()
+        },
         clearError,
       }}
     >
