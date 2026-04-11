@@ -70,3 +70,45 @@
   gap: 0.5rem;
   justify-content: center;
 }
+
+
+
+/* 로그인 탭 네비게이션 */
+.login-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.25rem;
+  background: #f3f4f6;
+  border-radius: 0.75rem;
+}
+
+.login-tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.625rem;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.login-tab:hover {
+  color: #374151;
+}
+
+.login-tab.active {
+  background: #ffffff;
+  color: #111827;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.login-hint {
+  margin: -0.5rem 0 0;
+  color: #6b7280;
+  font-size: 0.8125rem;
+  text-align: center;
+}
