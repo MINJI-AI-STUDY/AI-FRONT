@@ -11,6 +11,7 @@ export function SignupApprovalPage() {
   const [selectedSchoolId, setSelectedSchoolId] = useState('')
   const [requests, setRequests] = useState<SignupRequestResponse[]>([])
   const [rejectionReasons, setRejectionReasons] = useState<Record<string, string>>({})
+  const [notice, setNotice] = useState<string | null>(null)
 
   useEffect(() => {
     if (!token) return
@@ -41,8 +42,11 @@ export function SignupApprovalPage() {
       delete next[signupRequestId]
       return next
     })
-    if (approve && reviewed.provisionedLoginId) {
-      alert(`승인 완료\n로그인 ID: ${reviewed.provisionedLoginId}\n초기 비밀번호: ${reviewed.provisionedTempPassword ?? '기존 비밀번호 사용'}`)
+    setNotice(null)
+    if (approve && reviewed.role === 'TEACHER' && reviewed.provisionedLoginId) {
+      setNotice(`승인 완료 · 로그인 ID: ${reviewed.provisionedLoginId} · 초기 비밀번호: ${reviewed.provisionedTempPassword ?? '기존 비밀번호 사용'}`)
+    } else if (approve && reviewed.role === 'STUDENT') {
+      setNotice('학생 승인 완료 · 학생은 학교, 실명, PIN으로 로그인합니다.')
     }
   }
 
@@ -52,6 +56,7 @@ export function SignupApprovalPage() {
       <Card className="summary-card"><CardBody>
         <label>학교 선택<select value={selectedSchoolId} onChange={(e) => setSelectedSchoolId(e.target.value)} style={{ display: 'block', marginTop: '0.5rem', padding: '0.5rem', minWidth: '240px' }}>{schools.map((school) => <option key={school.schoolId} value={school.schoolId}>{school.name}</option>)}</select></label>
       </CardBody></Card>
+      {notice ? <Card className="summary-card" style={{ marginTop: '1rem' }}><CardBody><p className="page-description">{notice}</p></CardBody></Card> : null}
       <Card className="summary-card" style={{ marginTop: '1rem' }}><CardBody>
         {requests.length === 0 ? <p className="page-description">대기 중인 가입 요청이 없습니다.</p> : <ul>{requests.map((item) => <li key={item.signupRequestId} style={{ marginBottom: '1rem' }}><div style={{ marginBottom: '0.5rem' }}>{item.requesterName} · {item.role}</div><input value={rejectionReasons[item.signupRequestId] ?? ''} onChange={(e) => setRejectionReasons((prev) => ({ ...prev, [item.signupRequestId]: e.target.value }))} placeholder="반려 사유(선택)" className="number-input" style={{ marginBottom: '0.5rem', width: '100%' }} /><div style={{ display: 'flex', gap: '0.5rem' }}><Button variant="outline" onClick={() => handleReview(item.signupRequestId, true)}>승인</Button> <Button variant="danger" onClick={() => handleReview(item.signupRequestId, false)}>반려</Button></div></li>)}</ul>}
       </CardBody></Card>

@@ -106,3 +106,34 @@ export async function refreshToken(refreshToken: string): Promise<TokenResponse>
 export async function logout(refreshToken: string): Promise<void> {
   return post<void>('/api/auth/logout', { refreshToken })
 }
+
+
+/**
+ * 학생 PIN 로그인 요청 타입
+ * 백엔드: pin
+ */
+export interface StudentPinLoginRequest {
+  schoolId: string
+  studentName: string
+  pin: string
+}
+
+/**
+ * 학생 PIN 로그인 응답 타입
+ */
+export interface StudentPinLoginResponse {
+  accessToken: string
+  refreshToken: string
+  role: 'STUDENT'
+  displayName: string
+}
+
+/**
+ * 학생 PIN 로그인 API
+ * POST /api/auth/student/login
+ * @param credentials - PIN 로그인 자격 증명
+ * @returns 로그인 응답
+ */
+export async function studentPinLogin(credentials: StudentPinLoginRequest): Promise<StudentPinLoginResponse> {
+  return post<StudentPinLoginResponse>('/api/auth/student/login', credentials)
+}

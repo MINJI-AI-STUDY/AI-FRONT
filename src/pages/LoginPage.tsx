@@ -4,20 +4,34 @@
  */
 
 import { useState } from 'react'
+import { useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth, roleHomePaths } from '../auth'
 import { Button, Input, Card, CardBody } from '../components'
-import { login as loginApi } from '../api/auth'
+import { login as loginApi, studentPinLogin } from '../api/auth'
+import { searchSchools, type SchoolMasterResponse } from '../api/signup'
 import './LoginPage.css'
+
+type LoginTab = 'teacher' | 'student'
 
 /**
  * 로그인 페이지 컴포넌트
- * 교사/학생/학교 운영자가 일반 로그인으로 진입합니다.
+ * 교사/운영자는 ID/PW 로그인, 학생은 PIN 로그인
  */
 export function LoginPage() {
+  const [activeTab, setActiveTab] = useState<LoginTab>('teacher')
+
+  // Teacher/Operator login states
   const [loginId, setLoginId] = useState('')
   const [password, setPassword] = useState('')
+
+  // Student PIN login states
+  const [schools, setSchools] = useState<SchoolMasterResponse[]>([])
+  const [schoolId, setSchoolId] = useState('')
+  const [studentName, setStudentName] = useState('')
+  const [pin, setPin] = useState('')
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -26,10 +40,21 @@ export function LoginPage() {
   const location = useLocation()
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname
 
+  useEffect(() => {
+    searchSchools('')
+      .then((result) => {
+        setSchools(result)
+        setSchoolId((prev) => prev || result[0]?.schoolId || '')
+      })
+      .catch((err) => {
+        console.error('학교 목록 조회 실패:', err)
+      })
+  }, [])
+
   /**
-   * 로그인 폼 제출 핸들러
+   * 교사/운영자 로그인 폼 제출 핸들러
    */
-  const handleSubmit = async (e: FormEvent) => {
+  const handleTeacherSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
@@ -47,25 +72,122 @@ export function LoginPage() {
     }
   }
 
+  /**
+   * 학생 PIN 로그인 폼 제출 핸들러
+   */
+  const handleStudentPinSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    try {
+      const response = await studentPinLogin({ schoolId, studentName, pin })
+      await login(response.accessToken, response.refreshToken)
+      const homePath = roleHomePaths[response.role]
+      navigate(from || homePath, { replace: true })
+    } catch (err) {
+      console.error('PIN 로그인 실패:', err)
+      setError('PIN 로그인에 실패했습니다. 학교, 이름 또는 PIN을 확인해주세요.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="login-page">
       <Card className="login-card">
         <CardBody>
-          <h1 className="login-title">AI-STUDY 로그인</h1>
-          <p className="login-description">교사, 학생, 학교 운영자 계정으로 로그인합니다.</p>
+          <h1 className="login-title">Curator 로그인</h1>
+          <p className="login-description">계정 유형을 선택하여 로그인합니다.</p>
+
+          {/* Tab Navigation */}
+          <div className="login-tabs">
+            <button
+              type="button"
+              className={`login-tab ${activeTab === 'teacher' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('teacher'); setError(null) }}
+            >
+              교직원 / 운영자
+            </button>
+            <button
+              type="button"
+              className={`login-tab ${activeTab === 'student' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('student'); setError(null) }}
+            >
+              학생 (PIN)
+            </button>
+          </div>
+
           {error && <div className="login-error">{error}</div>}
 
-          <form onSubmit={handleSubmit} className="login-form">
-            <Input label="로그인 ID" type="text" value={loginId} onChange={(e) => setLoginId(e.target.value)} placeholder="로그인 ID를 입력하세요" required />
-            <Input label="비밀번호" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호를 입력하세요" required />
-            <Button type="submit" loading={loading} className="login-button">로그인</Button>
-          </form>
+          {activeTab === 'teacher' ? (
+            <form onSubmit={handleTeacherSubmit} className="login-form">
+              <Input
+                label="로그인 ID"
+                type="text"
+                value={loginId}
+                onChange={(e) => setLoginId(e.target.value)}
+                placeholder="로그인 ID를 입력하세요"
+                required
+              />
+              <Input
+                label="비밀번호"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="비밀번호를 입력하세요"
+                required
+              />
+              <Button type="submit" loading={loading} className="login-button">
+                로그인
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleStudentPinSubmit} className="login-form">
+              <label>
+                학교
+                <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="number-input">
+                  <option value="">학교 선택</option>
+                  {schools.map((school) => (
+                    <option key={school.schoolId} value={school.schoolId}>{school.name}</option>
+                  ))}
+                </select>
+              </label>
+              <Input
+                label="학생 이름"
+                type="text"
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                placeholder="실명을 입력하세요"
+                required
+              />
+              <Input
+                label="PIN 번호"
+                type="password"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                placeholder="PIN 번호를 입력하세요"
+                required
+                maxLength={6}
+              />
+              <p className="login-hint">
+                승인된 학교와 실명, 학교에서 안내받은 PIN 번호로 로그인합니다.
+              </p>
+              <Button type="submit" loading={loading} className="login-button">
+                PIN으로 로그인
+              </Button>
+            </form>
+          )}
 
           <div className="demo-accounts">
             <h3 className="demo-title">가입 요청</h3>
             <div className="demo-buttons">
-              <Link to="/signup/teacher"><Button variant="outline" size="sm">교직원 가입</Button></Link>
-              <Link to="/signup/student"><Button variant="outline" size="sm">학생 가입</Button></Link>
+              <Link to="/signup/teacher">
+                <Button variant="outline" size="sm">교직원 가입</Button>
+              </Link>
+              <Link to="/signup/student">
+                <Button variant="outline" size="sm">학생 가입</Button>
+              </Link>
             </div>
           </div>
         </CardBody>

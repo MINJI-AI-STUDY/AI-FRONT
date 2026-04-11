@@ -3,6 +3,8 @@
 ## Materials
 - `GET /api/student/materials`
 - 같은 학교에서 READY 상태인 자료를 학생 홈에 자동 노출한다.
+- `GET /api/materials/document/{materialId}`
+- 학생 workspace / QA / channel workspace는 공통 인증 PDF inline 조회 경로를 사용한다.
 
 ## Channel
 - `GET /api/student/channels`

@@ -195,3 +195,53 @@
     gap: 0.5rem;
   }
 }
+
+
+
+/* 개인정보 동의 모달 스타일 */
+.privacy-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.privacy-section-card {
+  border: 1px solid #e5e7eb;
+}
+
+.privacy-section-card .privacy-section {
+  margin-bottom: 0;
+}
+
+.privacy-section-card .privacy-section-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+}
+
+.privacy-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.privacy-consent-card {
+  background: #f9fafb;
+}
+
+.role-teacher {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.role-student {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.role-operator {
+  background: #f3e8ff;
+  color: #7c3aed;
+}

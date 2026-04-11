@@ -22,7 +22,7 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
       try {
         setLoading(true)
         setError(null)
-        const response = await fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:8080'}/api/teacher/materials/document/${materialId}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:8080'}/api/materials/document/${materialId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
