@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody } from '../../components'
-import { createAdminUser, createClassroom, createSchool, getAdminUsers, getClassrooms, getOperatorOverview, getSchools, updateAdminUser, updateSchool, type AdminUserResponse, type ClassroomResponse, type OperatorOverviewResponse, type SchoolResponse } from '../../api/operator'
+import { createAdminUser, createClassroom, createSchool, getAdminUsers, getClassrooms, getOperatorOverview, getSchools, syncSchoolMaster, updateAdminUser, updateSchool, type AdminUserResponse, type ClassroomResponse, type OperatorOverviewResponse, type SchoolResponse } from '../../api/operator'
 import './OperatorPages.css'
 
 export function OperatorOverviewPage() {
@@ -24,6 +24,7 @@ export function OperatorOverviewPage() {
   const [newUserRole, setNewUserRole] = useState<'TEACHER' | 'STUDENT' | 'OPERATOR'>('TEACHER')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [syncMessage, setSyncMessage] = useState<string | null>(null)
 
   const { user, token, logout } = useAuth()
 
@@ -149,6 +150,19 @@ export function OperatorOverviewPage() {
     setSchools(schoolData)
   }
 
+  const handleSyncSchoolMaster = async () => {
+    if (!token) return
+    try {
+      const result = await syncSchoolMaster(token)
+      setSyncMessage(`학교 마스터 동기화 완료: 신규 ${result.importedCount}건, 업데이트 ${result.updatedCount}건`)
+      const schoolData = await getSchools(token)
+      setSchools(schoolData)
+    } catch (err) {
+      console.error('학교 마스터 동기화 실패:', err)
+      setSyncMessage('학교 마스터 동기화에 실패했습니다. API 키를 확인해주세요.')
+    }
+  }
+
   if (loading) return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
   if (error || !overview) return <div className="error-container"><p>{error || '데이터를 찾을 수 없습니다.'}</p></div>
 
@@ -161,6 +175,14 @@ export function OperatorOverviewPage() {
         <p className="page-description">안녕하세요, {user?.displayName}님. 전체 현황을 확인하세요.</p>
         <Button variant="outline" onClick={handleLogout}>로그아웃</Button>
       </div>
+
+      <Card className="summary-card" style={{ marginBottom: '1rem' }}>
+        <CardBody>
+          <h3 className="summary-title">학교 마스터 동기화</h3>
+          <Button variant="outline" onClick={handleSyncSchoolMaster}>Open API로 학교 동기화</Button>
+          {syncMessage && <p className="page-description" style={{ marginTop: '0.75rem' }}>{syncMessage}</p>}
+        </CardBody>
+      </Card>
 
       {!hasOverviewData ? (
         <Card className="summary-card">
