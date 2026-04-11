@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardBody, Button } from '../components'
+import { Card, CardBody, Button, PrivacyConsentModal } from '../components'
 import { useAuth } from '../auth'
+import { updatePrivacyConsent } from '../api/auth'
 import './ProfilePage.css'
 
 export function ProfilePage() {
-  const { user, logout } = useAuth()
+  const { user, token, refreshUser, logout } = useAuth()
   const navigate = useNavigate()
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false)
 
   const handleLogout = async () => {
     await logout()
@@ -26,6 +29,17 @@ export function ProfilePage() {
   }
 
   const privacyConsent = user?.privacyConsents.find((consent) => consent.consentType === 'privacy_notice')
+
+  const handleConsent = async (consented: boolean) => {
+    if (!token) return
+
+    try {
+      await updatePrivacyConsent({ consentType: 'privacy_notice', consented }, token)
+      await refreshUser()
+    } catch (error) {
+      console.error('개인정보 동의 상태 저장 실패:', error)
+    }
+  }
 
   if (!user) {
     return (
@@ -106,8 +120,8 @@ export function ProfilePage() {
           </div>
 
           <div className="profile-actions">
-            <Button variant="outline" onClick={() => navigate('/legal/privacy')}>
-              개인정보 처리방침
+            <Button variant="outline" onClick={() => setIsPrivacyModalOpen(true)}>
+              개인정보 처리방침 보기
             </Button>
             <Button variant="secondary" onClick={handleLogout}>
               로그아웃
@@ -115,6 +129,15 @@ export function ProfilePage() {
           </div>
         </CardBody>
       </Card>
+
+      <PrivacyConsentModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+        privacyConsent={privacyConsent}
+        onConsent={handleConsent}
+        userName={user.displayName}
+        userRole={user.role}
+      />
     </div>
   )
 }

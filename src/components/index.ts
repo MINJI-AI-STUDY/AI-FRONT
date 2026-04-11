@@ -13,3 +13,5 @@ export { Modal, ConfirmModal } from './Modal'
 export { SubmissionResultModal } from './modals/SubmissionResultModal'
 export { TeacherDocumentDashboardModal } from './modals/TeacherDocumentDashboardModal'
 export { TeacherQuestionSetDashboardModal } from './modals/TeacherQuestionSetDashboardModal'
+
+export { PrivacyConsentModal } from './modals/PrivacyConsentModal'

@@ -1,29 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, Card, CardBody } from '../components'
 import { useAuth } from '../auth'
-import { updatePrivacyConsent } from '../api/auth'
 import './PrivacyNoticePage.css'
 
 export function PrivacyNoticePage() {
-  const { user, token, loading, refreshUser } = useAuth()
+  const { user, token, loading } = useAuth()
   const navigate = useNavigate()
   const isAuthenticated = !!token
   const isUserResolved = !loading && !!user
 
   const privacyConsent = user?.privacyConsents.find((consent) => consent.consentType === 'privacy_notice')
-
-  const handleConsent = async (consented: boolean) => {
-    if (!token) {
-      return
-    }
-
-    try {
-      await updatePrivacyConsent({ consentType: 'privacy_notice', consented }, token)
-      await refreshUser()
-    } catch (error) {
-      console.error('개인정보 동의 상태 저장 실패:', error)
-    }
-  }
 
   const formatRole = (role: string) => {
     return role === 'TEACHER' ? '교사' : role === 'STUDENT' ? '학생' : '운영자'
@@ -111,9 +97,8 @@ export function PrivacyNoticePage() {
                   최근 처리 시각: {formatDate(privacyConsent?.updatedAt ?? null)}
                 </p>
                 <div className="privacy-actions privacy-inline-actions">
-                  <Button onClick={() => void handleConsent(true)}>동의하기</Button>
-                  <Button variant="outline" onClick={() => void handleConsent(false)}>
-                    동의 철회
+                  <Button variant="outline" onClick={() => navigate('/profile')}>
+                    프로필에서 동의 관리하기
                   </Button>
                 </div>
               </section>
