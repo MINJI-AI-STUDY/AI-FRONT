@@ -15,7 +15,22 @@ export function StudentSignupPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    searchSchools('').then(setSchools).catch((err) => console.error('학교 검색 실패:', err))
+    searchSchools('')
+      .then((result) => {
+        if (Array.isArray(result)) {
+          setSchools(result)
+          return
+        }
+
+        console.error('학교 검색 응답 형식 오류:', result)
+        setSchools([])
+        setError('학교 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+      })
+      .catch((err) => {
+        console.error('학교 검색 실패:', err)
+        setSchools([])
+        setError('학교 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
+      })
   }, [])
 
   const handleSubmit = async () => {

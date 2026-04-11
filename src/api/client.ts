@@ -15,18 +15,23 @@ function resolveApiBaseUrl(): string {
   }
 
   if (typeof window !== 'undefined') {
-    const { hostname, origin } = window.location
+    const { hostname } = window.location
     const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
 
-    if (!isLocalhost) {
-      return normalizeApiBaseUrl(origin)
+    if (isLocalhost) {
+      return 'http://localhost:8080'
     }
   }
 
-  return 'http://localhost:8080'
+  // VITE_API_URL이 설정되지 않은 프로덕션 환경에서는
+  // window.origin으로 폴백하지 않음 (Vercel 등에서 프론트엔드 자신을 가리키게 됨)
+  console.error(
+    'VITE_API_URL이 설정되지 않았습니다. API 서버 URL을 환경변수로 설정하세요.'
+  )
+  return ''
 }
 
-// API 기본 URL (환경변수 우선, 배포 환경에서는 현재 origin fallback)
+// API 기본 URL (환경변수 필수, 미설정 시 빈 문자열 → 요청 실패로 명시적 에러 노출)
 const API_BASE_URL = resolveApiBaseUrl()
 
 /**
