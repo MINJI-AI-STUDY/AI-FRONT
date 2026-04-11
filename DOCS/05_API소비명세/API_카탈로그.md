@@ -3,6 +3,7 @@
 | 도메인 | 메서드 | URL | 설명 |
 | --- | --- | --- | --- |
 | auth | POST | `/api/auth/login` | 로그인 |
+| auth | POST | `/api/auth/student/login` | 학생 PIN 로그인 |
 | auth | GET | `/api/auth/me` | 사용자 복원 |
 | auth | POST | `/api/auth/refresh` | 토큰 재발급 |
 | auth | POST | `/api/auth/logout` | 로그아웃 |
