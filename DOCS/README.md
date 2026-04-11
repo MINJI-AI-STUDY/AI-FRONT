@@ -12,6 +12,7 @@
 6. `06_컴포넌트명세/README.md`
 7. `07_의사결정기록/README.md`
 8. `08_계획/README.md`
+9. `10_운영/README.md`
 
 ## 원칙
 - AI-FRONT 관련 문서는 이 저장소의 `DOCS/`에서만 관리합니다.
