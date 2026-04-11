@@ -13,7 +13,7 @@ import './LoginPage.css'
 
 /**
  * 로그인 페이지 컴포넌트
- * 데모 계정으로 교사/학생/운영자 진입을 지원합니다.
+ * 교사/학생/학교 운영자가 일반 로그인으로 진입합니다.
  */
 export function LoginPage() {
   const [loginId, setLoginId] = useState('')
@@ -47,31 +47,12 @@ export function LoginPage() {
     }
   }
 
-  /**
-   * 데모 계정으로 빠른 로그인
-   */
-  const handleDemoLogin = async (demoLoginId: string, demoPassword: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const response = await loginApi({ loginId: demoLoginId, password: demoPassword })
-      await login(response.accessToken, response.refreshToken)
-      const homePath = roleHomePaths[response.role]
-      navigate(from || homePath, { replace: true })
-    } catch (err) {
-      console.error('데모 로그인 실패:', err)
-      setError('데모 로그인에 실패했습니다.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div className="login-page">
       <Card className="login-card">
         <CardBody>
           <h1 className="login-title">AI-STUDY 로그인</h1>
-          <p className="login-description">교사, 학생, 운영자 데모 계정으로 진입합니다.</p>
+          <p className="login-description">교사, 학생, 학교 운영자 계정으로 로그인합니다.</p>
           {error && <div className="login-error">{error}</div>}
 
           <form onSubmit={handleSubmit} className="login-form">
@@ -79,15 +60,6 @@ export function LoginPage() {
             <Input label="비밀번호" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호를 입력하세요" required />
             <Button type="submit" loading={loading} className="login-button">로그인</Button>
           </form>
-
-          <div className="demo-accounts">
-            <h3 className="demo-title">데모 계정</h3>
-            <div className="demo-buttons">
-              <Button variant="outline" size="sm" onClick={() => handleDemoLogin('teacher', 'teacher123')} disabled={loading}>교사 데모</Button>
-              <Button variant="outline" size="sm" onClick={() => handleDemoLogin('student', 'student123')} disabled={loading}>학생 데모</Button>
-              <Button variant="outline" size="sm" onClick={() => handleDemoLogin('operator', 'operator123')} disabled={loading}>운영자 데모</Button>
-            </div>
-          </div>
 
           <div className="demo-accounts">
             <h3 className="demo-title">가입 요청</h3>
