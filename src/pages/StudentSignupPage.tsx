@@ -37,7 +37,7 @@ export function StudentSignupPage() {
     try {
       setError(null)
       const response = await createStudentSignup({ schoolId, realName, consentTerms, consentPrivacy, consentStudentNotice })
-      setMessage(`가입 요청이 접수되었습니다. 상태: ${response.status}`)
+      setMessage(`가입 요청이 접수되었습니다. 현재 상태는 ${response.status}이며, 학교 운영자 승인 후 로그인할 수 있습니다.`)
     } catch (err) {
       console.error('학생 가입 요청 실패:', err)
       setError('가입 요청에 실패했습니다.')
@@ -49,7 +49,7 @@ export function StudentSignupPage() {
       <Card className="login-card">
         <CardBody>
           <h1 className="login-title">학생 가입 요청</h1>
-          <p className="login-description">학교 선택과 실명 입력 후 학교 운영자 승인을 기다립니다.</p>
+          <p className="login-description">학교 선택과 실명 입력 후 학교 운영자 승인을 기다립니다. 승인 전까지는 로그인할 수 없습니다.</p>
           {message && <div className="login-error" style={{ background: '#ecfdf5', color: '#166534', borderColor: '#86efac' }}>{message}</div>}
           {error && <div className="login-error">{error}</div>}
           <div className="login-form">
