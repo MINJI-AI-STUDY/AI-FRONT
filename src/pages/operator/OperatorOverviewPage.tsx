@@ -52,7 +52,7 @@ export function OperatorOverviewPage() {
     <div className="operator-overview-page">
       <div className="page-header">
         <h1 className="page-title">운영자 대시보드</h1>
-        <p className="page-description">안녕하세요, {user?.displayName}님. 전체 현황을 확인하세요.</p>
+        <p className="page-description">안녕하세요, {user?.displayName}님. 내가 관리하는 학교 범위의 현황을 확인하세요.</p>
         <Button variant="outline" onClick={handleLogout}>로그아웃</Button>
       </div>
 

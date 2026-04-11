@@ -36,6 +36,7 @@
 - teacher 문서/문제 관련 화면
 - student 풀이/결과/QA 화면
 - operator 대시보드 화면
+- operator 가입 승인 화면과 반려 사유 입력 흐름
 
 ### 4.5 API 연동 게이트
 - 백엔드 API 실패 시 fallback UX가 있어야 한다.
