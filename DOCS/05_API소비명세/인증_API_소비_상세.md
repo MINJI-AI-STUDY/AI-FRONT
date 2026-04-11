@@ -20,6 +20,27 @@
 }
 ```
 
+## POST /api/auth/student/login (학생 PIN 로그인)
+
+### Request
+```json
+{
+  "schoolId": "school-uuid",
+  "studentCode": "2024001",
+  "pin": "123456"
+}
+```
+
+### Response
+```json
+{
+  "accessToken": "...",
+  "refreshToken": "...",
+  "role": "STUDENT",
+  "displayName": "김학생"
+}
+```
+
 ## GET /api/auth/me
 
 ### 역할
