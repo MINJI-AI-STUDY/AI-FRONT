@@ -1,6 +1,7 @@
 /**
  * 공통 레이아웃 컴포넌트
  * 상단 네비게이션과 플로팅 사이드 셸을 제공합니다.
+ * 역할 기반 네비게이션: 인증된 사용자만 역할에 맞는 메뉴를 볼 수 있습니다.
  */
 
 import type { ReactNode } from 'react'
@@ -62,7 +63,9 @@ function TopNav() {
 
 function FloatingRail() {
   const location = useLocation()
+  const { user, token } = useAuth()
   const isActive = (path: string) => location.pathname.startsWith(path)
+  const isAuthenticated = !!token && !!user
 
   return (
     <nav className="floating-rail glass-panel">
@@ -70,9 +73,15 @@ function FloatingRail() {
         <span className="material-symbols-outlined">school</span>
       </div>
       <div className="floating-rail-links">
-        <RailLink to="/student" icon="home" label="학생 홈" active={isActive('/student')} />
-        <RailLink to="/teacher" icon="auto_stories" label="교사 홈" active={isActive('/teacher')} />
-        <RailLink to="/operator" icon="insights" label="운영 현황" active={isActive('/operator')} />
+        {isAuthenticated && user?.role === 'STUDENT' && (
+          <RailLink to="/student" icon="home" label="학생 홈" active={isActive('/student')} />
+        )}
+        {isAuthenticated && user?.role === 'TEACHER' && (
+          <RailLink to="/teacher" icon="auto_stories" label="교사 홈" active={isActive('/teacher')} />
+        )}
+        {isAuthenticated && user?.role === 'OPERATOR' && (
+          <RailLink to="/operator" icon="insights" label="운영 현황" active={isActive('/operator')} />
+        )}
       </div>
       <div className="floating-rail-footer">
         <a href="#" className="floating-footer-link">
