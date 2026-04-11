@@ -3,8 +3,31 @@
  * 환경변수 기반 API URL을 사용하는 HTTP 클라이언트입니다.
  */
 
-// API 기본 URL (환경변수에서 가져오거나 기본값 사용)
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+function normalizeApiBaseUrl(url: string): string {
+  return url.replace(/\/$/, '')
+}
+
+function resolveApiBaseUrl(): string {
+  const configuredApiUrl = import.meta.env.VITE_API_URL?.trim()
+
+  if (configuredApiUrl) {
+    return normalizeApiBaseUrl(configuredApiUrl)
+  }
+
+  if (typeof window !== 'undefined') {
+    const { hostname, origin } = window.location
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1'
+
+    if (!isLocalhost) {
+      return normalizeApiBaseUrl(origin)
+    }
+  }
+
+  return 'http://localhost:8080'
+}
+
+// API 기본 URL (환경변수 우선, 배포 환경에서는 현재 origin fallback)
+const API_BASE_URL = resolveApiBaseUrl()
 
 /**
  * API 에러 클래스
