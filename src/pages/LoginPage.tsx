@@ -29,7 +29,7 @@ export function LoginPage() {
   // Student PIN login states
   const [schools, setSchools] = useState<SchoolMasterResponse[]>([])
   const [schoolId, setSchoolId] = useState('')
-  const [studentName, setStudentName] = useState('')
+  const [studentCode, setStudentCode] = useState('')
   const [pin, setPin] = useState('')
 
   const [loading, setLoading] = useState(false)
@@ -81,13 +81,13 @@ export function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await studentPinLogin({ schoolId, studentName, pin })
+      const response = await studentPinLogin({ schoolId, studentCode, pin })
       await login(response.accessToken, response.refreshToken)
       const homePath = roleHomePaths[response.role]
       navigate(from || homePath, { replace: true })
     } catch (err) {
       console.error('PIN 로그인 실패:', err)
-      setError('PIN 로그인에 실패했습니다. 학교, 이름 또는 PIN을 확인해주세요.')
+      setError('PIN 로그인에 실패했습니다. 학교, 학생 코드 또는 PIN을 확인해주세요.')
     } finally {
       setLoading(false)
     }
@@ -154,11 +154,11 @@ export function LoginPage() {
                 </select>
               </label>
               <Input
-                label="학생 이름"
+                label="학생 코드"
                 type="text"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                placeholder="실명을 입력하세요"
+                value={studentCode}
+                onChange={(e) => setStudentCode(e.target.value)}
+                placeholder="학교에서 안난 학생 코드를 입력하세요"
                 required
               />
               <Input
@@ -171,7 +171,7 @@ export function LoginPage() {
                 maxLength={6}
               />
               <p className="login-hint">
-                승인된 학교와 실명, 학교에서 안내받은 PIN 번호로 로그인합니다.
+                승인된 학교와 학생 코드, 학교에서 안난 PIN 번호로 로그인합니다.
               </p>
               <Button type="submit" loading={loading} className="login-button">
                 PIN으로 로그인
