@@ -8,6 +8,7 @@ export function StudentSignupPage() {
   const [schools, setSchools] = useState<SchoolMasterResponse[]>([])
   const [schoolId, setSchoolId] = useState('')
   const [realName, setRealName] = useState('')
+  const [studentCode, setStudentCode] = useState('')
   const [pin, setPin] = useState('')
   const [consentTerms, setConsentTerms] = useState(false)
   const [consentPrivacy, setConsentPrivacy] = useState(false)
@@ -37,8 +38,8 @@ export function StudentSignupPage() {
   const handleSubmit = async () => {
     try {
       setError(null)
-      const response = await createStudentSignup({ schoolId, realName, pin, consentTerms, consentPrivacy, consentStudentNotice })
-      setMessage(`가입 요청이 접수되었습니다. 현재 상태는 ${response.status}이며, 학교 운영자 승인 후 학교·실명·PIN으로 로그인할 수 있습니다.`)
+      const response = await createStudentSignup({ schoolId, studentCode, realName, pin, consentTerms, consentPrivacy, consentStudentNotice })
+      setMessage(`가입 요청이 접수되었습니다. 현재 상태는 ${response.status}이며, 학교 운영자 승인 후 학교·학생 코드·PIN으로 로그인할 수 있습니다.`)
     } catch (err) {
       console.error('학생 가입 요청 실패:', err)
       setError('가입 요청에 실패했습니다.')
@@ -50,12 +51,13 @@ export function StudentSignupPage() {
       <Card className="login-card">
         <CardBody>
           <h1 className="login-title">학생 가입 요청</h1>
-          <p className="login-description">학교 선택, 실명, PIN 입력 후 학교 운영자 승인을 기다립니다. 승인 전까지는 로그인할 수 없습니다.</p>
+          <p className="login-description">학교 선택, 학생 코드, 실명, PIN 입력 후 학교 운영자 승인을 기다립니다. 승인 전까지는 로그인할 수 없습니다.</p>
           {message && <div className="login-error" style={{ background: '#ecfdf5', color: '#166534', borderColor: '#86efac' }}>{message}</div>}
           {error && <div className="login-error">{error}</div>}
           <div className="login-form">
             <label>학교<select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="number-input"><option value="">학교 선택</option>{schools.map((school) => <option key={school.schoolId} value={school.schoolId}>{school.name}</option>)}</select></label>
-            <Input label="실명" value={realName} onChange={(e) => setRealName(e.target.value)} />
+            <Input label="학생 코드" value={studentCode} onChange={(e) => setStudentCode(e.target.value)} placeholder="학교에서 안난 학생 코드" />
+            <Input label="실명" value={realName} onChange={(e) => setRealName(e.target.value)} placeholder="본인 실명" />
             <Input label="PIN" type="password" value={pin} onChange={(e) => setPin(e.target.value)} maxLength={6} />
             <label><input type="checkbox" checked={consentTerms} onChange={(e) => setConsentTerms(e.target.checked)} /> <Link to="/legal/terms">서비스 이용약관</Link> 동의</label>
             <label><input type="checkbox" checked={consentPrivacy} onChange={(e) => setConsentPrivacy(e.target.checked)} /> <Link to="/legal/privacy">개인정보 수집·이용</Link> 동의</label>

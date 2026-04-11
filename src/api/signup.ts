@@ -21,33 +21,36 @@ export interface CreateTeacherSignupRequest {
 }
 
 export interface CreateStudentSignupRequest {
-  schoolId: string
+schoolId: string
   classroomId?: string | null
-  realName: string
-  pin: string
-  consentTerms: boolean
-  consentPrivacy: boolean
-  consentStudentNotice: boolean
+  studentCode: string
+realName: string
+pin: string
+consentTerms: boolean
+consentPrivacy: boolean
+consentStudentNotice: boolean
 }
 
 export interface SignupRequestResponse {
-  signupRequestId: string
-  schoolId: string
-  classroomId: string | null
-  requesterName: string
-  loginId: string | null
-  role: 'TEACHER' | 'STUDENT'
-  schoolEmail: string | null
+signupRequestId: string
+schoolId: string
+classroomId: string | null
+requesterName: string
+loginId: string | null
+role: 'TEACHER' | 'STUDENT'
+schoolEmail: string | null
   studentRealName: string | null
-  status: 'PENDING' | 'APPROVED' | 'REJECTED'
-  rejectionReason: string | null
-  provisionedLoginId: string | null
-  provisionedTempPassword: string | null
+  studentCode: string | null
+status: 'PENDING' | 'APPROVED' | 'REJECTED'
+rejectionReason: string | null
+provisionedLoginId: string | null
+provisionedTempPassword: string | null
 }
 
 export interface ReviewSignupRequest {
   approve: boolean
   rejectionReason?: string | null
+  studentCode?: string | null
 }
 
 export async function searchSchools(keyword: string): Promise<SchoolMasterResponse[]> {
