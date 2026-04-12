@@ -144,6 +144,13 @@ export function StudentWorkspacePage() {
     }
   }
 
+  const handleQuestionKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleAsk()
+    }
+  }
+
   if (loading) {
     return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
   }
@@ -196,6 +203,94 @@ export function StudentWorkspacePage() {
               </button>
             </div>
           </div>
+          <div className="workspace-main-stack">
+            <Card className="workspace-card student-workspace-quiz-card">
+              <CardBody>
+                <div className="workspace-panel-inline-header">
+                  <div>
+                    <div className="workspace-main-eyebrow">문제 풀이</div>
+                    <h3 className="workspace-card-title">정답 선택 후 바로 제출</h3>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setIsQuizModalOpen(true)}>
+                    집중 모드
+                  </Button>
+                </div>
+                <div className="workspace-questions-list">
+                  {questionSet.questions.map((item, index) => (
+                    <div key={item.id} className="workspace-question-item">
+                      <p className="workspace-question-title">문제 {index + 1}. {item.stem}</p>
+                      <div className="workspace-options-grid">
+                        {item.options.map((option, optionIndex) => (
+                          <button key={optionIndex} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
+                            <span>{String.fromCharCode(65 + optionIndex)}</span>
+                            <span>{option}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Button loading={submitting} onClick={handleSubmit}>정답 제출하기</Button>
+              </CardBody>
+            </Card>
+
+            <Card className="workspace-card student-workspace-qa-card">
+              <CardBody>
+                {followUpContext && (
+                  <div className="student-follow-up-callout">
+                    <div className="workspace-main-eyebrow">오답 AI 해설 준비됨</div>
+                    <strong>문제 {followUpContext.questionNumber}</strong>
+                    <p>{followUpContext.prompt}</p>
+                    <p className="student-follow-up-meta">
+                      선택 답: {followUpContext.selectedOptionLabel}
+                      {followUpContext.conceptTags.length > 0 && ` · 관련 개념: ${followUpContext.conceptTags.join(', ')}`}
+                    </p>
+                    <p className="student-follow-up-explanation">{followUpContext.explanation}</p>
+                    <p className="student-follow-up-helper">질문 칸에 자동으로 들어가며, 필요하면 수정해서 다시 물어볼 수 있습니다.</p>
+                  </div>
+                )}
+                <div className="workspace-panel-inline-header">
+                  <div>
+                    <div className="workspace-main-eyebrow">자료 기반 AI 질문</div>
+                    <h3 className="workspace-card-title">질문을 남기고 바로 답변 확인</h3>
+                  </div>
+                  <span className="workspace-mini-chip">LIVE</span>
+                </div>
+                <div className="workspace-chat-area">
+                  {qaResponse ? (
+                    <>
+                      <div className="workspace-chat-bubble user">{question}</div>
+                      <div className="workspace-chat-bubble assistant">{qaResponse.answer}</div>
+                      {qaResponse.evidenceSnippets.length > 0 && (
+                        <div className="workspace-evidence-list">
+                          {qaResponse.evidenceSnippets.map((snippet, index) => (
+                            <div key={index} className="workspace-evidence-item">{snippet}</div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="workspace-empty">자료에 대해 궁금한 점을 질문하면 AI가 답변합니다.</p>
+                  )}
+                </div>
+                <div className="workspace-ai-input-area">
+                  <textarea
+                    className="textarea"
+                    rows={3}
+                    maxLength={500}
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    onKeyDown={handleQuestionKeyDown}
+                    placeholder="질문을 입력하세요 (Enter로 전송, Shift+Enter 줄바꿈)"
+                  />
+                  <Button onClick={handleAsk} disabled={!question.trim()} loading={asking} style={{ marginTop: '0.5rem', width: '100%' }}>
+                    질문하기
+                  </Button>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+
           <div className="student-document-stage">
             <MaterialDocumentViewer materialId={questionSet.materialId} token={token} />
           </div>
