@@ -152,7 +152,114 @@ export function StudentWorkspacePage() {
   }
 
   if (loading) {
-    return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
+    return (
+      <div className="workspace-page student-workspace-page" aria-busy="true">
+        <div className="workspace-header">
+          <div className="workspace-header-content workspace-loading-copy">
+            <div className="workspace-loading-chip" style={{ width: '6rem' }} />
+            <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '72%' }} />
+            <div className="workspace-loading-line" style={{ width: '24rem', maxWidth: '92%', height: '0.8rem' }} />
+          </div>
+          <div className="workspace-actions">
+            <div className="workspace-loading-button" style={{ width: '8rem', height: '2.75rem' }} />
+            <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
+          </div>
+        </div>
+
+        <div className={`workspace-layout student-workspace-layout ${rightSidebarOpen ? 'student-workspace-layout--with-sidebar' : 'student-workspace-layout--document-only'}`}>
+          <section className="workspace-main student-workspace-stage">
+            <div className="workspace-main-header">
+              <div className="workspace-main-title workspace-loading-copy">
+                <div className="workspace-loading-line" style={{ width: '10rem' }} />
+                <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '85%' }} />
+                <div className="workspace-loading-line" style={{ width: '24rem', maxWidth: '100%', height: '0.8rem' }} />
+              </div>
+              <div className="workspace-main-toolbar">
+                <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
+                <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
+              </div>
+            </div>
+
+            <div className="student-document-stage">
+              <div className="document-viewer-shell workspace-document-stage">
+                <div className="document-viewer-toolbar">
+                  <div className="document-viewer-toolbar-title workspace-loading-copy">
+                    <div className="workspace-loading-line" style={{ width: '8.5rem' }} />
+                    <div className="workspace-loading-line" style={{ width: '13rem', height: '0.8rem' }} />
+                  </div>
+                  <div className="workspace-loading-button" style={{ width: '7rem', height: '2.6rem' }} />
+                </div>
+                <div className="document-viewer-frame-shell">
+                  <div className="workspace-loading-frame" />
+                </div>
+              </div>
+            </div>
+
+            <Card className="workspace-card student-workspace-quiz-card">
+              <CardBody>
+                <div className="workspace-panel-inline-header">
+                  <div className="workspace-loading-copy">
+                    <div className="workspace-loading-chip" style={{ width: '6.5rem' }} />
+                    <div className="workspace-loading-line" style={{ width: '14rem' }} />
+                  </div>
+                  <div className="workspace-loading-button" style={{ width: '6.5rem', height: '2.5rem' }} />
+                </div>
+                <div className="workspace-loading-row">
+                  <div className="workspace-loading-line" style={{ width: '80%' }} />
+                  <div className="workspace-loading-block" style={{ height: '7rem' }} />
+                  <div className="workspace-loading-block" style={{ height: '7rem' }} />
+                </div>
+                <div className="workspace-loading-button" style={{ width: '10rem', height: '2.75rem', marginTop: '1rem' }} />
+              </CardBody>
+            </Card>
+
+            <Card className="workspace-card workspace-chat-card">
+              <CardBody>
+                <div className="workspace-panel-inline-header">
+                  <div className="workspace-loading-copy">
+                    <div className="workspace-loading-chip" style={{ width: '7rem' }} />
+                    <div className="workspace-loading-line" style={{ width: '16rem' }} />
+                  </div>
+                  <div className="workspace-loading-chip" style={{ width: '3.5rem' }} />
+                </div>
+                <div className="workspace-loading-sidebar">
+                  <div className="workspace-loading-row">
+                    <div className="workspace-loading-line" style={{ width: '85%' }} />
+                    <div className="workspace-loading-block" style={{ height: '5rem' }} />
+                  </div>
+                  <div className="workspace-loading-row">
+                    <div className="workspace-loading-line" style={{ width: '78%' }} />
+                    <div className="workspace-loading-block" style={{ height: '5rem' }} />
+                  </div>
+                </div>
+                <div className="workspace-loading-button" style={{ width: '100%', height: '3rem', marginTop: '1rem' }} />
+              </CardBody>
+            </Card>
+          </section>
+
+          {rightSidebarOpen && (
+            <aside className="workspace-side student-side student-workspace-side">
+              <Card className="workspace-card">
+                <CardBody>
+                  <div className="workspace-loading-sidebar">
+                    <div className="workspace-loading-row">
+                      <div className="workspace-loading-chip" style={{ width: '7rem' }} />
+                      <div className="workspace-loading-line" style={{ width: '16rem', maxWidth: '90%' }} />
+                      <div className="workspace-loading-block" style={{ height: '4.75rem' }} />
+                    </div>
+                    <div className="workspace-loading-row">
+                      <div className="workspace-loading-chip" style={{ width: '6rem' }} />
+                      <div className="workspace-loading-line" style={{ width: '82%' }} />
+                      <div className="workspace-loading-block" style={{ height: '6.5rem' }} />
+                    </div>
+                  </div>
+                </CardBody>
+              </Card>
+            </aside>
+          )}
+        </div>
+      </div>
+    )
   }
   if (!questionSet || !token) {
     return <div className="error-container"><p>{error ?? '문제 세트를 찾을 수 없습니다.'}</p></div>
