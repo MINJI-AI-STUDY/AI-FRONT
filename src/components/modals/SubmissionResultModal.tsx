@@ -108,6 +108,7 @@ export function SubmissionResultModal({ submissionId, token, isOpen, onClose }: 
               const answerLabel = String.fromCharCode(65 + question.selectedOptionIndex)
               const explanation = question.explanation?.trim() || createFallbackExplanation(index + 1)
               const hasWrongAnswer = !question.correct
+              const conceptTags = Array.isArray(question.conceptTags) ? question.conceptTags : []
 
               return (
               <Card key={`${question.questionId}-${index}`} className={`result-card ${question.correct ? 'correct' : 'wrong'}`}>
@@ -124,15 +125,15 @@ export function SubmissionResultModal({ submissionId, token, isOpen, onClose }: 
                       <div className="page-actions page-actions--stacked">
                         <Link
                           to={followUpPath}
-                          onClick={() => storeWrongAnswerContext(index + 1, explanation, answerLabel, question.conceptTags)}
+                          onClick={() => storeWrongAnswerContext(index + 1, explanation, answerLabel, conceptTags)}
                         >
                           <Button variant="outline">오답 AI 해설 요청</Button>
                         </Link>
                       </div>
                     </div>
                   )}
-                  {question.conceptTags.length > 0 && (
-                    <div className="result-tags"><strong>관련 개념:</strong> {question.conceptTags.map((tag) => <span key={tag} className="concept-tag">{tag}</span>)}</div>
+                  {conceptTags.length > 0 && (
+                    <div className="result-tags"><strong>관련 개념:</strong> {conceptTags.map((tag) => <span key={tag} className="concept-tag">{tag}</span>)}</div>
                   )}
                 </CardBody>
               </Card>
