@@ -159,12 +159,24 @@ export interface ChannelWorkspaceResponse {
   participants: ChannelParticipantResponse[]
 }
 
+export interface StudentActiveQuestionSetResponse {
+  questionSetId: string
+  materialId: string
+  distributionCode: string
+  title: string
+  dueAt: string | null
+}
+
 export async function getStudentChannels(token: string): Promise<ChannelResponse[]> {
   return get<ChannelResponse[]>('/api/student/channels', token)
 }
 
 export async function getStudentChannelWorkspace(channelId: string, token: string): Promise<ChannelWorkspaceResponse> {
   return get<ChannelWorkspaceResponse>(`/api/student/channels/${channelId}/workspace`, token)
+}
+
+export async function getActiveQuestionSetByMaterial(materialId: string, token: string): Promise<StudentActiveQuestionSetResponse> {
+  return get<StudentActiveQuestionSetResponse>(`/api/student/materials/${materialId}/active-question-set`, token)
 }
 
 export async function sendChannelMessage(channelId: string, content: string, token: string): Promise<ChannelMessageResponse> {
