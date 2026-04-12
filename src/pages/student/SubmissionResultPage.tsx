@@ -11,6 +11,12 @@ import { getSubmissionResult } from '../../api/student'
 import type { StudentResultResponse } from '../../api/student'
 import './StudentPages.css'
 
+function getSelectedOptionLabel(selectedOptionIndex: number | null | undefined) {
+  return typeof selectedOptionIndex === 'number' && Number.isInteger(selectedOptionIndex) && selectedOptionIndex >= 0
+    ? String.fromCharCode(65 + selectedOptionIndex)
+    : '알 수 없음'
+}
+
 export function SubmissionResultPage() {
   const [result, setResult] = useState<StudentResultResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -119,6 +125,7 @@ export function SubmissionResultPage() {
       <div className="results-list">
         {result.questionResults.map((question, index) => {
           const conceptTags = Array.isArray(question.conceptTags) ? question.conceptTags : []
+          const answerLabel = getSelectedOptionLabel(question.selectedOptionIndex)
 
           return (
             <Card key={question.questionId} className={`result-card ${question.correct ? 'correct' : 'wrong'}`}>
@@ -127,7 +134,7 @@ export function SubmissionResultPage() {
                   <span className="result-number">문제 {index + 1}</span>
                   <span className={`result-badge ${question.correct ? 'correct' : 'wrong'}`}>{question.correct ? '정답' : '오답'}</span>
                 </div>
-                <div className="result-answer"><p><strong>선택한 답:</strong> {String.fromCharCode(65 + question.selectedOptionIndex)}</p></div>
+                <div className="result-answer"><p><strong>선택한 답:</strong> {answerLabel}</p></div>
                 <div className="result-explanation"><strong>해설:</strong> {question.explanation?.trim() || createFallbackExplanation(index + 1)}</div>
                 {conceptTags.length > 0 && (
                   <div className="result-tags"><strong>관련 개념:</strong> {conceptTags.map((tag) => <span key={tag} className="concept-tag">{tag}</span>)}</div>
@@ -138,7 +145,7 @@ export function SubmissionResultPage() {
                     <div className="page-actions page-actions--stacked">
                       <Link
                         to={followUpPath}
-                        onClick={() => storeWrongAnswerContext(index + 1, question.explanation?.trim() || createFallbackExplanation(index + 1), String.fromCharCode(65 + question.selectedOptionIndex), conceptTags)}
+                        onClick={() => storeWrongAnswerContext(index + 1, question.explanation?.trim() || createFallbackExplanation(index + 1), answerLabel, conceptTags)}
                       >
                         <Button variant="outline">오답 AI 해설 요청</Button>
                       </Link>

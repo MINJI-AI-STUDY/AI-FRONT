@@ -10,6 +10,12 @@ interface SubmissionResultModalProps {
   onClose: () => void
 }
 
+function getSelectedOptionLabel(selectedOptionIndex: number | null | undefined) {
+  return typeof selectedOptionIndex === 'number' && Number.isInteger(selectedOptionIndex) && selectedOptionIndex >= 0
+    ? String.fromCharCode(65 + selectedOptionIndex)
+    : '알 수 없음'
+}
+
 export function SubmissionResultModal({ submissionId, token, isOpen, onClose }: SubmissionResultModalProps) {
   const [result, setResult] = useState<StudentResultResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -105,7 +111,7 @@ export function SubmissionResultModal({ submissionId, token, isOpen, onClose }: 
                 </CardBody>
               </Card>
             ) : result.questionResults.map((question, index) => {
-              const answerLabel = String.fromCharCode(65 + question.selectedOptionIndex)
+              const answerLabel = getSelectedOptionLabel(question.selectedOptionIndex)
               const explanation = question.explanation?.trim() || createFallbackExplanation(index + 1)
               const hasWrongAnswer = !question.correct
               const conceptTags = Array.isArray(question.conceptTags) ? question.conceptTags : []
