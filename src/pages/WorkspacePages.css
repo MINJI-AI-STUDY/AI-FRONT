@@ -239,6 +239,13 @@
   gap: 1rem;
 }
 
+.workspace-side-description {
+  margin: 0 0 0.75rem;
+  color: #6b7280;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+
 .workspace-card {
   border-radius: 1rem;
 }
@@ -484,6 +491,151 @@
   max-height: calc(100vh - 12rem);
 }
 
+.student-main-pdf {
+  min-height: 720px;
+}
+
+.student-pdf-header {
+  align-items: flex-start;
+}
+
+.student-pdf-subtitle {
+  margin: 0.35rem 0 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  white-space: normal;
+}
+
+.student-pdf-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.8rem;
+  border-radius: 9999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.student-material-stage {
+  overflow: hidden;
+}
+
+.student-material-context {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #dbeafe;
+  border-radius: 0.875rem;
+  background: linear-gradient(135deg, #f8fbff 0%, #ffffff 100%);
+}
+
+.student-material-context-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.student-material-context-title {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #111827;
+  font-size: 1rem;
+}
+
+.student-material-context-description {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.student-material-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.student-material-status.status-ready {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.student-material-status.status-processing,
+.student-material-status.status-uploaded {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.student-material-status.status-failed {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.student-material-viewer {
+  min-height: 640px;
+}
+
+.student-channel-task-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1px solid #dcfce7;
+  border-radius: 0.875rem;
+  background: #f7fff8;
+}
+
+.teacher-channel-task-card {
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+.review-required-card {
+  border-color: #fde68a;
+  background: #fffbea;
+}
+
+.student-channel-task-title {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.student-channel-task-description {
+  margin: 0;
+  color: #525252;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.student-channel-task-empty {
+  margin-bottom: 1rem;
+  padding: 0.875rem 1rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.875rem;
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.student-workspace-cta-link {
+  text-decoration: none;
+}
+
 .student-chat-container {
   display: flex;
   flex-direction: column;
@@ -543,6 +695,46 @@
 
 .workspace-ai-material-selector select {
   width: 100%;
+}
+
+.workspace-mode-switch-header {
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.workspace-mode-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  background: #f3f4f6;
+}
+
+.workspace-mode-tab {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.45rem 0.8rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.workspace-mode-tab.active {
+  background: #ffffff;
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.workspace-channel-chat-area {
+  max-height: 420px;
+}
+
+.workspace-channel-message-item {
+  background: #f8fafc;
 }
 
 .workspace-ai-chat-area {
@@ -649,7 +841,21 @@
   .student-main-chat {
     min-height: 400px;
   }
-  
+
+  .student-main-pdf {
+    min-height: 520px;
+  }
+
+  .student-material-context,
+  .workspace-mode-switch-header,
+  .student-channel-task-card {
+    flex-direction: column;
+  }
+
+  .student-material-context-actions {
+    align-items: flex-start;
+  }
+
   .workspace-ai-chat-area {
     max-height: 280px;
   }
@@ -668,10 +874,19 @@
   .student-main-chat {
     min-height: 350px;
   }
-  
+
+  .student-main-pdf {
+    min-height: 420px;
+  }
+
   .student-message-list-primary {
     min-height: 250px;
     max-height: calc(100vh - 16rem);
+  }
+
+  .workspace-mode-switch {
+    width: 100%;
+    justify-content: space-between;
   }
   
   .student-message-input-primary {
