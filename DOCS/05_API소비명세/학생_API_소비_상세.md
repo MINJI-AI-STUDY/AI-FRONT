@@ -9,6 +9,7 @@
 ## Channel
 - `GET /api/student/channels`
 - `GET /api/student/channels/{channelId}/workspace`
+- `GET /api/student/materials/{materialId}/active-question-set`
 - `POST /api/channels/{channelId}/messages`
 - `GET /api/channels/{channelId}/events?accessToken=`
 - `POST /api/channels/{channelId}/presence/enter`
@@ -25,7 +26,8 @@
 - `GET /api/student/materials/{materialId}/qa-logs/me`
 
 ## 주요 UI 연결
-- student workspace
+- student channel workspace (공식 메인 학습 단위)
+- student question-set workspace (집중 풀이)
 - 결과 화면
 - QA 화면
 - student channel workspace
