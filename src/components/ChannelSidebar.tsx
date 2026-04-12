@@ -69,25 +69,14 @@ export function ChannelSidebar({
       className={`channel-sidebar-panel ${isCompactViewport ? 'channel-sidebar-panel-overlay' : ''} ${isDrawerOpen ? 'is-open' : 'is-closed'} ${className}`.trim()}
       aria-label="채널 탐색"
     >
-      {isCompactViewport && !isDrawerOpen && (
+      {isCompactViewport && isDrawerOpen && (
         <button
           type="button"
-          className="channel-sidebar-rail-toggle"
-          aria-label="채널 목록 열기"
-          title="채널 목록 열기"
-          onClick={() => setDrawerOpen(true)}
-        >
-          <span className="material-symbols-outlined">left_panel_open</span>
-        </button>
+          className={`channel-sidebar-backdrop ${isCompactViewport && isDrawerOpen ? 'is-visible' : ''}`}
+          aria-label="채널 목록 닫기"
+          onClick={() => setDrawerOpen(false)}
+        />
       )}
-
-      <button
-        type="button"
-        className={`channel-sidebar-backdrop ${isCompactViewport && isDrawerOpen ? 'is-visible' : ''}`}
-        aria-label="채널 목록 닫기"
-        tabIndex={isCompactViewport && isDrawerOpen ? 0 : -1}
-        onClick={() => setDrawerOpen(false)}
-      />
 
       <div className={`channel-sidebar-surface ${isDrawerOpen ? 'is-open' : 'is-closed'}`}>
         <div className="channel-sidebar-header">

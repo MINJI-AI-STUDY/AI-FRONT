@@ -312,7 +312,100 @@ export function TeacherChannelWorkspacePage() {
     }
   }
 
-  if (loading) return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
+  if (loading) {
+    return (
+      <div className="workspace-page teacher-workspace-page channel-workspace-page" aria-busy="true">
+        <div className={`channel-shell teacher-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
+          {leftSidebarOpen && (
+            <aside className="channel-sidebar-panel is-open">
+              <div className="channel-sidebar-header">
+                <div className="workspace-loading-copy" style={{ minWidth: 0 }}>
+                  <div className="workspace-loading-chip" style={{ width: '5rem' }} />
+                  <div className="workspace-loading-line" style={{ width: '70%' }} />
+                  <div className="workspace-loading-line" style={{ width: '88%', height: '0.8rem' }} />
+                </div>
+                <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
+              </div>
+              <div className="channel-sidebar-list">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="workspace-loading-row" style={{ padding: '0.875rem 0.9375rem' }}>
+                    <div className="workspace-loading-line" style={{ width: index === 0 ? '60%' : '72%' }} />
+                    <div className="workspace-loading-line" style={{ width: '84%', height: '0.8rem' }} />
+                  </div>
+                ))}
+              </div>
+            </aside>
+          )}
+
+          <div className="channel-content-shell teacher-channel-content-shell">
+            <div className="workspace-header">
+              <div className="workspace-header-content workspace-loading-copy">
+                <div className="workspace-loading-chip" style={{ width: '7rem' }} />
+                <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '70%' }} />
+                <div className="workspace-loading-line" style={{ width: '24rem', maxWidth: '92%', height: '0.8rem' }} />
+              </div>
+              <div className="workspace-actions teacher-shell-actions">
+                <div className="workspace-loading-button" style={{ width: '8.5rem', height: '2.75rem' }} />
+                <div className="workspace-loading-button" style={{ width: '8rem', height: '2.75rem' }} />
+              </div>
+            </div>
+
+            <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''}`}>
+              <section className="workspace-main teacher-main-stage">
+                <div className="workspace-main-header">
+                  <div className="workspace-main-title workspace-loading-copy">
+                    <div className="workspace-loading-line" style={{ width: '10rem' }} />
+                    <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '85%' }} />
+                    <div className="workspace-loading-line" style={{ width: '26rem', maxWidth: '100%', height: '0.8rem' }} />
+                  </div>
+                </div>
+
+                <Card className="workspace-card teacher-channel-primary-card">
+                  <CardBody>
+                    <div className="workspace-panel-inline-header">
+                      <div className="workspace-loading-copy">
+                        <div className="workspace-loading-chip" style={{ width: '8rem' }} />
+                        <div className="workspace-loading-line" style={{ width: '14rem' }} />
+                      </div>
+                      <div className="workspace-loading-button" style={{ width: '7.5rem', height: '2.5rem' }} />
+                    </div>
+                    <div className="workspace-loading-line" style={{ width: '100%', maxWidth: '32rem', height: '0.8rem' }} />
+                    <div className="workspace-loading-line" style={{ width: '88%', maxWidth: '28rem', height: '0.8rem', marginTop: '0.5rem' }} />
+                  </CardBody>
+                </Card>
+
+                <div className="workspace-loading-document">
+                  <div className="workspace-loading-toolbar">
+                    <div className="workspace-loading-toolbar-copy">
+                      <div className="workspace-loading-line" style={{ width: '9rem' }} />
+                      <div className="workspace-loading-line" style={{ width: '15rem', height: '0.8rem' }} />
+                    </div>
+                    <div className="workspace-loading-button" style={{ width: '7rem', height: '2.6rem' }} />
+                  </div>
+                  <div className="workspace-loading-frame" />
+                </div>
+              </section>
+
+              {rightPanelOpen && (
+                <aside className="workspace-side teacher-channel-aux-panel">
+                  <div className="workspace-loading-sidebar">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div key={index} className="workspace-loading-row">
+                        <div className="workspace-loading-chip" style={{ width: index === 0 ? '6rem' : '7rem' }} />
+                        <div className="workspace-loading-line" style={{ width: '72%' }} />
+                        <div className="workspace-loading-line" style={{ width: '92%', height: '0.8rem' }} />
+                        <div className="workspace-loading-block" style={{ height: index === 1 ? '5.5rem' : '4.5rem' }} />
+                      </div>
+                    ))}
+                  </div>
+                </aside>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
   if (error) return <div className="error-container"><p>{error}</p></div>
   if (!workspace || !token || !channelId) return <div className="error-container"><p>채널 운영 화면을 찾을 수 없습니다.</p></div>
 
