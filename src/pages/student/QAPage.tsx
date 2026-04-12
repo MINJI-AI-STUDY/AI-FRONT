@@ -110,6 +110,11 @@ export function QAPage() {
       {response && (
         <Card className="response-card">
           <CardBody>
+            {!response.grounded && !response.insufficientEvidence && (
+              <div className="result-badge wrong" style={{ marginBottom: '0.75rem', display: 'inline-flex' }}>
+                AI 서버 연결 실패
+              </div>
+            )}
             {!response.insufficientEvidence && response.grounded && response.evidenceSnippets.length > 0 && (
               <div className="result-badge correct" style={{ marginBottom: '0.75rem', display: 'inline-flex' }}>
                 자료 근거 응답
@@ -139,6 +144,11 @@ export function QAPage() {
             {response.insufficientEvidence && (
               <div className="no-evidence">
                 <p>이 답변은 자료에서 직접적인 근거를 찾을 수 없습니다. 추가 정보가 필요할 수 있습니다.</p>
+              </div>
+            )}
+            {!response.grounded && !response.insufficientEvidence && (
+              <div className="no-evidence">
+                <p>AI 서버 연결 또는 처리에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
               </div>
             )}
           </CardBody>

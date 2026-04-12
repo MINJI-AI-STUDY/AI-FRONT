@@ -15,3 +15,4 @@ export { TeacherDocumentDashboardModal } from './modals/TeacherDocumentDashboard
 export { TeacherQuestionSetDashboardModal } from './modals/TeacherQuestionSetDashboardModal'
 
 export { PrivacyConsentModal } from './modals/PrivacyConsentModal'
+export { SchoolSearchInput } from './SchoolSearchInput'

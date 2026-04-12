@@ -4,13 +4,11 @@
  */
 
 import { useState } from 'react'
-import { useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth, roleHomePaths } from '../auth'
-import { Button, Input, Card, CardBody } from '../components'
+import { Button, Input, Card, CardBody, SchoolSearchInput } from '../components'
 import { login as loginApi, studentPinLogin } from '../api/auth'
-import { searchSchools, type SchoolMasterResponse } from '../api/signup'
 import './LoginPage.css'
 
 type LoginTab = 'teacher' | 'student'
@@ -27,10 +25,10 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
 
   // Student PIN login states
-  const [schools, setSchools] = useState<SchoolMasterResponse[]>([])
   const [schoolId, setSchoolId] = useState('')
   const [studentName, setStudentName] = useState('')
   const [pin, setPin] = useState('')
+  const [schoolError, setSchoolError] = useState<string | null>(null)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -39,17 +37,6 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname
-
-  useEffect(() => {
-    searchSchools('')
-      .then((result) => {
-        setSchools(result)
-        setSchoolId((prev) => prev || result[0]?.schoolId || '')
-      })
-      .catch((err) => {
-        console.error('학교 목록 조회 실패:', err)
-      })
-  }, [])
 
   /**
    * 교사/운영자 로그인 폼 제출 핸들러
@@ -78,6 +65,13 @@ export function LoginPage() {
   const handleStudentPinSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
+    setSchoolError(null)
+
+    if (!schoolId) {
+      setSchoolError('학교를 선택해주세요')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -144,15 +138,13 @@ export function LoginPage() {
             </form>
           ) : (
             <form onSubmit={handleStudentPinSubmit} className="login-form">
-              <label>
-                학교
-                <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="number-input">
-                  <option value="">학교 선택</option>
-                  {schools.map((school) => (
-                    <option key={school.schoolId} value={school.schoolId}>{school.name}</option>
-                  ))}
-                </select>
-              </label>
+              <SchoolSearchInput
+                onChange={(id) => {
+                  setSchoolId(id)
+                  setSchoolError(null)
+                }}
+                error={schoolError || undefined}
+              />
               <Input
                 label="학생 이름"
                 type="text"
