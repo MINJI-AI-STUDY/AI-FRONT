@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, ChannelSidebar, MaterialDocumentViewer, Modal, Input } from '../../components'
-import { createChannel, getTeacherChannelWorkspace, getTeacherChannels, sendChannelMessage, updateChannel, uploadMaterial, type ChannelMessageResponse, type ChannelParticipantResponse, type ChannelResponse, type ChannelWorkspaceResponse } from '../../api/teacher'
+import { createChannel, getQuestionSetsByMaterial, getTeacherChannelWorkspace, getTeacherChannels, sendChannelMessage, updateChannel, uploadMaterial, type ChannelMessageResponse, type ChannelParticipantResponse, type ChannelResponse, type ChannelWorkspaceResponse, type QuestionSetResponse } from '../../api/teacher'
 import { enterChannel, heartbeatChannel, leaveChannel, subscribeChannelEvents } from '../../api/realtime'
 import type { ChannelEventResponse } from '../../api/realtime_types'
 import '../WorkspacePages.css'
@@ -20,6 +20,7 @@ export function TeacherChannelWorkspacePage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [questionSets, setQuestionSets] = useState<QuestionSetResponse[]>([])
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
@@ -67,6 +68,29 @@ export function TeacherChannelWorkspacePage() {
   }, [channelId, token])
 
   const selectedMaterial = workspace?.materials.find((item) => item.materialId === selectedMaterialId) ?? workspace?.materials[0] ?? null
+
+  useEffect(() => {
+    if (!token || !selectedMaterial) {
+      setQuestionSets([])
+      return
+    }
+
+    const loadQuestionSets = async () => {
+      try {
+        const data = await getQuestionSetsByMaterial(selectedMaterial.materialId, token)
+        setQuestionSets(data)
+      } catch (err) {
+        console.error('문제 세트 목록 조회 실패:', err)
+        setQuestionSets([])
+      }
+    }
+
+    loadQuestionSets()
+  }, [selectedMaterial, token])
+
+  const latestQuestionSet = questionSets[0] ?? null
+  const latestReviewRequiredQuestionSet = questionSets.find((item) => item.status === 'REVIEW_REQUIRED') ?? null
+  const latestPublishedQuestionSet = questionSets.find((item) => item.status === 'PUBLISHED') ?? null
 
   const handleSendMessage = async () => {
     if (!channelId || !token || !message.trim()) return
@@ -191,6 +215,52 @@ export function TeacherChannelWorkspacePage() {
                     </div>
                   </CardBody>
                 </Card>
+                {selectedMaterial && (
+                  <Card className="workspace-card">
+                    <CardBody>
+                      <h3 className="workspace-card-title">문제 흐름</h3>
+                      <p className="workspace-side-description">현재 선택한 PDF를 기준으로 문제를 생성하고, 최근 생성 세트를 검토/배포할 수 있습니다.</p>
+                      <div className="workspace-sidebar-actions">
+                        <Link to={`/teacher/materials/${selectedMaterial.materialId}/generate`}>
+                          <Button>이 PDF로 문제 생성</Button>
+                        </Link>
+                        {latestReviewRequiredQuestionSet && (
+                          <Link to={`/teacher/question-sets/${latestReviewRequiredQuestionSet.questionSetId}/review`}>
+                            <Button variant="outline">검토 후 배포하기</Button>
+                          </Link>
+                        )}
+                      </div>
+                      {latestReviewRequiredQuestionSet ? (
+                        <div className="student-channel-task-card teacher-channel-task-card review-required-card">
+                          <div>
+                            <div className="workspace-main-eyebrow">Review Required</div>
+                            <strong className="student-channel-task-title">최근 생성 세트 검토 필요</strong>
+                            <p className="student-channel-task-description">현재 PDF 기준으로 생성된 최신 세트가 아직 검토/배포 전 상태입니다. 채널 문맥을 유지한 채 바로 검토 화면으로 이동하세요.</p>
+                          </div>
+                          <Link to={`/teacher/question-sets/${latestReviewRequiredQuestionSet.questionSetId}/review`}>
+                            <Button>검토 화면 열기</Button>
+                          </Link>
+                        </div>
+                      ) : latestQuestionSet ? (
+                        <div className="student-channel-task-empty">최근 생성 세트는 이미 검토가 끝났거나, 아직 새로 생성된 세트가 없습니다.</div>
+                      ) : null}
+                      {latestPublishedQuestionSet ? (
+                        <div className="student-channel-task-card teacher-channel-task-card">
+                          <div>
+                            <div className="workspace-main-eyebrow">Published</div>
+                            <strong className="student-channel-task-title">최근 배포 코드</strong>
+                            <p className="student-channel-task-description">배포 코드 <strong>{latestPublishedQuestionSet.distributionCode}</strong> · 학생은 이 채널 PDF와 연결된 문제 세트로 바로 입장할 수 있습니다.</p>
+                          </div>
+                          <Link to={`/teacher/question-sets/${latestPublishedQuestionSet.questionSetId}/review`}>
+                            <Button variant="outline">배포 세트 보기</Button>
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="student-channel-task-empty">이 PDF에서 아직 배포된 문제 세트가 없습니다.</div>
+                      )}
+                    </CardBody>
+                  </Card>
+                )}
                 <Card className="workspace-card workspace-chat-card">
                   <CardBody>
                     <h3 className="workspace-card-title">채널 메시지</h3>
