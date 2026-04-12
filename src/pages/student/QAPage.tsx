@@ -1,17 +1,54 @@
 /**
- * 자료 기반 AI 질의응답 페이지
+ * 자료 기반 AI 도우미
  * F6: 자료 근거 기반 질문과 답변
  */
 
-import { useState } from 'react'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, MaterialDocumentViewer } from '../../components'
 import { askQuestion, getMyQaLogs } from '../../api/student'
 import type { QaResponse, StudentQaLogResponse } from '../../api/student'
+import { classifyAiResponse, AI_RESPONSE_MESSAGES, getUserFacingErrorMessage } from '../../api/aiResponse'
 import './StudentPages.css'
+
+function QaResponseCard({ response }: { response: QaResponse }) {
+  const state = classifyAiResponse(response)
+  const messages = AI_RESPONSE_MESSAGES[state]
+  const badgeClass = state === 'grounded' ? 'correct' : 'wrong'
+
+  return (
+    <Card className="response-card">
+      <CardBody>
+        <div className={`result-badge ${badgeClass}`} style={{ marginBottom: '0.75rem', display: 'inline-flex' }}>
+          {messages.badge}
+        </div>
+        <h3 className="response-title">AI 답변</h3>
+        <p className="response-answer">{response.answer}</p>
+
+        {state === 'grounded' && response.evidenceSnippets.length > 0 && (
+          <div className="evidence-section">
+            <h4 className="evidence-title">근거</h4>
+            <div className="evidence-list">
+              {response.evidenceSnippets.map((snippet, index) => (
+                <div key={index} className="evidence-item">
+                  <p className="evidence-content">{snippet}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {state !== 'grounded' && (
+          <div className="no-evidence">
+            <p>{messages.description} {messages.action}</p>
+          </div>
+        )}
+      </CardBody>
+    </Card>
+  )
+}
 
 export function QAPage() {
   const [question, setQuestion] = useState('')
@@ -65,7 +102,7 @@ export function QAPage() {
       setHistory(logs)
     } catch (err) {
       console.error('질의응답 실패:', err)
-      setError('답변을 가져오는데 실패했습니다.')
+      setError(getUserFacingErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -74,14 +111,14 @@ export function QAPage() {
   return (
     <div className="qa-page">
       <div className="page-header">
-        <h1 className="page-title">자료 기반 AI 질의응답</h1>
-        <p className="page-description">자료를 기반으로 한 질문에 답변합니다. 근거가 부족한 경우 안내됩니다.</p>
+        <h1 className="page-title">자료 기반 AI 도우미</h1>
+        <p className="page-description">학습 자료를 기반으로 질문에 답변합니다. 자료에 근거한 답변과 근거 부족 안내를 제공합니다.</p>
       </div>
 
       {materialId && token && (
         <Card className="response-card">
           <CardBody>
-            <h3 className="response-title">학습 문서</h3>
+            <h3 className="response-title">학습 자료</h3>
             <div style={{ minHeight: '480px' }}>
               <MaterialDocumentViewer materialId={materialId} token={token} />
             </div>
@@ -94,7 +131,7 @@ export function QAPage() {
           <form onSubmit={handleSubmit} className="qa-form">
             <div className="form-group">
               <label className="input-label">질문</label>
-              <textarea className="textarea" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="자료에 대한 질문을 입력하세요 (최대 500자)" rows={4} maxLength={500} />
+              <textarea className="textarea" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="자료에 대해 궁금한 점을 질문하세요 (Enter로 전송, 최대 500자)" rows={4} maxLength={500} />
               <span className="char-count">{question.length} / 500</span>
             </div>
 
@@ -108,68 +145,27 @@ export function QAPage() {
       </Card>
 
       {response && (
-        <Card className="response-card">
-          <CardBody>
-            {!response.grounded && !response.insufficientEvidence && (
-              <div className="result-badge wrong" style={{ marginBottom: '0.75rem', display: 'inline-flex' }}>
-                AI 서버 연결 실패
-              </div>
-            )}
-            {!response.insufficientEvidence && response.grounded && response.evidenceSnippets.length > 0 && (
-              <div className="result-badge correct" style={{ marginBottom: '0.75rem', display: 'inline-flex' }}>
-                자료 근거 응답
-              </div>
-            )}
-            {response.insufficientEvidence && (
-              <div className="result-badge wrong" style={{ marginBottom: '0.75rem', display: 'inline-flex' }}>
-                근거 부족 안내
-              </div>
-            )}
-            <h3 className="response-title">답변</h3>
-            <p className="response-answer">{response.answer}</p>
-
-            {response.grounded && response.evidenceSnippets.length > 0 && (
-              <div className="evidence-section">
-                <h4 className="evidence-title">근거</h4>
-                <div className="evidence-list">
-                  {response.evidenceSnippets.map((snippet, index) => (
-                    <div key={index} className="evidence-item">
-                      <p className="evidence-content">{snippet}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {response.insufficientEvidence && (
-              <div className="no-evidence">
-                <p>이 답변은 자료에서 직접적인 근거를 찾을 수 없습니다. 추가 정보가 필요할 수 있습니다.</p>
-              </div>
-            )}
-            {!response.grounded && !response.insufficientEvidence && (
-              <div className="no-evidence">
-                <p>AI 서버 연결 또는 처리에 실패했습니다. 잠시 후 다시 시도해주세요.</p>
-              </div>
-            )}
-          </CardBody>
-        </Card>
+        <QaResponseCard response={response} />
       )}
 
       <Card className="response-card">
         <CardBody>
           <h3 className="response-title">내 질문 이력</h3>
-          {history.length === 0 ? (
-            <p className="page-description">아직 질문 이력이 없습니다.</p>
-          ) : (
-            <div className="evidence-list">
-              {history.map((log) => (
-                <div key={log.qaLogId} className="evidence-item">
-                  <p className="response-answer" style={{ fontWeight: 600 }}>{log.question}</p>
-                  <p className="response-answer">{log.answer}</p>
-                </div>
-              ))}
+{history.length === 0 ? (
+<div className="workspace-empty" style={{ textAlign: 'center', padding: '2rem 0' }}>
+<p style={{ marginBottom: '0.5rem' }}>아직 질문 이력이 없습니다.</p>
+<p className="page-description" style={{ fontSize: '0.875rem' }}>자료에 대해 궁금한 점을 질문하면 AI가 답변합니다.</p>
             </div>
-          )}
+          ) : (
+<div className="evidence-list">
+{history.map((log) => (
+<div key={log.qaLogId} className="evidence-item">
+<p className="response-answer" style={{ fontWeight: 600 }}>{log.question}</p>
+<p className="response-answer">{log.answer}</p>
+</div>
+))}
+</div>
+)}
         </CardBody>
       </Card>
     </div>

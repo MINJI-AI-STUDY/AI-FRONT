@@ -445,3 +445,270 @@
     justify-content: flex-end;
   }
 }
+
+
+/* Student 3-Column Layout Styles */
+
+/* Left sidebar collapsed state */
+.channel-shell.left-sidebar-collapsed {
+  grid-template-columns: 0 minmax(0, 1fr);
+  gap: 0;
+}
+
+.channel-shell.left-sidebar-collapsed .student-left-sidebar {
+  display: none;
+}
+
+/* Student main chat area - taller and primary */
+.student-main-chat {
+  min-height: 600px;
+  max-height: calc(100vh - 12rem);
+}
+
+.student-chat-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.student-message-list-primary {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 400px;
+  max-height: calc(100vh - 20rem);
+}
+
+.student-message-input-primary {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #eef2f7;
+  background: #f8fafc;
+}
+
+/* AI Sidebar Styles */
+.workspace-ai-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace-ai-card .card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.workspace-ai-material-selector {
+  margin-bottom: 0.75rem;
+}
+
+.workspace-ai-material-selector .input-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.workspace-ai-material-selector select {
+  width: 100%;
+}
+
+.workspace-ai-chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-height: 200px;
+  max-height: 360px;
+  margin-bottom: 0.75rem;
+}
+
+.workspace-ai-input-area {
+  flex-shrink: 0;
+}
+
+.workspace-ai-input-area .textarea {
+  width: 100%;
+  resize: none;
+}
+
+/* PDF preview in sidebar */
+.student-pdf-preview {
+  margin-top: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  max-height: 400px;
+}
+
+.student-pdf-preview .workspace-document-frame,
+.student-pdf-preview iframe,
+.student-pdf-preview > div {
+  min-height: 380px;
+  max-height: 400px;
+}
+
+/* Card title with action button */
+.workspace-card-title-with-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+}
+
+.workspace-card-title-with-action .workspace-card-title {
+  margin: 0;
+}
+
+.workspace-text-button {
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: transparent;
+  color: #2563eb;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.workspace-text-button:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Three column layout responsive */
+.student-three-column {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+}
+
+.student-three-column.sidebar-collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1279px) {
+  .student-three-column {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+  
+  .student-main-chat {
+    min-height: 500px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .student-three-column,
+  .student-three-column.sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  
+  .student-left-sidebar {
+    position: static;
+    max-height: none;
+  }
+  
+  .student-main-chat {
+    min-height: 400px;
+  }
+  
+  .workspace-ai-chat-area {
+    max-height: 280px;
+  }
+}
+
+@media (max-width: 767px) {
+  .channel-shell.left-sidebar-collapsed,
+  .channel-shell {
+    grid-template-columns: 1fr;
+  }
+  
+  .student-left-sidebar {
+    display: none;
+  }
+  
+  .student-main-chat {
+    min-height: 350px;
+  }
+  
+  .student-message-list-primary {
+    min-height: 250px;
+    max-height: calc(100vh - 16rem);
+  }
+  
+  .student-message-input-primary {
+    flex-direction: column;
+  }
+  
+  .student-message-input-primary .number-input {
+    width: 100%;
+  }
+}
+
+/* AI Response State Badges (shared between QAPage and ChannelWorkspace) */
+.ai-state-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.ai-state-badge--grounded {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.ai-state-badge--insufficientEvidence {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ai-state-badge--runtimeFailure {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.ai-state-guidance {
+  margin-top: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #525252;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.ai-evidence-list {
+  margin-top: 0.375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-evidence-item {
+  padding: 0.375rem 0.625rem;
+  border-left: 2px solid #bbf7d0;
+  background: #f0fdf4;
+  border-radius: 0 0.25rem 0.25rem 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #334155;
+}
