@@ -31,8 +31,16 @@ function resolveApiBaseUrl(): string {
   return ''
 }
 
-// API 기본 URL (환경변수 필수, 미설정 시 빈 문자열 → 요청 실패로 명시적 에러 노출)
+// API 기본 URL (환경변수 필수, 미설정 시 빈 문자열 → 요청 시 명시적 에러)
 const API_BASE_URL = resolveApiBaseUrl()
+
+/**
+ * API URL이 정상 설정되었는지 확인
+ * VITE_API_URL 미설정 + localhost가 아닌 환경에서 false 반환
+ */
+export function isApiUrlConfigured(): boolean {
+  return API_BASE_URL.length > 0
+}
 
 /**
  * API 에러 클래스
@@ -66,6 +74,15 @@ async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
+  // API URL 미설정 시 명시적 에러 (빈 문자열 URL로 fetch하면 프론트엔드 자신을 호출하게 됨)
+  if (!API_BASE_URL) {
+    throw new ApiError(
+      0,
+      'API 서버 주소가 설정되지 않았습니다. 관리자에게 문의해주세요.',
+      { reason: 'VITE_API_URL_NOT_CONFIGURED' }
+    )
+  }
+
   const { token, ...fetchOptions } = options
 
   const headers: Record<string, string> = {
@@ -77,10 +94,16 @@ async function request<T>(
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...fetchOptions,
-    headers,
-  })
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...fetchOptions,
+      headers,
+    })
+  } catch (fetchError) {
+    // 네트워크 오류 (DNS, CORS, 연결 거부 등) — TypeError로 전달됨
+    throw fetchError
+  }
 
   // 응답이 성공적이지 않으면 에러 발생
   if (!response.ok) {
@@ -144,5 +167,5 @@ export function patch<T>(
   })
 }
 
-// API 기본 URL 낵�
+// API 기본 URL 내보내기
 export { API_BASE_URL }
