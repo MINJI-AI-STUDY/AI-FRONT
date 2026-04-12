@@ -21,8 +21,39 @@ export function SubmissionResultPage() {
   const latestMaterialId = sessionStorage.getItem('latest_material_id')
   const latestDistributionCode = sessionStorage.getItem('latest_distribution_code')
 
+  const followUpPath = latestDistributionCode
+    ? `/student/question-sets/${latestDistributionCode}/workspace`
+    : latestMaterialId
+      ? `/student/materials/${latestMaterialId}/qa`
+      : '/student'
+
+  const storeWrongAnswerContext = (questionNumber: number, explanation: string, selectedOptionLabel: string, conceptTags: string[]) => {
+    sessionStorage.setItem(
+      'student_ai_followup_context',
+      JSON.stringify({
+        questionNumber,
+        explanation,
+        selectedOptionLabel,
+        conceptTags,
+        prompt: `문제 ${questionNumber}에서 내가 고른 ${selectedOptionLabel}가 왜 틀렸는지 자료 기준으로 짧고 친절하게 설명해 주세요.`,
+      }),
+    )
+  }
+
+  const createFallbackExplanation = (questionNumber: number) =>
+    `문제 ${questionNumber}의 자세한 해설이 아직 준비되지 않았습니다. AI 해설 요청으로 추가 설명을 받아보세요.`
+
   useEffect(() => {
-    if (!submissionId || !token) return
+    if (!submissionId) {
+      setLoading(false)
+      setError('결과를 찾을 수 없습니다.')
+      return
+    }
+    if (!token) {
+      setLoading(false)
+      setError('로그인이 필요합니다.')
+      return
+    }
 
     const fetchResult = async () => {
       try {
@@ -39,8 +70,28 @@ export function SubmissionResultPage() {
     fetchResult()
   }, [submissionId, token])
 
-  if (loading) return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
-  if (error || !result) return <div className="error-container"><p>{error || '결과를 찾을 수 없습니다.'}</p><Link to="/student"><Button variant="outline">홈으로</Button></Link></div>
+  if (loading) {
+    return (
+      <div className="modal-status-state">
+        <div className="loading-spinner" />
+        <p className="modal-status-title">결과를 불러오는 중입니다.</p>
+        <p className="modal-status-description">제출한 답안을 다시 확인하고 있어요.</p>
+      </div>
+    )
+  }
+
+  if (error || !result) {
+    return (
+      <div className="modal-status-state modal-status-state--error">
+        <p className="modal-status-title">결과를 찾을 수 없습니다.</p>
+        <p className="modal-status-description">{error || '제출 결과가 아직 준비되지 않았습니다.'}</p>
+        <div className="page-actions page-actions--stacked">
+          <Link to="/student"><Button variant="outline">홈으로</Button></Link>
+          {submissionId && <Link to={`/student/submissions/${submissionId}`}><Button variant="primary">다시 시도</Button></Link>}
+        </div>
+      </div>
+    )
+  }
 
   const correctCount = result.questionResults.filter((r) => r.correct).length
   const totalQuestions = result.questionResults.length
@@ -74,9 +125,22 @@ export function SubmissionResultPage() {
                 <span className={`result-badge ${question.correct ? 'correct' : 'wrong'}`}>{question.correct ? '정답' : '오답'}</span>
               </div>
               <div className="result-answer"><p><strong>선택한 답:</strong> {String.fromCharCode(65 + question.selectedOptionIndex)}</p></div>
-              <div className="result-explanation"><strong>해설:</strong> {question.explanation}</div>
+              <div className="result-explanation"><strong>해설:</strong> {question.explanation?.trim() || createFallbackExplanation(index + 1)}</div>
               {question.conceptTags.length > 0 && (
                 <div className="result-tags"><strong>관련 개념:</strong> {question.conceptTags.map((tag) => <span key={tag} className="concept-tag">{tag}</span>)}</div>
+              )}
+              {!question.correct && (
+                <div className="result-follow-up">
+                  <div className="result-follow-up-text">이 오답은 AI에게 다시 물어볼 수 있습니다. 선택한 답과 해설을 함께 보내 더 친절한 설명을 받아보세요.</div>
+                  <div className="page-actions page-actions--stacked">
+                    <Link
+                      to={followUpPath}
+                      onClick={() => storeWrongAnswerContext(index + 1, question.explanation?.trim() || createFallbackExplanation(index + 1), String.fromCharCode(65 + question.selectedOptionIndex), question.conceptTags)}
+                    >
+                      <Button variant="outline">오답 AI 해설 요청</Button>
+                    </Link>
+                  </div>
+                </div>
               )}
             </CardBody>
           </Card>
