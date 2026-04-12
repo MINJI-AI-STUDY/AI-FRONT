@@ -30,7 +30,7 @@ export function ChannelSidebar({
   isOpen,
   onOpenChange,
 }: ChannelSidebarProps) {
-  const initialCompactViewport = typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches
+  const initialCompactViewport = typeof window !== 'undefined' && window.matchMedia('(max-width: 1180px)').matches
   const [uncontrolledDrawerOpen, setUncontrolledDrawerOpen] = useState(() => !initialCompactViewport)
   const [isCompactViewport, setIsCompactViewport] = useState(initialCompactViewport)
   const isDrawerOpen = isOpen ?? uncontrolledDrawerOpen
@@ -45,7 +45,7 @@ export function ChannelSidebar({
   }
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 1024px)')
+    const mediaQuery = window.matchMedia('(max-width: 1180px)')
 
     const handleChange = () => {
       const compactViewport = mediaQuery.matches

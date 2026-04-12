@@ -56,7 +56,7 @@ export function TeacherChannelWorkspacePage() {
   const [publishCode, setPublishCode] = useState<string | null>(null)
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') return true
-    return !window.matchMedia('(max-width: 1024px)').matches
+    return !window.matchMedia('(max-width: 1180px)').matches
   })
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
 
@@ -108,7 +108,7 @@ export function TeacherChannelWorkspacePage() {
   }, [channelId, token])
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 1024px)')
+    const mediaQuery = window.matchMedia('(max-width: 1180px)')
 
     const syncSidebarState = () => {
       setLeftSidebarOpen(!mediaQuery.matches)

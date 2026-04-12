@@ -63,7 +63,7 @@
   margin-top: 0.75rem;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1180px) {
   .teacher-shell-actions {
     width: 100%;
   }

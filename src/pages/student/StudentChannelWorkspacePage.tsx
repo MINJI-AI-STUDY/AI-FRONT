@@ -29,7 +29,7 @@ interface PendingAiFollowUp {
 }
 
 function isCompactViewport() {
-  return typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 1180px)').matches
 }
 
 export function StudentChannelWorkspacePage() {
@@ -99,7 +99,7 @@ export function StudentChannelWorkspacePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const mediaQuery = window.matchMedia('(max-width: 1024px)')
+    const mediaQuery = window.matchMedia('(max-width: 1180px)')
     const handleChange = () => {
       setLeftSidebarOpen(!mediaQuery.matches)
     }
