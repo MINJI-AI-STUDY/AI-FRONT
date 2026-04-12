@@ -54,6 +54,7 @@ export function StudentHomePage() {
   const hasRecentMaterial = !!latestMaterialId
   const hasChannels = channels.length > 0
   const hasMaterials = materials.length > 0
+  const latestMaterial = materials.find((material) => material.materialId === latestMaterialId) ?? materials[0] ?? null
 
   return (
     <div className="student-home">
@@ -69,6 +70,7 @@ export function StudentHomePage() {
       {/* 주요 액션: 빠른 시작 */}
       <section className="dashboard-section">
         <h2 className="section-title">빠른 시작</h2>
+        <p className="section-helper">가장 자주 쓰는 학습 행동부터 바로 시작할 수 있게 정리했습니다.</p>
         <div className="quick-action-cards">
           <Card className="quick-action-card primary">
             <CardBody>
@@ -86,6 +88,25 @@ export function StudentHomePage() {
               </Link>
             </CardBody>
           </Card>
+
+          {latestMaterial && (
+            <Card className="quick-action-card secondary">
+              <CardBody>
+                <div className="quick-action-content">
+                  <div className="quick-action-icon secondary">🤖</div>
+                  <div className="quick-action-text">
+                    <h3 className="quick-action-title">자료 기반 AI 도우미</h3>
+                    <p className="quick-action-description">
+                      최근에 본 자료 <strong>{latestMaterial.title}</strong> 기준으로 바로 질문을 이어갈 수 있습니다.
+                    </p>
+                  </div>
+                </div>
+                <Link to={`/student/materials/${latestMaterial.materialId}/qa`}>
+                  <Button variant="outline" size="lg">AI로 질문 이어가기</Button>
+                </Link>
+              </CardBody>
+            </Card>
+          )}
         </div>
       </section>
 
@@ -93,6 +114,7 @@ export function StudentHomePage() {
       {(hasRecentSubmission || hasRecentMaterial) && (
         <section className="dashboard-section">
           <h2 className="section-title">이어서 하기</h2>
+          <p className="section-helper">최근에 보던 결과와 질문 흐름을 다시 이어갈 수 있습니다.</p>
           <div className="action-cards">
             {hasRecentSubmission && (
               <Card className="action-card highlight">
@@ -135,6 +157,7 @@ export function StudentHomePage() {
           <h2 className="section-title">채널 워크스페이스</h2>
           <span className="section-count">{channels.length}개 참여 중</span>
         </div>
+        <p className="section-helper">교사와 함께 학습 중인 채널입니다. 공지 확인이나 자료 토론이 필요할 때 먼저 들어가세요.</p>
         <div className="action-cards">
           {!hasChannels ? (
             <Card className="action-card empty">
@@ -170,6 +193,7 @@ export function StudentHomePage() {
           <h2 className="section-title">학습 자료</h2>
           <span className="section-count">{materials.length}개 이용 가능</span>
         </div>
+        <p className="section-helper">자료를 열면 PDF를 보면서 바로 AI에게 질문할 수 있습니다.</p>
         {!hasMaterials ? (
           <Card className="info-card">
             <CardBody>
