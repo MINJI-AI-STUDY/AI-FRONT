@@ -59,10 +59,21 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
   }
 
   return (
-    <iframe
-      className="workspace-document-frame"
-      src={documentUrl}
-      title="학습 자료 PDF"
-    />
+    <div className="document-viewer-shell">
+      <div className="document-viewer-toolbar">
+        <div>
+          <strong>PDF 미리보기</strong>
+          <p className="document-viewer-helper">미리보기가 비어 보이면 새 탭에서 문서를 열어 확인할 수 있습니다.</p>
+        </div>
+        <a className="document-viewer-link" href={documentUrl} target="_blank" rel="noreferrer">
+          새 탭에서 열기
+        </a>
+      </div>
+      <iframe
+        className="workspace-document-frame"
+        src={`${documentUrl}#toolbar=1&navpanes=0&scrollbar=1`}
+        title="학습 자료 PDF"
+      />
+    </div>
   )
 }
