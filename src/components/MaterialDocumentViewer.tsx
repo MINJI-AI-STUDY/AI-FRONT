@@ -59,18 +59,24 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
   }
 
   return (
-    <div className="document-viewer-shell">
+    <div className="document-viewer-shell workspace-document-stage">
       <div className="document-viewer-toolbar">
-        <strong>PDF 미리보기</strong>
+        <div className="document-viewer-toolbar-title">
+          <strong>PDF 미리보기</strong>
+          <span className="document-viewer-helper">브라우저 PDF 뷰어는 제한이 있습니다.</span>
+        </div>
         <a className="document-viewer-link" href={documentUrl} target="_blank" rel="noreferrer">
           새 탭에서 열기
         </a>
       </div>
-      <iframe
-        className="workspace-document-frame"
-        src={`${documentUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-        title="학습 자료 PDF"
-      />
+      <div className="document-viewer-frame-shell">
+        <iframe
+          className="workspace-document-frame"
+          src={`${documentUrl}#toolbar=0&navpanes=0&scrollbar=0&page=1&view=FitH`}
+          title="학습 자료 PDF"
+          loading="lazy"
+        />
+      </div>
     </div>
   )
 }

@@ -60,9 +60,10 @@
 
 .channel-shell {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  grid-template-columns: minmax(16rem, 18rem) minmax(0, 1fr);
   gap: 1rem;
   align-items: start;
+  position: relative;
 }
 
 .channel-content-shell {
@@ -89,6 +90,67 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.channel-sidebar-panel {
+  width: 100%;
+  transition: transform 220ms ease, box-shadow 220ms ease, opacity 220ms ease;
+}
+
+.channel-sidebar-surface {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.channel-sidebar-toggle,
+.channel-sidebar-rail-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.channel-sidebar-toggle:hover,
+.channel-sidebar-rail-toggle:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1d4ed8;
+}
+
+.channel-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  border: 0;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.32);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.channel-sidebar-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.channel-sidebar-rail-toggle {
+  position: fixed;
+  left: 0.75rem;
+  top: 4.75rem;
+  z-index: 75;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
 }
 
 .teacher-channel-shell .channel-sidebar-panel {
@@ -217,13 +279,13 @@
 
 .workspace-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 340px);
+  grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 20rem);
   gap: 1rem;
   align-items: start;
 }
 
 .workspace-layout.sidebar-collapsed {
-  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 340px);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .workspace-main,
@@ -242,7 +304,7 @@
 }
 
 .teacher-main-stage {
-  min-height: calc(100vh - 12rem);
+  min-height: calc(100vh - 11rem);
 }
 
 .teacher-channel-aux-panel {
@@ -271,9 +333,8 @@
   font-size: 1rem;
   font-weight: 700;
   color: #0f172a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .workspace-side {
@@ -379,7 +440,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 480px;
+  min-height: 30rem;
   padding: 1.5rem;
   border: 1px dashed #cbd5e1;
   border-radius: 1rem;
@@ -390,7 +451,7 @@
 
 .workspace-document-frame {
   width: 100%;
-  min-height: 780px;
+  min-height: clamp(34rem, 72vh, 52rem);
   border: 0;
   border-radius: 1.25rem;
   background: #ffffff;
@@ -400,15 +461,26 @@
 .document-viewer-shell {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  width: min(100%, 72rem);
+  margin-inline: auto;
 }
 
 .document-viewer-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1rem;
   padding: 0 0.25rem;
+  min-width: 0;
+}
+
+.document-viewer-toolbar-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
 .document-viewer-toolbar strong {
@@ -417,7 +489,23 @@
 }
 
 .document-viewer-helper {
-  display: none;
+  color: #64748b;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.document-viewer-frame-shell {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 1.5rem;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, rgba(255, 255, 255, 1) 100%);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.workspace-document-stage {
+  min-width: 0;
 }
 
 .document-viewer-link {
@@ -549,11 +637,15 @@
 
 @media (max-width: 1279px) {
   .channel-shell {
-    grid-template-columns: 240px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .workspace-layout {
-    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 18rem);
+  }
+
+  .workspace-layout.sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -565,19 +657,42 @@
 
   .channel-sidebar-panel,
   .student-left-sidebar {
-    order: 2;
+    position: fixed;
+    inset: 4rem auto 0 0;
+    width: min(24rem, 88vw);
+    max-height: calc(100vh - 4rem);
+    z-index: 70;
+    transform: translateX(-105%);
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
   }
 
-  .channel-content-shell {
-    order: 1;
+  .channel-sidebar-panel.is-open,
+  .student-left-sidebar.is-open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
   }
 
-  .channel-sidebar-list,
-  .student-channel-list {
-    max-height: 220px;
+  .channel-sidebar-panel-overlay,
+  .student-left-sidebar {
+    border-radius: 0 1rem 1rem 0;
+  }
+
+  .channel-sidebar-rail-toggle {
+    display: inline-flex;
+  }
+
+  .channel-sidebar-toggle {
+    display: inline-flex;
   }
 
   .workspace-layout,
+  .workspace-layout.sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 20rem);
+  }
+
   .workspace-layout.sidebar-collapsed {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -585,12 +700,13 @@
   .workspace-side,
   .student-left-sidebar,
   .channel-sidebar-panel {
-    position: static;
+    position: relative;
+    top: auto;
     max-height: none;
   }
 
   .workspace-document-frame {
-    min-height: 600px;
+    min-height: clamp(30rem, 60vh, 44rem);
   }
 
   .workspace-tool-button {
@@ -619,8 +735,27 @@
   .channel-sidebar-panel,
   .student-left-sidebar,
   .workspace-side {
-    position: static;
+    position: relative;
     max-height: none;
+  }
+
+  .channel-sidebar-panel,
+  .student-left-sidebar {
+    position: fixed;
+    inset: 4rem auto 0 0;
+    width: min(20rem, 92vw);
+    transform: translateX(-110%);
+    z-index: 70;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+  }
+
+  .channel-sidebar-panel.is-open,
+  .student-left-sidebar.is-open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .workspace-header,
@@ -632,12 +767,22 @@
   }
 
   .workspace-document-frame {
-    min-height: 480px;
+    min-height: clamp(24rem, 60vh, 34rem);
   }
 
   .workspace-actions {
     width: 100%;
     justify-content: flex-end;
+  }
+
+  .channel-sidebar-rail-toggle {
+    display: inline-flex;
+    left: 0.5rem;
+    top: 4.5rem;
+  }
+
+  .channel-sidebar-toggle {
+    display: inline-flex;
   }
 }
 

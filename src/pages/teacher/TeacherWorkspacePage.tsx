@@ -10,6 +10,7 @@ import { Button, Card, CardBody, MaterialDocumentViewer, Modal } from '../../com
 import { generateQuestions, getMaterial } from '../../api/teacher'
 import type { GenerateQuestionsRequest, MaterialSummaryResponse, QuestionSetResponse } from '../../api/teacher'
 import '../WorkspacePages.css'
+import './TeacherPages.css'
 
 export function TeacherWorkspacePage() {
   const { materialId } = useParams<{ materialId: string }>()
@@ -24,6 +25,7 @@ export function TeacherWorkspacePage() {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false)
+  const [rightPanelOpen, setRightPanelOpen] = useState(false)
 
   useEffect(() => {
     if (!materialId || !token) return
@@ -80,7 +82,13 @@ export function TeacherWorkspacePage() {
           <h1 className="page-title">{material.title}</h1>
           <p className="page-description">같은 자료를 보면서 문제를 생성·검토·배포합니다.</p>
         </div>
-        <div className="workspace-actions">
+        <div className="workspace-actions teacher-shell-actions">
+          <Button variant="outline" size="sm" onClick={() => setRightPanelOpen((current) => !current)}>
+            <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
+              {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
+            </span>
+            {rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
+          </Button>
           {questionSet && (
             <Button variant="primary" onClick={() => navigate(`/teacher/question-sets/${questionSet.questionSetId}/review`, { state: { questionSet } })}>
               검토 화면 열기
@@ -92,7 +100,7 @@ export function TeacherWorkspacePage() {
 
       {error && <div className="error-message">{error}</div>}
 
-      <div className="workspace-layout">
+      <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''}`}>
         <section className="workspace-main">
           <div className="workspace-main-header">
             <div className="workspace-main-title">
@@ -116,43 +124,57 @@ export function TeacherWorkspacePage() {
           <MaterialDocumentViewer materialId={materialId} token={token} />
         </section>
 
-        <aside className="workspace-side teacher-side">
-          <Card className="workspace-card">
-            <CardBody>
-              <div className="workspace-panel-inline-header">
-                <h3 className="workspace-card-title">문제 생성 설정</h3>
-                <span className="workspace-mini-chip">AI</span>
+        {rightPanelOpen && (
+          <aside className="workspace-side teacher-side">
+            <div className="workspace-panel-inline-header teacher-panel-header">
+              <div>
+                <div className="workspace-main-eyebrow">보조 패널</div>
+                <h3 className="workspace-card-title">문제 생성 · JSON 검토</h3>
               </div>
-              <div className="form-group">
-                <label className="input-label">문항 수</label>
-                <input className="number-input" type="number" min={1} max={10} value={questionCount} onChange={(e) => setQuestionCount(Number(e.target.value))} />
-              </div>
-              <div className="form-group">
-                <label className="input-label">난이도</label>
-                <select className="number-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}>
-                  <option value="EASY">쉬움</option>
-                  <option value="MEDIUM">보통</option>
-                  <option value="HARD">어려움</option>
-                </select>
-              </div>
-              <Button loading={generating} onClick={handleGenerate}>AI 문제 생성</Button>
-            </CardBody>
-          </Card>
+              <Button variant="ghost" size="sm" onClick={() => setRightPanelOpen(false)}>
+                닫기
+              </Button>
+            </div>
 
-          <Card className="workspace-card workspace-json-card">
-            <CardBody>
-              <div className="workspace-panel-inline-header">
-                <h3 className="workspace-card-title">생성 결과 JSON</h3>
-                {generatedJson && (
-                  <Button variant="ghost" size="sm" onClick={() => setIsJsonModalOpen(true)}>
-                    크게 보기
-                  </Button>
-                )}
-              </div>
-              {generatedJson ? <pre className="workspace-json-view">{generatedJson}</pre> : <p className="workspace-empty">문제를 생성하면 구조화된 결과가 여기에 표시됩니다.</p>}
-            </CardBody>
-          </Card>
-        </aside>
+            <div className="teacher-panel-stack">
+              <Card className="workspace-card">
+                <CardBody>
+                  <div className="workspace-panel-inline-header">
+                    <h3 className="workspace-card-title">문제 생성 설정</h3>
+                    <span className="workspace-mini-chip">AI</span>
+                  </div>
+                  <div className="form-group">
+                    <label className="input-label">문항 수</label>
+                    <input className="number-input" type="number" min={1} max={10} value={questionCount} onChange={(e) => setQuestionCount(Number(e.target.value))} />
+                  </div>
+                  <div className="form-group">
+                    <label className="input-label">난이도</label>
+                    <select className="number-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}>
+                      <option value="EASY">쉬움</option>
+                      <option value="MEDIUM">보통</option>
+                      <option value="HARD">어려움</option>
+                    </select>
+                  </div>
+                  <Button loading={generating} onClick={handleGenerate}>AI 문제 생성</Button>
+                </CardBody>
+              </Card>
+
+              <Card className="workspace-card workspace-json-card">
+                <CardBody>
+                  <div className="workspace-panel-inline-header">
+                    <h3 className="workspace-card-title">생성 결과 JSON</h3>
+                    {generatedJson && (
+                      <Button variant="ghost" size="sm" onClick={() => setIsJsonModalOpen(true)}>
+                        크게 보기
+                      </Button>
+                    )}
+                  </div>
+                  {generatedJson ? <pre className="workspace-json-view">{generatedJson}</pre> : <p className="workspace-empty">문제를 생성하면 구조화된 결과가 여기에 표시됩니다.</p>}
+                </CardBody>
+              </Card>
+            </div>
+          </aside>
+        )}
       </div>
 
       <Modal

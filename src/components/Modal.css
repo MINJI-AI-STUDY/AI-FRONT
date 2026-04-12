@@ -87,6 +87,8 @@
   font-weight: 600;
   color: #171717;
   letter-spacing: -0.01em;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* 닫기 버튼 */
@@ -104,6 +106,7 @@
   cursor: pointer;
   transition: all 150ms ease;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .modal-close-button:hover {
@@ -152,7 +155,7 @@
   cursor: pointer;
   transition: all 150ms ease;
   min-width: 0;
-  white-space: normal;
+  white-space: nowrap;
   height: auto;
   min-height: 2.25rem;
   line-height: 1.25;

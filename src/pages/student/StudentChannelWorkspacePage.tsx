@@ -28,6 +28,10 @@ interface PendingAiFollowUp {
   prompt: string
 }
 
+function isCompactViewport() {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches
+}
+
 export function StudentChannelWorkspacePage() {
   const { channelId } = useParams<{ channelId: string }>()
   const { token } = useAuth()
@@ -41,8 +45,8 @@ export function StudentChannelWorkspacePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [askError, setAskError] = useState<string | null>(null)
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true)
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(true)
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(() => !isCompactViewport())
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(false)
   const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>('ai')
   const [pendingAiFollowUp, setPendingAiFollowUp] = useState<PendingAiFollowUp | null>(null)
 
@@ -91,6 +95,19 @@ export function StudentChannelWorkspacePage() {
       leaveChannel(channelId, token).catch(() => undefined)
     }
   }, [channelId, token])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const mediaQuery = window.matchMedia('(max-width: 1024px)')
+    const handleChange = () => {
+      setLeftSidebarOpen(!mediaQuery.matches)
+    }
+
+    handleChange()
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
   const handleSendMessage = async () => {
     if (!channelId || !token || !message.trim()) return
@@ -213,6 +230,7 @@ export function StudentChannelWorkspacePage() {
       setPendingAiFollowUp(parsed)
       setRightPanelMode('ai')
       setQuestion(parsed.prompt)
+      setRightSidebarOpen(true)
     } catch (err) {
       console.error('오답 AI 해설 문맥을 불러오지 못했습니다:', err)
     } finally {
@@ -245,6 +263,12 @@ export function StudentChannelWorkspacePage() {
     </div>
   )
 
+  const activeQuestionSetAction = activeQuestionSet ? (
+    <Link to={`/student/question-sets/${activeQuestionSet.distributionCode}/workspace`} className="student-workspace-cta-link">
+      <Button size="sm">문제 풀이 열기</Button>
+    </Link>
+  ) : null
+
   return (
     <div className="workspace-page student-workspace-page channel-workspace-page">
       <div className={`channel-shell student-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
@@ -254,6 +278,8 @@ export function StudentChannelWorkspacePage() {
             activeChannelId={channelId}
             basePath="student"
             description="학교 채널 목록을 따라 이동하고 현재 학습 채널을 유지하세요."
+            isOpen={leftSidebarOpen}
+            onOpenChange={setLeftSidebarOpen}
           />
         )}
 
@@ -265,10 +291,11 @@ export function StudentChannelWorkspacePage() {
               <p className="page-description">현재 입장 학생: {participantNames || '없음'}</p>
             </div>
             <div className="workspace-actions">
+              {activeQuestionSetAction}
               <button
                 type="button"
                 className="workspace-tool-button"
-                onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
+                onClick={() => setLeftSidebarOpen((current) => !current)}
                 aria-label={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
                 title={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
               >
@@ -277,7 +304,7 @@ export function StudentChannelWorkspacePage() {
               <button
                 type="button"
                 className="workspace-tool-button"
-                onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
+                onClick={() => setRightSidebarOpen((current) => !current)}
                 aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
                 title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
               >
@@ -296,15 +323,17 @@ export function StudentChannelWorkspacePage() {
                 <div className="student-pdf-meta-chip">{selectedMaterialLabel}</div>
               </div>
 
-              {selectedMaterial ? (
-                <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} />
-              ) : (
-                <div className="workspace-document-placeholder">이 채널에 연결된 PDF 자료가 아직 없습니다.</div>
-              )}
+              <div className="student-document-stage">
+                {selectedMaterial ? (
+                  <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} />
+                ) : (
+                  <div className="workspace-document-placeholder">이 채널에 연결된 PDF 자료가 아직 없습니다.</div>
+                )}
+              </div>
             </section>
 
             {rightSidebarOpen && (
-              <aside className="workspace-side student-side">
+              <aside className="workspace-side student-side student-channel-side">
                 <Card className="workspace-card workspace-ai-card">
                   <CardBody>
                     <div className="workspace-card-title-with-action workspace-mode-switch-header">

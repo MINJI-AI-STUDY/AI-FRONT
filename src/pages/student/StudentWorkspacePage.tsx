@@ -23,6 +23,10 @@ interface StudentAiFollowUpContext {
   prompt: string
 }
 
+function isCompactViewport() {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches
+}
+
 function consumeStudentAiFollowUpContext() {
   const rawContext = sessionStorage.getItem('student_ai_followup_context')
   if (!rawContext) return null
@@ -52,6 +56,20 @@ export function StudentWorkspacePage() {
   const [error, setError] = useState<string | null>(null)
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false)
   const [followUpContext, setFollowUpContext] = useState<StudentAiFollowUpContext | null>(null)
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(() => !isCompactViewport())
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const mediaQuery = window.matchMedia('(max-width: 1024px)')
+    const handleChange = () => {
+      setRightSidebarOpen(!mediaQuery.matches)
+    }
+
+    handleChange()
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
   useEffect(() => {
     const context = consumeStudentAiFollowUpContext()
@@ -59,6 +77,7 @@ export function StudentWorkspacePage() {
 
     setFollowUpContext(context)
     setQuestion(context.prompt)
+    setRightSidebarOpen(true)
   }, [])
 
   useEffect(() => {
@@ -142,13 +161,22 @@ export function StudentWorkspacePage() {
         </div>
         <div className="workspace-actions">
           <Link to="/student"><Button variant="outline">학생 홈</Button></Link>
+          <button
+            type="button"
+            className="workspace-tool-button"
+            onClick={() => setRightSidebarOpen((current) => !current)}
+            aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
+            title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
+          >
+            <span className="material-symbols-outlined">{rightSidebarOpen ? 'right_panel_close' : 'right_panel_open'}</span>
+          </button>
         </div>
       </div>
 
       {error && <div className="error-message">{error}</div>}
 
-      <div className="workspace-layout">
-        <section className="workspace-main">
+      <div className={`workspace-layout student-workspace-layout ${rightSidebarOpen ? 'student-workspace-layout--with-sidebar' : 'student-workspace-layout--document-only'}`}>
+        <section className="workspace-main student-workspace-stage">
           <div className="workspace-main-header">
             <div className="workspace-main-title">
               <div className="workspace-main-title-icon">
@@ -168,10 +196,13 @@ export function StudentWorkspacePage() {
               </button>
             </div>
           </div>
-          <MaterialDocumentViewer materialId={questionSet.materialId} token={token} />
+          <div className="student-document-stage">
+            <MaterialDocumentViewer materialId={questionSet.materialId} token={token} />
+          </div>
         </section>
 
-        <aside className="workspace-side student-side">
+        {rightSidebarOpen && (
+          <aside className="workspace-side student-side student-workspace-side">
           <Card className="workspace-card">
             <CardBody>
               <div className="workspace-panel-inline-header">
@@ -242,7 +273,8 @@ export function StudentWorkspacePage() {
               </div>
             </CardBody>
           </Card>
-        </aside>
+          </aside>
+        )}
       </div>
 
       <Modal

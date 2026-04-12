@@ -193,85 +193,91 @@ export function QAPage() {
         </Card>
       )}
 
-      {materialId && token && (
-        <Card className="response-card">
-          <CardBody>
-            <h3 className="response-title">학습 자료</h3>
-            <p className="page-description" style={{ marginBottom: '1rem' }}>먼저 문서를 훑어본 뒤 질문하면 더 정확한 도움을 받을 수 있습니다.</p>
-            <div style={{ minHeight: '480px' }}>
-              <MaterialDocumentViewer materialId={materialId} token={token} />
-            </div>
-          </CardBody>
-        </Card>
-      )}
-
-      <Card>
-        <CardBody>
-          {followUpContext && (
-            <div className="student-follow-up-callout">
-              <div className="workspace-main-eyebrow">오답 AI 해설 준비됨</div>
-              <strong>문제 {followUpContext.questionNumber}</strong>
-              <p>{followUpContext.prompt}</p>
-              <p className="student-follow-up-meta">
-                선택 답: {followUpContext.selectedOptionLabel}
-                {followUpContext.conceptTags.length > 0 && ` · 관련 개념: ${followUpContext.conceptTags.join(', ')}`}
-              </p>
-              <p className="student-follow-up-explanation">{followUpContext.explanation}</p>
-              <p className="student-follow-up-helper">질문 칸에 자동으로 들어가며, 필요하면 수정해서 다시 물어볼 수 있습니다.</p>
-            </div>
+      <div className="workspace-layout student-qa-layout">
+        <section className="workspace-main student-qa-stage">
+          {materialId && token && (
+            <Card className="response-card">
+              <CardBody>
+                <h3 className="response-title">학습 자료</h3>
+                <p className="page-description" style={{ marginBottom: '1rem' }}>먼저 문서를 훑어본 뒤 질문하면 더 정확한 도움을 받을 수 있습니다.</p>
+                <div className="student-document-stage">
+                  <MaterialDocumentViewer materialId={materialId} token={token} />
+                </div>
+              </CardBody>
+            </Card>
           )}
-          <form onSubmit={handleSubmit} className="qa-form">
-            <div className="form-group">
-              <label className="input-label">질문</label>
-              <textarea className="textarea" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="자료에 대해 궁금한 점을 질문하세요 (Enter로 전송, 최대 500자)" rows={4} maxLength={500} />
-              <span className="char-count">{question.length} / 500</span>
-            </div>
+        </section>
 
-            {error && <div className="error-message">{error}</div>}
+        <aside className="workspace-side student-qa-side">
+          <Card>
+            <CardBody>
+              {followUpContext && (
+                <div className="student-follow-up-callout">
+                  <div className="workspace-main-eyebrow">오답 AI 해설 준비됨</div>
+                  <strong>문제 {followUpContext.questionNumber}</strong>
+                  <p>{followUpContext.prompt}</p>
+                  <p className="student-follow-up-meta">
+                    선택 답: {followUpContext.selectedOptionLabel}
+                    {followUpContext.conceptTags.length > 0 && ` · 관련 개념: ${followUpContext.conceptTags.join(', ')}`}
+                  </p>
+                  <p className="student-follow-up-explanation">{followUpContext.explanation}</p>
+                  <p className="student-follow-up-helper">질문 칸에 자동으로 들어가며, 필요하면 수정해서 다시 물어볼 수 있습니다.</p>
+                </div>
+              )}
+              <form onSubmit={handleSubmit} className="qa-form">
+                <div className="form-group">
+                  <label className="input-label">질문</label>
+                  <textarea className="textarea" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="자료에 대해 궁금한 점을 질문하세요 (Enter로 전송, 최대 500자)" rows={4} maxLength={500} />
+                  <span className="char-count">{question.length} / 500</span>
+                </div>
 
-            <div className="form-actions">
-              <Button type="submit" loading={loading}>질문하기</Button>
-            </div>
-          </form>
-        </CardBody>
-      </Card>
+                {error && <div className="error-message">{error}</div>}
 
-      {response && (
-        <QaResponseCard response={response} />
-      )}
+                <div className="form-actions">
+                  <Button type="submit" loading={loading}>질문하기</Button>
+                </div>
+              </form>
+            </CardBody>
+          </Card>
 
-        <Card className="response-card">
-          <CardBody>
-            <h3 className="response-title">내 질문 이력</h3>
-            <p className="page-description" style={{ marginBottom: '1rem' }}>최근 질문 6개만 보여줍니다. 근거 부족과 시스템 오류는 배지로 구분됩니다.</p>
-            {recentHistory.length === 0 ? (
-              <div className="workspace-empty qa-history-empty">
-                <p style={{ marginBottom: '0.5rem' }}>아직 질문 이력이 없습니다.</p>
-                <p className="page-description" style={{ fontSize: '0.875rem' }}>자료를 읽다가 막히는 부분을 질문하면 AI가 학습 자료 기준으로 설명해드립니다.</p>
-              </div>
-            ) : (
-              <div className="qa-history-list">
-                {recentHistory.map((log) => {
-                  const state = getHistoryState(log)
-                  const messages = AI_RESPONSE_MESSAGES[state]
+          {response && (
+            <QaResponseCard response={response} />
+          )}
 
-                  return (
-                    <div key={log.qaLogId} className="qa-history-item">
-                      <div className="qa-history-header">
-                        <div>
-                          <p className="qa-history-question">{log.question}</p>
-                          <span className="qa-history-time">{formatLogTime(log.createdAt)}</span>
+          <Card className="response-card">
+            <CardBody>
+              <h3 className="response-title">내 질문 이력</h3>
+              <p className="page-description" style={{ marginBottom: '1rem' }}>최근 질문 6개만 보여줍니다. 근거 부족과 시스템 오류는 배지로 구분됩니다.</p>
+              {recentHistory.length === 0 ? (
+                <div className="workspace-empty qa-history-empty">
+                  <p style={{ marginBottom: '0.5rem' }}>아직 질문 이력이 없습니다.</p>
+                  <p className="page-description" style={{ fontSize: '0.875rem' }}>자료를 읽다가 막히는 부분을 질문하면 AI가 학습 자료 기준으로 설명해드립니다.</p>
+                </div>
+              ) : (
+                <div className="qa-history-list">
+                  {recentHistory.map((log) => {
+                    const state = getHistoryState(log)
+                    const messages = AI_RESPONSE_MESSAGES[state]
+
+                    return (
+                      <div key={log.qaLogId} className="qa-history-item">
+                        <div className="qa-history-header">
+                          <div>
+                            <p className="qa-history-question">{log.question}</p>
+                            <span className="qa-history-time">{formatLogTime(log.createdAt)}</span>
+                          </div>
+                          <span className={`qa-history-badge ${state}`}>{messages.badge}</span>
                         </div>
-                        <span className={`qa-history-badge ${state}`}>{messages.badge}</span>
+                        <p className="qa-history-answer">{log.answer}</p>
                       </div>
-                      <p className="qa-history-answer">{log.answer}</p>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-        </CardBody>
-      </Card>
+                    )
+                  })}
+                </div>
+              )}
+            </CardBody>
+          </Card>
+        </aside>
+      </div>
     </div>
   )
 }
