@@ -263,6 +263,12 @@ export function StudentChannelWorkspacePage() {
     </div>
   )
 
+  const activeQuestionSetAction = activeQuestionSet ? (
+    <Link to={`/student/question-sets/${activeQuestionSet.distributionCode}/workspace`} className="student-workspace-cta-link">
+      <Button size="sm">문제 풀이 열기</Button>
+    </Link>
+  ) : null
+
   return (
     <div className="workspace-page student-workspace-page channel-workspace-page">
       <div className={`channel-shell student-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
@@ -272,6 +278,8 @@ export function StudentChannelWorkspacePage() {
             activeChannelId={channelId}
             basePath="student"
             description="학교 채널 목록을 따라 이동하고 현재 학습 채널을 유지하세요."
+            isOpen={leftSidebarOpen}
+            onOpenChange={setLeftSidebarOpen}
           />
         )}
 
@@ -283,10 +291,11 @@ export function StudentChannelWorkspacePage() {
               <p className="page-description">현재 입장 학생: {participantNames || '없음'}</p>
             </div>
             <div className="workspace-actions">
+              {activeQuestionSetAction}
               <button
                 type="button"
                 className="workspace-tool-button"
-                onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
+                onClick={() => setLeftSidebarOpen((current) => !current)}
                 aria-label={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
                 title={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
               >
@@ -295,7 +304,7 @@ export function StudentChannelWorkspacePage() {
               <button
                 type="button"
                 className="workspace-tool-button"
-                onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
+                onClick={() => setRightSidebarOpen((current) => !current)}
                 aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
                 title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
               >

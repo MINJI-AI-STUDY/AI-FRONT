@@ -15,6 +15,8 @@ interface ChannelSidebarProps {
   description?: string
   className?: string
   footer?: ReactNode
+  isOpen?: boolean
+  onOpenChange?: (isOpen: boolean) => void
 }
 
 export function ChannelSidebar({
@@ -25,17 +27,29 @@ export function ChannelSidebar({
   description,
   className = '',
   footer,
+  isOpen,
+  onOpenChange,
 }: ChannelSidebarProps) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(true)
+  const [uncontrolledDrawerOpen, setUncontrolledDrawerOpen] = useState(true)
   const [isCompactViewport, setIsCompactViewport] = useState(false)
+  const isDrawerOpen = isOpen ?? uncontrolledDrawerOpen
+
+  const setDrawerOpen = (nextOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(nextOpen)
+      return
+    }
+
+    setUncontrolledDrawerOpen(nextOpen)
+  }
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 1024px)')
 
     const handleChange = () => {
       setIsCompactViewport(mediaQuery.matches)
-      if (!mediaQuery.matches) {
-        setIsDrawerOpen(true)
+      if (!mediaQuery.matches && isOpen === undefined) {
+        setUncontrolledDrawerOpen(true)
       }
     }
 
@@ -45,7 +59,7 @@ export function ChannelSidebar({
     return () => {
       mediaQuery.removeEventListener('change', handleChange)
     }
-  }, [])
+  }, [isOpen])
 
   return (
     <aside
@@ -58,7 +72,7 @@ export function ChannelSidebar({
           className="channel-sidebar-rail-toggle"
           aria-label="채널 목록 열기"
           title="채널 목록 열기"
-          onClick={() => setIsDrawerOpen(true)}
+          onClick={() => setDrawerOpen(true)}
         >
           <span className="material-symbols-outlined">left_panel_open</span>
         </button>
@@ -69,7 +83,7 @@ export function ChannelSidebar({
         className={`channel-sidebar-backdrop ${isCompactViewport && isDrawerOpen ? 'is-visible' : ''}`}
         aria-label="채널 목록 닫기"
         tabIndex={isCompactViewport && isDrawerOpen ? 0 : -1}
-        onClick={() => setIsDrawerOpen(false)}
+        onClick={() => setDrawerOpen(false)}
       />
 
       <div className={`channel-sidebar-surface ${isDrawerOpen ? 'is-open' : 'is-closed'}`}>
@@ -86,7 +100,7 @@ export function ChannelSidebar({
               className="channel-sidebar-toggle"
               aria-label={isDrawerOpen ? '채널 목록 닫기' : '채널 목록 열기'}
               title={isDrawerOpen ? '채널 목록 닫기' : '채널 목록 열기'}
-              onClick={() => setIsDrawerOpen((current) => !current)}
+              onClick={() => setDrawerOpen(!isDrawerOpen)}
             >
               <span className="material-symbols-outlined">{isDrawerOpen ? 'close' : 'menu'}</span>
             </button>

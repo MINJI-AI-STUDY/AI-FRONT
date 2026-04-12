@@ -23,6 +23,10 @@ interface StudentAiFollowUpContext {
   prompt: string
 }
 
+function isCompactViewport() {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 1024px)').matches
+}
+
 function consumeStudentAiFollowUpContext() {
   const rawContext = sessionStorage.getItem('student_ai_followup_context')
   if (!rawContext) return null
@@ -52,7 +56,20 @@ export function StudentWorkspacePage() {
   const [error, setError] = useState<string | null>(null)
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false)
   const [followUpContext, setFollowUpContext] = useState<StudentAiFollowUpContext | null>(null)
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(false)
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(() => !isCompactViewport())
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const mediaQuery = window.matchMedia('(max-width: 1024px)')
+    const handleChange = () => {
+      setRightSidebarOpen(!mediaQuery.matches)
+    }
+
+    handleChange()
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
   useEffect(() => {
     const context = consumeStudentAiFollowUpContext()
