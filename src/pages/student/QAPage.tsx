@@ -5,13 +5,31 @@
 
 import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, MaterialDocumentViewer } from '../../components'
-import { askQuestion, getMyQaLogs } from '../../api/student'
-import type { QaResponse, StudentQaLogResponse } from '../../api/student'
+import { askQuestion, getMyQaLogs, getStudentMaterials } from '../../api/student'
+import type { QaResponse, StudentMaterialSummaryResponse, StudentQaLogResponse } from '../../api/student'
 import { classifyAiResponse, AI_RESPONSE_MESSAGES, getUserFacingErrorMessage } from '../../api/aiResponse'
+import type { AiResponseState } from '../../api/aiResponse'
 import './StudentPages.css'
+
+function formatLogTime(createdAt: string) {
+  const date = new Date(createdAt)
+  if (Number.isNaN(date.getTime())) return ''
+  return date.toLocaleString('ko-KR', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function getHistoryState(log: StudentQaLogResponse): AiResponseState {
+  if (log.status === 'AI_UNAVAILABLE') return 'runtimeFailure'
+  if (!log.grounded) return 'insufficientEvidence'
+  return 'grounded'
+}
 
 function QaResponseCard({ response }: { response: QaResponse }) {
   const state = classifyAiResponse(response)
@@ -56,6 +74,7 @@ export function QAPage() {
   const [error, setError] = useState<string | null>(null)
   const [response, setResponse] = useState<QaResponse | null>(null)
   const [history, setHistory] = useState<StudentQaLogResponse[]>([])
+  const [materials, setMaterials] = useState<StudentMaterialSummaryResponse[]>([])
 
   const { materialId } = useParams<{ materialId: string }>()
   const { token } = useAuth()
@@ -65,8 +84,12 @@ export function QAPage() {
 
     const fetchLogs = async () => {
       try {
-        const logs = await getMyQaLogs(materialId, token)
+        const [logs, materialList] = await Promise.all([
+          getMyQaLogs(materialId, token),
+          getStudentMaterials(token),
+        ])
         setHistory(logs)
+        setMaterials(materialList)
       } catch (err) {
         console.error('질문 이력 조회 실패:', err)
       }
@@ -108,17 +131,42 @@ export function QAPage() {
     }
   }
 
+  const currentMaterial = materials.find((item) => item.materialId === materialId) ?? null
+  const recentHistory = history.slice(0, 6)
+
   return (
     <div className="qa-page">
       <div className="page-header">
+        <div className="workspace-chip">자료 기반 AI 도우미</div>
         <h1 className="page-title">자료 기반 AI 도우미</h1>
-        <p className="page-description">학습 자료를 기반으로 질문에 답변합니다. 자료에 근거한 답변과 근거 부족 안내를 제공합니다.</p>
+        <p className="page-description">현재 보고 있는 학습 자료를 바탕으로 질문에 답합니다. 답변 전에는 먼저 자료 맥락을 확인하고, 필요하면 새 탭에서 PDF를 열어 함께 보세요.</p>
       </div>
+
+      {currentMaterial && (
+        <Card className="material-context-card">
+          <CardBody>
+            <div className="material-context-header">
+              <div>
+                <div className="action-meta">현재 학습 자료</div>
+                <h3 className="material-context-title">{currentMaterial.title}</h3>
+                <p className="material-context-description">{currentMaterial.description || '설명이 아직 등록되지 않았습니다. 문서 내용을 바탕으로 질문해 보세요.'}</p>
+              </div>
+              <div className="material-context-actions">
+                <span className="material-context-docno">문서 #{currentMaterial.docNo}</span>
+                <Link to="/student">
+                  <Button variant="ghost" size="sm">대시보드로 돌아가기</Button>
+                </Link>
+              </div>
+            </div>
+          </CardBody>
+        </Card>
+      )}
 
       {materialId && token && (
         <Card className="response-card">
           <CardBody>
             <h3 className="response-title">학습 자료</h3>
+            <p className="page-description" style={{ marginBottom: '1rem' }}>먼저 문서를 훑어본 뒤 질문하면 더 정확한 도움을 받을 수 있습니다.</p>
             <div style={{ minHeight: '480px' }}>
               <MaterialDocumentViewer materialId={materialId} token={token} />
             </div>
@@ -148,24 +196,36 @@ export function QAPage() {
         <QaResponseCard response={response} />
       )}
 
-      <Card className="response-card">
-        <CardBody>
-          <h3 className="response-title">내 질문 이력</h3>
-{history.length === 0 ? (
-<div className="workspace-empty" style={{ textAlign: 'center', padding: '2rem 0' }}>
-<p style={{ marginBottom: '0.5rem' }}>아직 질문 이력이 없습니다.</p>
-<p className="page-description" style={{ fontSize: '0.875rem' }}>자료에 대해 궁금한 점을 질문하면 AI가 답변합니다.</p>
-            </div>
-          ) : (
-<div className="evidence-list">
-{history.map((log) => (
-<div key={log.qaLogId} className="evidence-item">
-<p className="response-answer" style={{ fontWeight: 600 }}>{log.question}</p>
-<p className="response-answer">{log.answer}</p>
-</div>
-))}
-</div>
-)}
+        <Card className="response-card">
+          <CardBody>
+            <h3 className="response-title">내 질문 이력</h3>
+            <p className="page-description" style={{ marginBottom: '1rem' }}>최근 질문 6개만 보여줍니다. 근거 부족과 시스템 오류는 배지로 구분됩니다.</p>
+            {recentHistory.length === 0 ? (
+              <div className="workspace-empty qa-history-empty">
+                <p style={{ marginBottom: '0.5rem' }}>아직 질문 이력이 없습니다.</p>
+                <p className="page-description" style={{ fontSize: '0.875rem' }}>자료를 읽다가 막히는 부분을 질문하면 AI가 학습 자료 기준으로 설명해드립니다.</p>
+              </div>
+            ) : (
+              <div className="qa-history-list">
+                {recentHistory.map((log) => {
+                  const state = getHistoryState(log)
+                  const messages = AI_RESPONSE_MESSAGES[state]
+
+                  return (
+                    <div key={log.qaLogId} className="qa-history-item">
+                      <div className="qa-history-header">
+                        <div>
+                          <p className="qa-history-question">{log.question}</p>
+                          <span className="qa-history-time">{formatLogTime(log.createdAt)}</span>
+                        </div>
+                        <span className={`qa-history-badge ${state}`}>{messages.badge}</span>
+                      </div>
+                      <p className="qa-history-answer">{log.answer}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
         </CardBody>
       </Card>
     </div>
