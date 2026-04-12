@@ -58,8 +58,10 @@ export function PrivacyNoticePage() {
               <h2 className="privacy-section-title">수집 항목</h2>
               <ul className="privacy-list">
                 <li>학교 정보 (학교 ID)</li>
+                <li>학생 코드 (학생)</li>
                 <li>이름 (학생은 실명)</li>
                 <li>로그인 ID / 비밀번호 (교직원)</li>
+                <li>PIN (학생 로그인 인증용)</li>
                 <li>학교 이메일 (교직원)</li>
                 {user?.classroomId && <li>교실 ID</li>}
               </ul>

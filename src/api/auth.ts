@@ -114,7 +114,7 @@ export async function logout(refreshToken: string): Promise<void> {
  */
 export interface StudentPinLoginRequest {
   schoolId: string
-  studentCode: string
+  studentName: string
   pin: string
 }
 

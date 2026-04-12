@@ -21,14 +21,13 @@ export interface CreateTeacherSignupRequest {
 }
 
 export interface CreateStudentSignupRequest {
-schoolId: string
+  schoolId: string
   classroomId?: string | null
-  studentCode: string
-realName: string
-pin: string
-consentTerms: boolean
-consentPrivacy: boolean
-consentStudentNotice: boolean
+  realName: string
+  pin: string
+  consentTerms: boolean
+  consentPrivacy: boolean
+  consentStudentNotice: boolean
 }
 
 export interface SignupRequestResponse {
