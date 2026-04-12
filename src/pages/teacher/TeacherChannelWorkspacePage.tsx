@@ -23,6 +23,7 @@ import {
 import { enterChannel, heartbeatChannel, leaveChannel, subscribeChannelEvents } from '../../api/realtime'
 import type { ChannelEventResponse } from '../../api/realtime_types'
 import '../WorkspacePages.css'
+import './TeacherPages.css'
 
 export function TeacherChannelWorkspacePage() {
   const { channelId } = useParams<{ channelId: string }>()
@@ -53,6 +54,8 @@ export function TeacherChannelWorkspacePage() {
   const [publishing, setPublishing] = useState(false)
   const [reviewDueAt, setReviewDueAt] = useState('')
   const [publishCode, setPublishCode] = useState<string | null>(null)
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true)
+  const [rightPanelOpen, setRightPanelOpen] = useState(false)
 
   useEffect(() => {
     if (!token || !channelId) return
@@ -100,6 +103,21 @@ export function TeacherChannelWorkspacePage() {
       leaveChannel(channelId, token).catch(() => undefined)
     }
   }, [channelId, token])
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1024px)')
+
+    const syncSidebarState = () => {
+      setLeftSidebarOpen(!mediaQuery.matches)
+    }
+
+    syncSidebarState()
+    mediaQuery.addEventListener('change', syncSidebarState)
+
+    return () => {
+      mediaQuery.removeEventListener('change', syncSidebarState)
+    }
+  }, [])
 
   const selectedMaterial = useMemo(
     () => workspace?.materials.find((item) => item.materialId === selectedMaterialId) ?? workspace?.materials[0] ?? null,
@@ -305,13 +323,15 @@ export function TeacherChannelWorkspacePage() {
 
   return (
     <div className="workspace-page teacher-workspace-page channel-workspace-page">
-      <div className="channel-shell teacher-channel-shell">
-        <ChannelSidebar
-          channels={channels}
-          activeChannelId={channelId}
-          basePath="teacher"
-          description="채널을 전환하고 현재 채널 운영 흐름은 오른쪽 패널에서 이어갑니다."
-        />
+      <div className={`channel-shell teacher-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
+        {leftSidebarOpen && (
+          <ChannelSidebar
+            channels={channels}
+            activeChannelId={channelId}
+            basePath="teacher"
+            description="채널을 전환하고 현재 채널 운영 흐름은 오른쪽 패널에서 이어갑니다."
+          />
+        )}
 
         <div className="channel-content-shell teacher-channel-content-shell">
           <div className="workspace-header">
@@ -320,7 +340,19 @@ export function TeacherChannelWorkspacePage() {
               <h1 className="page-title">{workspace.channel.name}</h1>
               <p className="page-description">현재 입장 학생: {studentNames || '없음'}</p>
             </div>
-            <div className="workspace-actions">
+            <div className="workspace-actions teacher-shell-actions">
+              <Button variant="outline" size="sm" onClick={() => setLeftSidebarOpen((current) => !current)}>
+                <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
+                  {leftSidebarOpen ? 'left_panel_close' : 'left_panel_open'}
+                </span>
+                {leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setRightPanelOpen((current) => !current)}>
+                <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
+                  {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
+                </span>
+                {rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setUploadModalOpen(true)}>
                 <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.4rem' }}>upload_file</span>
                 PDF 업로드
@@ -328,7 +360,7 @@ export function TeacherChannelWorkspacePage() {
             </div>
           </div>
 
-          <div className="workspace-layout teacher-workspace-layout">
+          <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''}`}>
             <section className="workspace-main teacher-main-stage">
               <div className="workspace-main-header">
                 <div className="workspace-main-title">
@@ -345,119 +377,133 @@ export function TeacherChannelWorkspacePage() {
               )}
             </section>
 
-            <aside className="workspace-side teacher-channel-aux-panel">
-              <section className="channel-sidebar-section teacher-channel-settings">
-                <div>
-                  <div className="workspace-main-eyebrow">채널 관리</div>
-                  <strong>현재 채널 설정</strong>
-                </div>
-                <div className="workspace-inline-form">
-                  <Input
-                    label="채널 이름"
-                    value={channelNameDraft}
-                    onChange={(e) => setChannelNameDraft(e.target.value)}
-                    placeholder="현재 채널 이름"
-                  />
-                  <Button variant="outline" onClick={handleRenameChannel} disabled={!channelNameDraft.trim()}>
-                    저장
+            {rightPanelOpen && (
+              <aside className="workspace-side teacher-channel-aux-panel">
+                <div className="workspace-panel-inline-header teacher-panel-header">
+                  <div>
+                    <div className="workspace-main-eyebrow">보조 패널</div>
+                    <h3 className="workspace-card-title">채널 도구와 흐름</h3>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setRightPanelOpen(false)}>
+                    닫기
                   </Button>
                 </div>
-                <div className="workspace-sidebar-actions">
-                  <Button variant="outline" onClick={() => setCreateModalOpen(true)}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.5rem' }}>add</span>
-                    새 채널 생성
-                  </Button>
-                </div>
-              </section>
 
-              <section className="channel-sidebar-section">
-                <div>
-                  <div className="workspace-main-eyebrow">현재 PDF</div>
-                  <strong>{selectedMaterial?.title ?? '채널 PDF 없음'}</strong>
-                </div>
-                <p className="workspace-side-description">
-                  선택한 PDF를 기준으로 문제 생성과 검토를 이어갑니다.
-                </p>
-                <div className="workspace-questions-list teacher-material-list">
-                  {workspace.materials.map((material) => (
-                    <button
-                      key={material.materialId}
-                      type="button"
-                      className={`workspace-option ${selectedMaterial?.materialId === material.materialId ? 'selected' : ''}`}
-                      onClick={() => setSelectedMaterialId(material.materialId)}
-                    >
-                      <span>#{material.docNo}</span>
-                      <span>{material.title}</span>
-                    </button>
-                  ))}
-                </div>
-              </section>
+                <div className="teacher-panel-stack">
+                  <section className="channel-sidebar-section teacher-channel-settings">
+                    <div>
+                      <div className="workspace-main-eyebrow">채널 관리</div>
+                      <strong>현재 채널 설정</strong>
+                    </div>
+                    <div className="workspace-inline-form">
+                      <Input
+                        label="채널 이름"
+                        value={channelNameDraft}
+                        onChange={(e) => setChannelNameDraft(e.target.value)}
+                        placeholder="현재 채널 이름"
+                      />
+                      <Button variant="outline" onClick={handleRenameChannel} disabled={!channelNameDraft.trim()}>
+                        저장
+                      </Button>
+                    </div>
+                    <div className="workspace-sidebar-actions">
+                      <Button variant="outline" onClick={() => setCreateModalOpen(true)}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.5rem' }}>add</span>
+                        새 채널 생성
+                      </Button>
+                    </div>
+                  </section>
 
-              <section className="channel-sidebar-section">
-                <div>
-                  <div className="workspace-main-eyebrow">채널 최근 메시지</div>
-                  <strong>교사 · 채널 공용 대화</strong>
-                </div>
-                <p className="workspace-side-description">workspace.recentMessages 기준으로 채널 전체 흐름만 확인합니다.</p>
-                <div className="teacher-channel-message-list">
-                  {recentTeacherMessages.length === 0 ? (
-                    <div className="student-channel-task-empty">아직 메시지가 없습니다.</div>
-                  ) : (
-                    recentTeacherMessages.map((item) => (
-                      <div key={item.messageId} className="student-message-item teacher-channel-message-item">
-                        <strong>{item.displayName}</strong>
-                        <span>{item.content}</span>
+                  <section className="channel-sidebar-section">
+                    <div>
+                      <div className="workspace-main-eyebrow">현재 PDF</div>
+                      <strong>{selectedMaterial?.title ?? '채널 PDF 없음'}</strong>
+                    </div>
+                    <p className="workspace-side-description">
+                      선택한 PDF를 기준으로 문제 생성과 검토를 이어갑니다.
+                    </p>
+                    <div className="workspace-questions-list teacher-material-list">
+                      {workspace.materials.map((material) => (
+                        <button
+                          key={material.materialId}
+                          type="button"
+                          className={`workspace-option ${selectedMaterial?.materialId === material.materialId ? 'selected' : ''}`}
+                          onClick={() => setSelectedMaterialId(material.materialId)}
+                        >
+                          <span>#{material.docNo}</span>
+                          <span>{material.title}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="channel-sidebar-section">
+                    <div>
+                      <div className="workspace-main-eyebrow">채널 최근 메시지</div>
+                      <strong>교사 · 채널 공용 대화</strong>
+                    </div>
+                    <p className="workspace-side-description">workspace.recentMessages 기준으로 채널 전체 흐름만 확인합니다.</p>
+                    <div className="teacher-channel-message-list">
+                      {recentTeacherMessages.length === 0 ? (
+                        <div className="student-channel-task-empty">아직 메시지가 없습니다.</div>
+                      ) : (
+                        recentTeacherMessages.map((item) => (
+                          <div key={item.messageId} className="student-message-item teacher-channel-message-item">
+                            <strong>{item.displayName}</strong>
+                            <span>{item.content}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </section>
+
+                  <section className="channel-sidebar-section">
+                    <div>
+                      <div className="workspace-main-eyebrow">문제 흐름</div>
+                      <strong>현재 채널 모달 플로우</strong>
+                    </div>
+                    <div className="workspace-sidebar-actions">
+                      <Button onClick={() => { setGenerateModalOpen(true); setReviewError(null) }}>문제 생성</Button>
+                      <Button
+                        variant="outline"
+                        disabled={!latestReviewRequiredQuestionSet}
+                        onClick={() => latestReviewRequiredQuestionSet && openReviewModal(latestReviewRequiredQuestionSet.questionSetId)}
+                      >
+                        최근 검토 열기
+                      </Button>
+                    </div>
+                    {latestReviewRequiredQuestionSet ? (
+                      <div className="teacher-channel-task-card review-required-card">
+                        <div>
+                          <div className="workspace-main-eyebrow">Review Required</div>
+                          <strong className="student-channel-task-title">최근 생성 세트 검토 필요</strong>
+                          <p className="student-channel-task-description">
+                            현재 PDF 기준으로 생성된 최신 세트가 검토/배포 전 상태입니다.
+                          </p>
+                        </div>
+                        <Button size="sm" onClick={() => openReviewModal(latestReviewRequiredQuestionSet.questionSetId)}>검토 모달 열기</Button>
                       </div>
-                    ))
-                  )}
+                    ) : latestQuestionSet ? (
+                      <div className="student-channel-task-empty">최근 생성 세트는 이미 검토가 끝났거나, 아직 새로 생성된 세트가 없습니다.</div>
+                    ) : null}
+                    {latestPublishedQuestionSet ? (
+                      <div className="teacher-channel-task-card">
+                        <div>
+                          <div className="workspace-main-eyebrow">Published</div>
+                          <strong className="student-channel-task-title">최근 배포 코드</strong>
+                          <p className="student-channel-task-description">
+                            배포 코드 <strong>{latestPublishedQuestionSet.distributionCode}</strong> · 학생은 이 채널 PDF와 연결된 문제 세트로 입장할 수 있습니다.
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => openReviewModal(latestPublishedQuestionSet.questionSetId)}>배포 세트 보기</Button>
+                      </div>
+                    ) : (
+                      <div className="student-channel-task-empty">이 PDF에서 아직 배포된 문제 세트가 없습니다.</div>
+                    )}
+                  </section>
                 </div>
-              </section>
-
-              <section className="channel-sidebar-section">
-                <div>
-                  <div className="workspace-main-eyebrow">문제 흐름</div>
-                  <strong>현재 채널 모달 플로우</strong>
-                </div>
-                <div className="workspace-sidebar-actions">
-                  <Button onClick={() => { setGenerateModalOpen(true); setReviewError(null) }}>문제 생성</Button>
-                  <Button
-                    variant="outline"
-                    disabled={!latestReviewRequiredQuestionSet}
-                    onClick={() => latestReviewRequiredQuestionSet && openReviewModal(latestReviewRequiredQuestionSet.questionSetId)}
-                  >
-                    최근 검토 열기
-                  </Button>
-                </div>
-                {latestReviewRequiredQuestionSet ? (
-                  <div className="teacher-channel-task-card review-required-card">
-                    <div>
-                      <div className="workspace-main-eyebrow">Review Required</div>
-                      <strong className="student-channel-task-title">최근 생성 세트 검토 필요</strong>
-                      <p className="student-channel-task-description">
-                        현재 PDF 기준으로 생성된 최신 세트가 검토/배포 전 상태입니다.
-                      </p>
-                    </div>
-                    <Button size="sm" onClick={() => openReviewModal(latestReviewRequiredQuestionSet.questionSetId)}>검토 모달 열기</Button>
-                  </div>
-                ) : latestQuestionSet ? (
-                  <div className="student-channel-task-empty">최근 생성 세트는 이미 검토가 끝났거나, 아직 새로 생성된 세트가 없습니다.</div>
-                ) : null}
-                {latestPublishedQuestionSet ? (
-                  <div className="teacher-channel-task-card">
-                    <div>
-                      <div className="workspace-main-eyebrow">Published</div>
-                      <strong className="student-channel-task-title">최근 배포 코드</strong>
-                      <p className="student-channel-task-description">
-                        배포 코드 <strong>{latestPublishedQuestionSet.distributionCode}</strong> · 학생은 이 채널 PDF와 연결된 문제 세트로 입장할 수 있습니다.
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => openReviewModal(latestPublishedQuestionSet.questionSetId)}>배포 세트 보기</Button>
-                  </div>
-                ) : (
-                  <div className="student-channel-task-empty">이 PDF에서 아직 배포된 문제 세트가 없습니다.</div>
-                )}
-              </section>
-            </aside>
+              </aside>
+            )}
           </div>
         </div>
       </div>

@@ -22,6 +22,31 @@
   line-height: 1.6;
 }
 
+.teacher-shell-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.teacher-workspace-page .workspace-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(17rem, 19rem);
+}
+
+.teacher-panel-header {
+  margin-bottom: 0;
+}
+
+.teacher-panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .teacher-shell-actions {
+    width: 100%;
+  }
+}
+
 .workspace-chip {
   display: inline-flex;
   align-items: center;
