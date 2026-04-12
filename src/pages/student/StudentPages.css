@@ -186,10 +186,10 @@
 }
 
 .progress-helper {
-  margin-top: 0.375rem !important;
+  margin-top: 0.375rem;
   font-size: 0.8125rem;
-  color: #737373 !important;
-  font-weight: 400 !important;
+  color: #737373;
+  font-weight: 400;
 }
 
 /* 문제 목록 - 개선된 디자인 */
@@ -610,19 +610,19 @@
 
 .student-follow-up-meta,
 .student-follow-up-helper {
-  margin-top: 0.5rem !important;
-  color: #475569 !important;
-  font-size: 0.8125rem !important;
+  margin-top: 0.5rem;
+  color: #475569;
+  font-size: 0.8125rem;
 }
 
 .student-follow-up-explanation {
-  margin-top: 0.5rem !important;
+  margin-top: 0.5rem;
   padding: 0.75rem 0.875rem;
   border-radius: 0.625rem;
   background: rgba(255, 255, 255, 0.75);
-  color: #334155 !important;
-  font-size: 0.875rem !important;
-  line-height: 1.6 !important;
+  color: #334155;
+  font-size: 0.875rem;
+  line-height: 1.6;
 }
 
 /* 빈 상태 */
@@ -1086,6 +1086,43 @@
 .student-workspace-stage,
 .student-qa-stage {
   min-width: 0;
+}
+
+.workspace-main-stack {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.student-channel-primary-card,
+.student-workspace-quiz-card,
+.student-workspace-qa-card,
+.student-qa-primary-card {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.student-channel-primary-card .workspace-card-title,
+.student-workspace-quiz-card .workspace-card-title,
+.student-workspace-qa-card .workspace-card-title,
+.student-qa-primary-card .workspace-card-title {
+  margin: 0;
+}
+
+.student-channel-primary-card .workspace-side-description,
+.student-workspace-quiz-card .workspace-side-description,
+.student-workspace-qa-card .workspace-side-description,
+.student-qa-primary-card .workspace-side-description {
+  margin-top: 0.75rem;
+}
+
+.student-workspace-qa-card .workspace-chat-area,
+.student-workspace-qa-card .workspace-ai-input-area {
+  margin-top: 1rem;
+}
+
+.student-qa-primary-card .qa-form {
+  margin-top: 1rem;
 }
 
 .student-document-stage .document-viewer-shell {
