@@ -91,10 +91,28 @@
   flex-direction: column;
 }
 
+.teacher-channel-shell .channel-sidebar-panel {
+  min-height: 0;
+}
+
 .channel-sidebar-header,
 .student-sidebar-header {
   padding: 1rem 1rem 0.75rem;
   border-bottom: 1px solid #eef2f7;
+}
+
+.channel-sidebar-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.channel-sidebar-summary {
+  margin: 0.35rem 0 0;
+  color: #6b7280;
+  font-size: 0.8125rem;
+  line-height: 1.5;
 }
 
 .channel-sidebar-list,
@@ -102,6 +120,12 @@
 .student-message-list {
   padding: 0.75rem;
   overflow-y: auto;
+}
+
+.channel-sidebar-list {
+  flex: 1;
+  min-height: 0;
+  scrollbar-gutter: stable;
 }
 
 .channel-sidebar-list,
@@ -213,6 +237,10 @@
   gap: 0.875rem;
 }
 
+.teacher-main-stage {
+  min-height: calc(100vh - 12rem);
+}
+
 .workspace-main-header {
   display: flex;
   align-items: center;
@@ -237,6 +265,67 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.channel-sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-top: 1px solid #eef2f7;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.channel-sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border: 1px solid #eef2f7;
+  border-radius: 0.875rem;
+  background: #ffffff;
+}
+
+.workspace-inline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.workspace-inline-form .input-wrapper {
+  margin: 0;
+}
+
+.workspace-inline-form .input,
+.workspace-inline-form .number-input,
+.workspace-inline-form .textarea,
+.workspace-ai-material-selector select {
+  width: 100%;
+}
+
+.teacher-channel-settings .workspace-sidebar-actions,
+.teacher-channel-settings .workspace-inline-form {
+  margin-top: 0;
+}
+
+.teacher-material-list {
+  max-height: 260px;
+}
+
+.teacher-channel-task-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.875rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.875rem;
+  background: #f8fafc;
+}
+
+.teacher-channel-task-card.review-required-card {
+  border-color: #fde68a;
+  background: #fffbea;
 }
 
 .workspace-side-description {
@@ -481,6 +570,7 @@
   gap: 0;
 }
 
+.channel-shell.left-sidebar-collapsed .channel-sidebar-panel,
 .channel-shell.left-sidebar-collapsed .student-left-sidebar {
   display: none;
 }
@@ -677,8 +767,35 @@
 .workspace-ai-card .card-body {
   display: flex;
   flex-direction: column;
+  gap: 0.875rem;
   flex: 1;
   min-height: 0;
+}
+
+.student-right-panel-callout {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.875rem 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(135deg, #f8fbff 0%, #ffffff 100%);
+}
+
+.student-right-panel-callout p {
+  margin: 0.35rem 0 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.student-right-panel-callout strong {
+  color: #111827;
+}
+
+.student-right-panel-callout--empty {
+  border-style: dashed;
 }
 
 .workspace-ai-material-selector {

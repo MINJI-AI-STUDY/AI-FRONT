@@ -9,6 +9,7 @@
 ## Channel
 - `GET /api/student/channels`
 - `GET /api/student/channels/{channelId}/workspace`
+- `GET /api/student/channels/{channelId}/active-question-set`
 - `GET /api/student/materials/{materialId}/active-question-set`
 - `POST /api/channels/{channelId}/messages`
 - `GET /api/channels/{channelId}/events?accessToken=`
@@ -32,3 +33,7 @@
 - QA 화면
 - student channel workspace
 - student home channel cards
+
+## 최근 반영 UI
+- student channel workspace의 활성 문제 세트 조회는 channel 우선 경로를 사용합니다.
+- material 기반 활성 문제 세트 경로는 호환 fallback으로 유지합니다.

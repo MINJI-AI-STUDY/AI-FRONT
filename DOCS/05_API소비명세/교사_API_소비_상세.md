@@ -12,6 +12,8 @@
 
 ## Question
 - `POST /api/teacher/materials/{materialId}/question-sets/generate`
+- `POST /api/teacher/channels/{channelId}/question-sets/generate`
+- `GET /api/teacher/channels/{channelId}/question-sets`
 - `GET /api/teacher/question-sets/{questionSetId}`
 - `PATCH /api/teacher/question-sets/{questionSetId}/questions/{questionId}`
 - `POST /api/teacher/question-sets/{questionSetId}/publish`
@@ -33,11 +35,13 @@
 
 ## 주요 UI 연결
 - teacher workspace
-- 문제 검토 모달/화면
+- teacher channel workspace 모달(생성/검토/배포)
+- 문제 검토 보조 화면(호환)
 - 교사 대시보드
 - teacher channel workspace
 - teacher home channel cards
 
 ## 최근 반영 UI
-- teacher home에 채널이 없을 때 첫 채널 생성 CTA를 제공합니다.
-- question review 화면에서 due date 입력 후 배포할 수 있습니다.
+- teacher channel workspace에서 생성/검토/배포를 모달 흐름으로 수행합니다.
+- 생성 요청은 현재 채널 컨텍스트와 선택 materialId를 함께 전송합니다.
+- 검토 모달에서 최종 확인 시 즉시 배포하며 dueAt 입력을 지원합니다.

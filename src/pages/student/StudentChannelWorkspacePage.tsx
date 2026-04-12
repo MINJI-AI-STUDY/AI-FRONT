@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
-import { Button, Card, CardBody, MaterialDocumentViewer } from '../../components'
-import { askQuestion, getActiveQuestionSetByMaterial, getStudentChannels, getStudentChannelWorkspace, sendChannelMessage, type ChannelMessageResponse, type ChannelParticipantResponse, type ChannelResponse, type ChannelWorkspaceResponse, type StudentActiveQuestionSetResponse, type StudentMaterialSummaryResponse } from '../../api/student'
+import { Button, Card, CardBody, ChannelSidebar, MaterialDocumentViewer } from '../../components'
+import { askQuestion, getActiveQuestionSetByChannel, getStudentChannels, getStudentChannelWorkspace, sendChannelMessage, type ChannelMessageResponse, type ChannelParticipantResponse, type ChannelResponse, type ChannelWorkspaceResponse, type StudentActiveQuestionSetResponse, type StudentMaterialSummaryResponse } from '../../api/student'
 import { enterChannel, heartbeatChannel, leaveChannel, subscribeChannelEvents } from '../../api/realtime'
 import type { ChannelEventResponse } from '../../api/realtime_types'
 import { classifyAiResponse, AI_RESPONSE_MESSAGES, getUserFacingErrorMessage, type AiResponseState } from '../../api/aiResponse'
@@ -38,15 +38,18 @@ export function StudentChannelWorkspacePage() {
 
   useEffect(() => {
     if (!token || !channelId) return
+
     const load = async () => {
       try {
         const [channelData, workspaceData] = await Promise.all([
           getStudentChannels(token),
           getStudentChannelWorkspace(channelId, token),
         ])
+
         setChannels(channelData)
         setWorkspace(workspaceData)
         setSelectedMaterial(workspaceData.materials[0] ?? null)
+
         await enterChannel(channelId, token)
       } catch (err) {
         console.error('학생 채널 워크스페이스 로드 실패:', err)
@@ -55,6 +58,7 @@ export function StudentChannelWorkspacePage() {
         setLoading(false)
       }
     }
+
     load()
 
     const interval = setInterval(() => heartbeatChannel(channelId, token), 15000)
@@ -95,8 +99,8 @@ export function StudentChannelWorkspacePage() {
         timestamp: new Date(),
       }
       setChatHistory((prev) => [...prev, userMessage])
-      const result = await askQuestion(selectedMaterial.materialId, { question: question.trim() }, token)
 
+      const result = await askQuestion(selectedMaterial.materialId, { question: question.trim() }, token)
       const aiState = classifyAiResponse(result)
 
       const assistantMessage: ChatMessage = {
@@ -123,18 +127,21 @@ export function StudentChannelWorkspacePage() {
     }
   }
 
-  const participantNames = useMemo(() => workspace?.participants.map((participant: ChannelParticipantResponse) => participant.displayName).join(', ') ?? '', [workspace])
+  const participantNames = useMemo(
+    () => workspace?.participants.map((participant: ChannelParticipantResponse) => participant.displayName).join(', ') ?? '',
+    [workspace],
+  )
   const selectedMaterialLabel = selectedMaterial ? `#${selectedMaterial.docNo} ${selectedMaterial.title}` : '선택된 자료 없음'
 
   useEffect(() => {
-    if (!token || !selectedMaterial) {
+    if (!token || !channelId) {
       setActiveQuestionSet(null)
       return
     }
 
     const loadActiveQuestionSet = async () => {
       try {
-        const result = await getActiveQuestionSetByMaterial(selectedMaterial.materialId, token)
+        const result = await getActiveQuestionSetByChannel(channelId, token)
         setActiveQuestionSet(result)
       } catch {
         setActiveQuestionSet(null)
@@ -142,38 +149,46 @@ export function StudentChannelWorkspacePage() {
     }
 
     loadActiveQuestionSet()
-  }, [selectedMaterial, token])
+  }, [channelId, token])
 
   if (loading) return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
   if (error) return <div className="error-container"><p>{error}</p></div>
   if (!workspace || !token || !channelId) return <div className="error-container"><p>채널 워크스페이스를 찾을 수 없습니다.</p></div>
 
+  const toolCallout = activeQuestionSet ? (
+    <div className="student-right-panel-callout">
+      <div>
+        <div className="workspace-main-eyebrow">활성 문제 세트</div>
+        <strong>{activeQuestionSet.title}</strong>
+        <p>현재 채널에 배포된 문제 세트를 바로 열 수 있습니다.</p>
+      </div>
+      <Link to={`/student/question-sets/${activeQuestionSet.distributionCode}/workspace`} className="student-workspace-cta-link">
+        <Button size="sm">문제 풀이 열기</Button>
+      </Link>
+    </div>
+  ) : (
+    <div className="student-right-panel-callout student-right-panel-callout--empty">
+      <div>
+        <div className="workspace-main-eyebrow">활성 문제 세트</div>
+        <strong>연결된 배포 세트 없음</strong>
+        <p>현재 선택한 PDF에 연결된 문제 세트가 아직 없습니다.</p>
+      </div>
+    </div>
+  )
+
   return (
     <div className="workspace-page student-workspace-page channel-workspace-page">
       <div className={`channel-shell student-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
         {leftSidebarOpen && (
-          <aside className="student-left-sidebar">
-            <div className="student-sidebar-section">
-              <div className="student-sidebar-header">
-                <div className="workspace-main-eyebrow">채널 목록</div>
-                <strong>학교 채널</strong>
-              </div>
-              <div className="student-channel-list">
-                {channels.map((channel) => (
-                  <a
-                    key={channel.channelId}
-                    href={`/student/channels/${channel.channelId}`}
-                    className={`student-channel-item ${channelId === channel.channelId ? 'active' : ''}`}
-                  >
-                    <div className="student-channel-name"># {channel.name}</div>
-                    <div className="student-channel-description">{channel.description || '설명 없음'}</div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          </aside>
+          <ChannelSidebar
+            channels={channels}
+            activeChannelId={channelId}
+            basePath="student"
+            description="학교 채널 목록을 따라 이동하고 현재 학습 채널을 유지하세요."
+          />
         )}
-        <div className="channel-content-shell">
+
+        <div className="channel-content-shell student-channel-content-shell">
           <div className="workspace-header">
             <div className="workspace-header-content">
               <div className="workspace-section-meta">학생 · 채널 학습</div>
@@ -194,8 +209,8 @@ export function StudentChannelWorkspacePage() {
                 type="button"
                 className="workspace-tool-button"
                 onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
-                aria-label={rightSidebarOpen ? 'AI 도우미 닫기' : 'AI 도우미 열기'}
-                title={rightSidebarOpen ? 'AI 도우미 닫기' : 'AI 도우미 열기'}
+                aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
+                title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
               >
                 <span className="material-symbols-outlined">{rightSidebarOpen ? 'right_panel_close' : 'right_panel_open'}</span>
               </button>
@@ -213,55 +228,21 @@ export function StudentChannelWorkspacePage() {
               </div>
 
               {selectedMaterial ? (
-                <Card className="workspace-card student-material-stage">
-                  <CardBody>
-                    <div className="workspace-card-title-with-action">
-                      <h3 className="workspace-card-title">현재 선택된 자료</h3>
-                    </div>
-                    <div className="student-material-context">
-                      <div>
-                        <div className="workspace-main-eyebrow">Active PDF</div>
-                        <strong className="student-material-context-title">{selectedMaterial.title}</strong>
-                        <p className="student-material-context-description">{selectedMaterial.description || '설명이 등록되지 않았습니다. 우측 패널에서 AI 질문이나 채널 대화를 이어가세요.'}</p>
-                      </div>
-                      <div className="student-material-context-actions">
-                        <span className={`student-material-status status-${selectedMaterial.status.toLowerCase()}`}>{selectedMaterial.status}</span>
-                        {activeQuestionSet && (
-                          <a href={`/student/question-sets/${activeQuestionSet.distributionCode}/workspace`} className="student-workspace-cta-link">
-                            <Button size="sm">이 채널 문제 풀기</Button>
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                    {activeQuestionSet ? (
-                      <div className="student-channel-task-card">
-                        <div>
-                          <div className="workspace-main-eyebrow">Channel Question Set</div>
-                          <strong className="student-channel-task-title">{activeQuestionSet.title}</strong>
-                          <p className="student-channel-task-description">현재 선택한 PDF에 연결된 배포 문제 세트가 있습니다. 채널 문맥을 유지한 채 바로 문제 풀이로 이동할 수 있습니다.</p>
-                        </div>
-                        <a href={`/student/question-sets/${activeQuestionSet.distributionCode}/workspace`} className="student-workspace-cta-link">
-                          <Button>문제 풀기</Button>
-                        </a>
-                      </div>
-                    ) : (
-                      <div className="student-channel-task-empty">이 PDF에 연결된 배포 문제 세트가 아직 없습니다.</div>
-                    )}
-                    <div className="student-material-viewer">
-                      <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} />
-                    </div>
-                  </CardBody>
-                </Card>
+                <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} />
               ) : (
                 <div className="workspace-document-placeholder">이 채널에 연결된 PDF 자료가 아직 없습니다.</div>
               )}
             </section>
+
             {rightSidebarOpen && (
               <aside className="workspace-side student-side">
                 <Card className="workspace-card workspace-ai-card">
                   <CardBody>
                     <div className="workspace-card-title-with-action workspace-mode-switch-header">
-                      <h3 className="workspace-card-title">학습 도구</h3>
+                      <div>
+                        <div className="workspace-main-eyebrow">학습 도구</div>
+                        <h3 className="workspace-card-title">현재 자료와 대화</h3>
+                      </div>
                       <div className="workspace-mode-switch" role="tablist" aria-label="우측 사이드바 모드 전환">
                         <button
                           type="button"
@@ -286,7 +267,7 @@ export function StudentChannelWorkspacePage() {
                         className="number-input"
                         value={selectedMaterial?.materialId ?? ''}
                         onChange={(e) => {
-                          const material = workspace.materials.find(m => m.materialId === e.target.value)
+                          const material = workspace.materials.find((m) => m.materialId === e.target.value)
                           if (material) setSelectedMaterial(material)
                         }}
                       >
@@ -297,6 +278,8 @@ export function StudentChannelWorkspacePage() {
                         ))}
                       </select>
                     </div>
+
+                    {toolCallout}
 
                     {rightPanelMode === 'ai' ? (
                       <>
@@ -349,11 +332,7 @@ export function StudentChannelWorkspacePage() {
                             onKeyDown={handleQuestionKeyDown}
                             placeholder="질문을 입력하세요 (Enter로 전송, Shift+Enter 줄바꿈)"
                           />
-                          <Button
-                            onClick={handleAsk}
-                            disabled={!selectedMaterial || !question.trim()}
-                            style={{ marginTop: '0.5rem', width: '100%' }}
-                          >
+                          <Button onClick={handleAsk} disabled={!selectedMaterial || !question.trim()} style={{ marginTop: '0.5rem', width: '100%' }}>
                             <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.5rem' }}>send</span>
                             질문하기
                           </Button>
@@ -386,27 +365,6 @@ export function StudentChannelWorkspacePage() {
                         </div>
                       </>
                     )}
-                  </CardBody>
-                </Card>
-
-                <Card className="workspace-card">
-                  <CardBody>
-                    <div className="workspace-card-title-with-action">
-                      <h3 className="workspace-card-title">채널 자료</h3>
-                    </div>
-                    <div className="workspace-questions-list">
-                      {workspace.materials.map((material) => (
-                        <button
-                          type="button"
-                          key={material.materialId}
-                          className={`workspace-option ${selectedMaterial?.materialId === material.materialId ? 'selected' : ''}`}
-                          onClick={() => setSelectedMaterial(material)}
-                        >
-                          <span>#{material.docNo}</span>
-                          <span>{material.title}</span>
-                        </button>
-                      ))}
-                    </div>
                   </CardBody>
                 </Card>
               </aside>

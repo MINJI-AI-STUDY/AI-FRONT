@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 interface ChannelSummary {
@@ -10,15 +11,28 @@ interface ChannelSidebarProps {
   channels: ChannelSummary[]
   activeChannelId: string
   basePath: 'teacher' | 'student'
+  title?: string
+  description?: string
+  className?: string
+  footer?: ReactNode
 }
 
-export function ChannelSidebar({ channels, activeChannelId, basePath }: ChannelSidebarProps) {
+export function ChannelSidebar({
+  channels,
+  activeChannelId,
+  basePath,
+  title = '학교 채널',
+  description,
+  className = '',
+  footer,
+}: ChannelSidebarProps) {
   return (
-    <aside className="channel-sidebar-panel">
+    <aside className={`channel-sidebar-panel ${className}`.trim()}>
       <div className="channel-sidebar-header">
         <div>
           <div className="workspace-main-eyebrow">채널</div>
-          <strong>학교 채널</strong>
+          <strong>{title}</strong>
+          {description && <p className="channel-sidebar-summary">{description}</p>}
         </div>
       </div>
       <div className="channel-sidebar-list">
@@ -29,6 +43,7 @@ export function ChannelSidebar({ channels, activeChannelId, basePath }: ChannelS
           </Link>
         ))}
       </div>
+      {footer && <div className="channel-sidebar-footer">{footer}</div>}
     </aside>
   )
 }
