@@ -38,6 +38,7 @@ export function JoinPage() {
   return (
     <div className="join-page">
       <div className="page-header">
+        <div className="workspace-chip">문제 세트 참여</div>
         <h1 className="page-title">배포 코드 입력</h1>
         <p className="page-description">교사가 공유한 배포 코드를 입력하여 문제 세트에 참여하세요.</p>
       </div>
@@ -47,12 +48,20 @@ export function JoinPage() {
           {error && <div className="error-message">{error}</div>}
 
           <form onSubmit={handleSubmit} className="join-form">
+            <div className="join-helper-card">
+              <strong>입력 전에 확인하세요</strong>
+              <ul className="join-helper-list">
+                <li>배포 코드는 영문/숫자 조합으로 공유됩니다.</li>
+                <li>코드를 입력하면 바로 문제 세트 입장 화면으로 이동합니다.</li>
+                <li>입력이 틀리면 다음 화면에서 유효하지 않은 코드 안내를 받게 됩니다.</li>
+              </ul>
+            </div>
             <Input
               label="배포 코드"
               type="text"
               value={distributionCode}
               onChange={(e) => setDistributionCode(e.target.value)}
-              placeholder="배포 코드를 입력하세요"
+              placeholder="예: ABC123"
               required
             />
 
