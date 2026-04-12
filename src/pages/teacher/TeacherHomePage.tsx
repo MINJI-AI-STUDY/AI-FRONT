@@ -112,6 +112,7 @@ export function TeacherHomePage() {
       {/* 주요 액션: 빠른 시작 */}
       <section className="dashboard-section">
         <h2 className="section-title">빠른 액션</h2>
+        <p className="section-helper">자료를 올리고, 준비된 자료를 확인한 뒤, 문제 세트 생성으로 이어지는 흐름을 기준으로 배치했습니다.</p>
         <div className="quick-action-cards">
           <Card className="quick-action-card primary">
             <CardBody>
@@ -139,6 +140,13 @@ export function TeacherHomePage() {
                   <p className="quick-action-description">
                     업로드한 자료를 기반으로 AI가 문제 세트를 자동 생성합니다.
                   </p>
+                  {firstReadyMaterial && (
+                    <div className="quick-action-context">
+                      <span className="quick-action-context-label">현재 기준 자료</span>
+                      <strong>{firstReadyMaterial.title}</strong>
+                      <span>문서 #{firstReadyMaterial.docNo} · {firstReadyMaterial.description || '설명 없음'}</span>
+                    </div>
+                  )}
                 </div>
               </div>
               <Link to={firstReadyMaterial ? `/teacher/materials/${firstReadyMaterial.materialId}/generate` : '/teacher'}>
@@ -148,6 +156,32 @@ export function TeacherHomePage() {
           </Card>
         </div>
       </section>
+
+      {firstReadyMaterial && (
+        <section className="dashboard-section">
+          <div className="section-header">
+            <h2 className="section-title">문제 생성 준비 완료 자료</h2>
+            <span className="section-count">우선 추천 1개</span>
+          </div>
+          <Card className="ready-material-spotlight">
+            <CardBody>
+              <div className="ready-material-content">
+                <div>
+                  <div className="action-meta">READY MATERIAL</div>
+                  <h3 className="ready-material-title">{firstReadyMaterial.title}</h3>
+                  <p className="ready-material-description">{firstReadyMaterial.description || '설명이 등록되지 않았습니다. 이 자료 기준으로 바로 문제 세트를 생성할 수 있습니다.'}</p>
+                </div>
+                <div className="ready-material-actions">
+                  <span className="status-badge-mini status-ready">분석 완료</span>
+                  <Link to={`/teacher/materials/${firstReadyMaterial.materialId}/generate`}>
+                    <Button variant="primary">이 자료로 문제 생성</Button>
+                  </Link>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </section>
+      )}
 
       {/* 채널 워크스페이스 */}
       <section className="dashboard-section">
