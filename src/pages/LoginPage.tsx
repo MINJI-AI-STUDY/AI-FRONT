@@ -116,6 +116,10 @@ export function LoginPage() {
 
           {activeTab === 'teacher' ? (
             <form onSubmit={handleTeacherSubmit} className="login-form">
+              <div className="login-flow-helper teacher-helper">
+                <strong>교직원 / 운영자 로그인</strong>
+                <p>승인된 계정의 로그인 ID와 비밀번호를 입력해 바로 대시보드로 이동합니다.</p>
+              </div>
               <Input
                 label="로그인 ID"
                 type="text"
@@ -138,6 +142,10 @@ export function LoginPage() {
             </form>
           ) : (
             <form onSubmit={handleStudentPinSubmit} className="login-form">
+              <div className="login-flow-helper student-helper">
+                <strong>학생 PIN 로그인</strong>
+                <p>학교를 검색해서 선택한 뒤, 실명과 PIN 번호를 입력하세요. 학교를 입력만 하면 로그인되지 않고 꼭 선택해야 합니다.</p>
+              </div>
               <SchoolSearchInput
                 onChange={(id) => {
                   setSchoolId(id)

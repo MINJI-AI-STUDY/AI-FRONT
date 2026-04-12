@@ -95,6 +95,14 @@ export function SchoolSearchInput({
 
   const displayValue = selectedSchool ? selectedSchool.name : keyword
 
+  const handleClearSelection = () => {
+    setSelectedSchool(null)
+    setKeyword('')
+    setIsOpen(false)
+    onChange('', '')
+    inputRef.current?.focus()
+  }
+
   return (
     <div className="school-search-input-wrapper" ref={containerRef}>
       {label && <label className="input-label">{label}</label>}
@@ -111,6 +119,18 @@ export function SchoolSearchInput({
         <span className="material-symbols-outlined school-search-icon">search</span>
         {loading && <span className="school-search-spinner" />}
       </div>
+      {selectedSchool ? (
+        <div className="school-search-selection-card">
+          <div>
+            <span className="school-search-selection-label">선택된 학교</span>
+            <p className="school-search-selection-name">{selectedSchool.name}</p>
+            <span className="school-search-selection-meta">{selectedSchool.schoolLevel} · {selectedSchool.region || '지역 미지정'}</span>
+          </div>
+          <button type="button" className="school-search-clear" onClick={handleClearSelection}>다시 선택</button>
+        </div>
+      ) : (
+        <p className="school-search-helper">학교 이름을 입력한 뒤, 아래 목록에서 정확한 학교를 한 번 더 선택해주세요.</p>
+      )}
       {error && <span className="input-error-text">{error}</span>}
       {isOpen && schools.length > 0 && (
         <div className="school-search-dropdown">
