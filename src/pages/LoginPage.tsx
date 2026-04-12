@@ -53,7 +53,7 @@ export function LoginPage() {
       navigate(from || homePath, { replace: true })
     } catch (err) {
       console.error('로그인 실패:', err)
-      setError('로그인에 실패했습니다. 로그인 ID 또는 비밀번호를 확인해주세요.')
+      setError('로그인 후 사용자 정보를 확인하지 못했습니다. 잠시 후 다시 시도해주세요.')
     } finally {
       setLoading(false)
     }
@@ -81,7 +81,7 @@ export function LoginPage() {
       navigate(from || homePath, { replace: true })
     } catch (err) {
       console.error('PIN 로그인 실패:', err)
-      setError('PIN 로그인에 실패했습니다. 학교, 이름 또는 PIN을 확인해주세요.')
+      setError('PIN 로그인 후 사용자 정보를 확인하지 못했습니다. 잠시 후 다시 시도해주세요.')
     } finally {
       setLoading(false)
     }

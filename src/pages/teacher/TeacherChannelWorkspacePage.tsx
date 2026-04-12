@@ -54,7 +54,10 @@ export function TeacherChannelWorkspacePage() {
   const [publishing, setPublishing] = useState(false)
   const [reviewDueAt, setReviewDueAt] = useState('')
   const [publishCode, setPublishCode] = useState<string | null>(null)
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true)
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return !window.matchMedia('(max-width: 1024px)').matches
+  })
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
 
   useEffect(() => {
@@ -423,6 +426,8 @@ export function TeacherChannelWorkspacePage() {
             activeChannelId={channelId}
             basePath="teacher"
             description="채널을 전환하고 현재 채널 운영 흐름은 오른쪽 패널에서 이어갑니다."
+            isOpen={leftSidebarOpen}
+            onOpenChange={setLeftSidebarOpen}
           />
         )}
 
