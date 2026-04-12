@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, Card, CardBody, Input } from '../components'
-import { createTeacherSignup, searchSchools, type SchoolMasterResponse } from '../api/signup'
+import { Button, Card, CardBody, Input, SchoolSearchInput } from '../components'
+import { createTeacherSignup } from '../api/signup'
 import './LoginPage.css'
 
 export function TeacherSignupPage() {
-  const [schools, setSchools] = useState<SchoolMasterResponse[]>([])
   const [schoolId, setSchoolId] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [loginId, setLoginId] = useState('')
@@ -16,29 +15,18 @@ export function TeacherSignupPage() {
   const [consentStudentNotice, setConsentStudentNotice] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    searchSchools('')
-      .then((result) => {
-        if (Array.isArray(result)) {
-          setSchools(result)
-          return
-        }
-
-        console.error('학교 검색 응답 형식 오류:', result)
-        setSchools([])
-        setError('학교 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
-      })
-      .catch((err) => {
-        console.error('학교 검색 실패:', err)
-        setSchools([])
-        setError('학교 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.')
-      })
-  }, [])
+  const [schoolError, setSchoolError] = useState<string | null>(null)
 
   const handleSubmit = async () => {
     try {
       setError(null)
+      setSchoolError(null)
+
+      if (!schoolId) {
+        setSchoolError('학교를 선택해주세요')
+        return
+      }
+
       const response = await createTeacherSignup({ schoolId, displayName, loginId, password, schoolEmail, consentTerms, consentPrivacy, consentStudentNotice })
       setMessage(`가입 요청이 접수되었습니다. 현재 상태는 ${response.status}이며, 학교 운영자 승인 후 로그인할 수 있습니다.`)
     } catch (err) {
@@ -56,7 +44,10 @@ export function TeacherSignupPage() {
           {message && <div className="login-error" style={{ background: '#ecfdf5', color: '#166534', borderColor: '#86efac' }}>{message}</div>}
           {error && <div className="login-error">{error}</div>}
           <div className="login-form">
-            <label>학교<select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="number-input"><option value="">학교 선택</option>{schools.map((school) => <option key={school.schoolId} value={school.schoolId}>{school.name}</option>)}</select></label>
+            <SchoolSearchInput
+              onChange={(id) => { setSchoolId(id); setSchoolError(null) }}
+              error={schoolError || undefined}
+            />
             <Input label="이름" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
             <Input label="로그인 ID" value={loginId} onChange={(e) => setLoginId(e.target.value)} />
             <Input label="비밀번호" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
