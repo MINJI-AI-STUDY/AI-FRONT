@@ -68,6 +68,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: 1;
 }
 
 .icon-button:hover { color: #2563eb; }
@@ -143,6 +149,7 @@
   color: #475569;
   transition: all 150ms ease;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .rail-link:hover,
@@ -161,6 +168,9 @@
 .floating-footer-link span:last-child {
   opacity: 0;
   transition: opacity 150ms ease;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .floating-rail:hover .rail-link-label,
