@@ -7,6 +7,7 @@ import { enterChannel, heartbeatChannel, leaveChannel, subscribeChannelEvents } 
 import type { ChannelEventResponse } from '../../api/realtime_types'
 import { classifyAiResponse, AI_RESPONSE_MESSAGES, getUserFacingErrorMessage, type AiResponseState } from '../../api/aiResponse'
 import '../WorkspacePages.css'
+import './StudentPages.css'
 
 interface ChatMessage {
   id: string
@@ -18,6 +19,14 @@ interface ChatMessage {
 }
 
 type RightPanelMode = 'ai' | 'chat'
+
+interface PendingAiFollowUp {
+  questionNumber: number
+  explanation: string
+  selectedOptionLabel: string
+  conceptTags: string[]
+  prompt: string
+}
 
 export function StudentChannelWorkspacePage() {
   const { channelId } = useParams<{ channelId: string }>()
@@ -35,6 +44,7 @@ export function StudentChannelWorkspacePage() {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true)
   const [rightSidebarOpen, setRightSidebarOpen] = useState(true)
   const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>('ai')
+  const [pendingAiFollowUp, setPendingAiFollowUp] = useState<PendingAiFollowUp | null>(null)
 
   useEffect(() => {
     if (!token || !channelId) return
@@ -133,6 +143,49 @@ export function StudentChannelWorkspacePage() {
   )
   const selectedMaterialLabel = selectedMaterial ? `#${selectedMaterial.docNo} ${selectedMaterial.title}` : '선택된 자료 없음'
 
+  const renderAssistantMessage = (msg: ChatMessage) => {
+    const shortAnswer = getShortAiAnswer(msg.content)
+    const showFullAnswer = shortAnswer !== msg.content
+
+    return (
+      <div key={msg.id} className={`workspace-chat-bubble ${msg.role}`}>
+        <div className="ai-response-header">
+          <div className="ai-response-eyebrow">
+            <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', verticalAlign: 'middle', marginRight: '0.25rem' }}>smart_toy</span>
+            AI
+          </div>
+          {msg.aiState && <span className={`ai-state-badge ai-state-badge--${msg.aiState}`}>{AI_RESPONSE_MESSAGES[msg.aiState].badge}</span>}
+        </div>
+        <div className="ai-response-summary">
+          <div className="ai-response-summary-label">핵심 답변</div>
+          <p>{shortAnswer}</p>
+        </div>
+        {showFullAnswer && (
+          <details className="ai-answer-details">
+            <summary>전체 답변 보기</summary>
+            <div className="ai-answer-details-body">{msg.content}</div>
+          </details>
+        )}
+        {msg.aiState && msg.aiState !== 'grounded' && (
+          <div className="ai-state-guidance">
+            {AI_RESPONSE_MESSAGES[msg.aiState].description}
+            {AI_RESPONSE_MESSAGES[msg.aiState].action && ` ${AI_RESPONSE_MESSAGES[msg.aiState].action}`}
+          </div>
+        )}
+        <details className="ai-evidence-details">
+          <summary>근거 보기{msg.evidenceSnippets && msg.evidenceSnippets.length > 0 ? ` (${msg.evidenceSnippets.length})` : ''}</summary>
+          <div className="ai-evidence-list">
+            {msg.evidenceSnippets && msg.evidenceSnippets.length > 0 ? (
+              msg.evidenceSnippets.map((snippet, idx) => <div key={idx} className="ai-evidence-item">{snippet}</div>)
+            ) : (
+              <div className="ai-evidence-item ai-evidence-item--empty">추가 근거가 제공되지 않았습니다.</div>
+            )}
+          </div>
+        </details>
+      </div>
+    )
+  }
+
   useEffect(() => {
     if (!token || !channelId) {
       setActiveQuestionSet(null)
@@ -150,6 +203,22 @@ export function StudentChannelWorkspacePage() {
 
     loadActiveQuestionSet()
   }, [channelId, token])
+
+  useEffect(() => {
+    const rawContext = sessionStorage.getItem('student_ai_followup_context')
+    if (!rawContext) return
+
+    try {
+      const parsed = JSON.parse(rawContext) as PendingAiFollowUp
+      setPendingAiFollowUp(parsed)
+      setRightPanelMode('ai')
+      setQuestion(parsed.prompt)
+    } catch (err) {
+      console.error('오답 AI 해설 문맥을 불러오지 못했습니다:', err)
+    } finally {
+      sessionStorage.removeItem('student_ai_followup_context')
+    }
+  }, [])
 
   if (loading) return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
   if (error) return <div className="error-container"><p>{error}</p></div>
@@ -286,40 +355,23 @@ export function StudentChannelWorkspacePage() {
                         <p className="workspace-side-description">현재 선택한 PDF 기준으로 질문합니다. 채널 대화는 우측 상단 탭에서 바로 전환할 수 있습니다.</p>
                         {askError && <div className="modal-error" style={{ marginBottom: '0.75rem' }}>{askError}</div>}
                         <div className="workspace-ai-chat-area">
+                          {pendingAiFollowUp && (
+                            <div className="student-follow-up-callout">
+                              <div className="workspace-main-eyebrow">오답 AI 해설 준비됨</div>
+                              <strong>문제 {pendingAiFollowUp.questionNumber}</strong>
+                              <p>{pendingAiFollowUp.prompt}</p>
+                              <p className="student-follow-up-meta">
+                                선택 답: {pendingAiFollowUp.selectedOptionLabel}
+                                {pendingAiFollowUp.conceptTags.length > 0 && ` · 관련 개념: ${pendingAiFollowUp.conceptTags.join(', ')}`}
+                              </p>
+                              <p className="student-follow-up-explanation">{pendingAiFollowUp.explanation}</p>
+                              <p className="student-follow-up-helper">질문을 전송하면 선택한 오답과 기존 해설 문맥을 바탕으로 더 짧고 친절하게 설명해 드립니다.</p>
+                            </div>
+                          )}
                           {chatHistory.length === 0 ? (
                             <p className="workspace-empty">자료에 대해 궁금한 점을 질문하면 AI가 답변합니다.</p>
                           ) : (
-                            chatHistory.map((msg) => (
-                              <div key={msg.id} className={`workspace-chat-bubble ${msg.role}`}>
-                                {msg.role === 'assistant' && (
-                                  <div style={{ marginBottom: '0.25rem' }}>
-                                    <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.25rem' }}>
-                                      <span className="material-symbols-outlined" style={{ fontSize: '0.875rem', verticalAlign: 'middle', marginRight: '0.25rem' }}>smart_toy</span>
-                                      AI
-                                    </div>
-                                    {msg.aiState && (
-                                      <span className={`ai-state-badge ai-state-badge--${msg.aiState}`}>
-                                        {AI_RESPONSE_MESSAGES[msg.aiState].badge}
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-                                <div>{msg.content}</div>
-                                {msg.role === 'assistant' && msg.aiState && msg.aiState !== 'grounded' && (
-                                  <div className="ai-state-guidance">
-                                    {AI_RESPONSE_MESSAGES[msg.aiState].description}
-                                    {AI_RESPONSE_MESSAGES[msg.aiState].action && ` ${AI_RESPONSE_MESSAGES[msg.aiState].action}`}
-                                  </div>
-                                )}
-                                {msg.role === 'assistant' && msg.evidenceSnippets && msg.evidenceSnippets.length > 0 && (
-                                  <div className="ai-evidence-list">
-                                    {msg.evidenceSnippets.map((snippet, idx) => (
-                                      <div key={idx} className="ai-evidence-item">{snippet}</div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            ))
+                            chatHistory.map((msg) => (msg.role === 'assistant' ? renderAssistantMessage(msg) : <div key={msg.id} className={`workspace-chat-bubble ${msg.role}`}><div>{msg.content}</div></div>))
                           )}
                         </div>
                         <div className="workspace-ai-input-area">
@@ -374,4 +426,17 @@ export function StudentChannelWorkspacePage() {
       </div>
     </div>
   )
+}
+
+function getShortAiAnswer(content: string) {
+  const trimmed = content.trim().replace(/\s+/g, ' ')
+  if (trimmed.length <= 120) return trimmed
+
+  const sentenceMatch = trimmed.match(/[^.!?。]+[.!?。]?/)
+  if (sentenceMatch && sentenceMatch[0].trim().length >= 30) {
+    const summary = sentenceMatch[0].trim()
+    if (summary.length <= 140) return summary
+  }
+
+  return `${trimmed.slice(0, 117).trimEnd()}...`
 }

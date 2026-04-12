@@ -31,6 +31,28 @@ function getHistoryState(log: StudentQaLogResponse): AiResponseState {
   return 'grounded'
 }
 
+interface StudentAiFollowUpContext {
+  questionNumber: number
+  explanation: string
+  selectedOptionLabel: string
+  conceptTags: string[]
+  prompt: string
+}
+
+function consumeStudentAiFollowUpContext() {
+  const rawContext = sessionStorage.getItem('student_ai_followup_context')
+  if (!rawContext) return null
+
+  try {
+    return JSON.parse(rawContext) as StudentAiFollowUpContext
+  } catch (err) {
+    console.error('오답 AI 해설 문맥을 불러오지 못했습니다:', err)
+    return null
+  } finally {
+    sessionStorage.removeItem('student_ai_followup_context')
+  }
+}
+
 function QaResponseCard({ response }: { response: QaResponse }) {
   const state = classifyAiResponse(response)
   const messages = AI_RESPONSE_MESSAGES[state]
@@ -75,9 +97,18 @@ export function QAPage() {
   const [response, setResponse] = useState<QaResponse | null>(null)
   const [history, setHistory] = useState<StudentQaLogResponse[]>([])
   const [materials, setMaterials] = useState<StudentMaterialSummaryResponse[]>([])
+  const [followUpContext, setFollowUpContext] = useState<StudentAiFollowUpContext | null>(null)
 
   const { materialId } = useParams<{ materialId: string }>()
   const { token } = useAuth()
+
+  useEffect(() => {
+    const context = consumeStudentAiFollowUpContext()
+    if (!context) return
+
+    setFollowUpContext(context)
+    setQuestion(context.prompt)
+  }, [])
 
   useEffect(() => {
     if (!materialId || !token) return
@@ -176,6 +207,19 @@ export function QAPage() {
 
       <Card>
         <CardBody>
+          {followUpContext && (
+            <div className="student-follow-up-callout">
+              <div className="workspace-main-eyebrow">오답 AI 해설 준비됨</div>
+              <strong>문제 {followUpContext.questionNumber}</strong>
+              <p>{followUpContext.prompt}</p>
+              <p className="student-follow-up-meta">
+                선택 답: {followUpContext.selectedOptionLabel}
+                {followUpContext.conceptTags.length > 0 && ` · 관련 개념: ${followUpContext.conceptTags.join(', ')}`}
+              </p>
+              <p className="student-follow-up-explanation">{followUpContext.explanation}</p>
+              <p className="student-follow-up-helper">질문 칸에 자동으로 들어가며, 필요하면 수정해서 다시 물어볼 수 있습니다.</p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="qa-form">
             <div className="form-group">
               <label className="input-label">질문</label>

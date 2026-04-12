@@ -139,6 +139,7 @@
   padding: 1rem 1.5rem;
   border-top: 1px solid #f0f0f0;
   background: #fafafa;
+  flex-wrap: wrap;
 }
 
 /* 확인 모달용 버튼 스타일 */
@@ -150,6 +151,11 @@
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 150ms ease;
+  min-width: 0;
+  white-space: normal;
+  height: auto;
+  min-height: 2.25rem;
+  line-height: 1.25;
 }
 
 .modal-footer .btn-outline {

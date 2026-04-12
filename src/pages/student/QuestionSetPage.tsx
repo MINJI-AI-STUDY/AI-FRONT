@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
-import { Button, Card, CardBody } from '../../components'
+import { Button, Card, CardBody, SubmissionResultModal } from '../../components'
 import { getQuestionSet, submitAnswers } from '../../api/student'
 import type { StudentQuestionResponse, StudentQuestionSetResponse } from '../../api/student'
 import './StudentPages.css'
@@ -21,13 +21,24 @@ export function QuestionSetPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [resultSubmissionId, setResultSubmissionId] = useState<string | null>(null)
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false)
 
   const { distributionCode } = useParams<{ distributionCode: string }>()
   const { token } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!distributionCode || !token) return
+    if (!distributionCode) {
+      setLoading(false)
+      setError('문제 세트를 찾을 수 없습니다.')
+      return
+    }
+    if (!token) {
+      setLoading(false)
+      setError('로그인이 필요합니다.')
+      return
+    }
 
     const fetchQuestionSet = async () => {
       try {
@@ -63,6 +74,8 @@ export function QuestionSetPage() {
 
     setSubmitting(true)
     setError(null)
+    setResultSubmissionId(null)
+    setIsResultModalOpen(false)
 
     try {
       const submitData = {
@@ -72,7 +85,8 @@ export function QuestionSetPage() {
       sessionStorage.setItem('latest_submission_id', result.submissionId)
       sessionStorage.setItem('latest_material_id', questionSet.materialId)
       sessionStorage.setItem('latest_distribution_code', distributionCode)
-      navigate(`/student/submissions/${result.submissionId}`)
+      setResultSubmissionId(result.submissionId)
+      setIsResultModalOpen(true)
     } catch (err) {
       console.error('답안 제출 실패:', err)
       setError('답안 제출에 실패했습니다. 다시 시도해주세요.')
@@ -116,10 +130,17 @@ export function QuestionSetPage() {
 
       {!isExpired && (
         <div className="submit-actions">
-          {submitting && <p className="submit-message">답안을 제출하고 채점 중입니다. 잠시만 기다려주세요.</p>}
+          {submitting && <p className="submit-message">답안을 전송하고 채점을 준비 중입니다. 모달이 열리면 바로 결과를 확인할 수 있습니다.</p>}
           <Button variant="primary" loading={submitting} onClick={handleSubmit} disabled={questionSet.questions.some((q) => answers[q.id] === undefined)}>제출하기</Button>
         </div>
       )}
+
+      <SubmissionResultModal
+        submissionId={resultSubmissionId}
+        token={token ?? ''}
+        isOpen={isResultModalOpen}
+        onClose={() => setIsResultModalOpen(false)}
+      />
     </div>
   )
 }
