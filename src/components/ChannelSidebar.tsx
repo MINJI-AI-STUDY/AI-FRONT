@@ -27,7 +27,7 @@ export function ChannelSidebar({
   footer,
 }: ChannelSidebarProps) {
   return (
-    <aside className={`channel-sidebar-panel ${className}`.trim()}>
+    <aside className={`channel-sidebar-panel ${className}`.trim()} aria-label="채널 탐색">
       <div className="channel-sidebar-header">
         <div>
           <div className="workspace-main-eyebrow">채널</div>
@@ -35,15 +35,20 @@ export function ChannelSidebar({
           {description && <p className="channel-sidebar-summary">{description}</p>}
         </div>
       </div>
-      <div className="channel-sidebar-list">
+      <nav className="channel-sidebar-list" aria-label="채널 목록">
         {channels.map((channel) => (
           <Link key={channel.channelId} to={`/${basePath}/channels/${channel.channelId}`} className={`channel-sidebar-item ${activeChannelId === channel.channelId ? 'active' : ''}`}>
             <div className="channel-sidebar-name"># {channel.name}</div>
             <div className="channel-sidebar-description">{channel.description || '설명 없음'}</div>
           </Link>
         ))}
-      </div>
-      {footer && <div className="channel-sidebar-footer">{footer}</div>}
+      </nav>
+      {footer && (
+        <div className="channel-sidebar-management" aria-label="채널 관리">
+          <div className="channel-sidebar-management-label">관리</div>
+          <div className="channel-sidebar-footer">{footer}</div>
+        </div>
+      )}
     </aside>
   )
 }
