@@ -777,7 +777,7 @@
   font-size: 0.875rem;
 }
 
-@media (max-width: 1279px) {
+@media (max-width: 1180px) {
   .channel-shell {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -797,7 +797,7 @@
   }
 }
 
-@media (min-width: 768px) and (max-width: 1024px) {
+@media (min-width: 768px) and (max-width: 1180px) {
   .channel-shell {
     grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
