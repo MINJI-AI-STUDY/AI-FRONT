@@ -644,9 +644,8 @@
 
 /* Student 3-Column Layout Styles */
 
-/* Left sidebar collapse removed on desktop */
 .channel-shell.left-sidebar-collapsed {
-  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
 }
 

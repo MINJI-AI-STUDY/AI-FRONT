@@ -15,6 +15,28 @@ interface AnswerState {
   [questionId: string]: number
 }
 
+interface StudentAiFollowUpContext {
+  questionNumber: number
+  explanation: string
+  selectedOptionLabel: string
+  conceptTags: string[]
+  prompt: string
+}
+
+function consumeStudentAiFollowUpContext() {
+  const rawContext = sessionStorage.getItem('student_ai_followup_context')
+  if (!rawContext) return null
+
+  try {
+    return JSON.parse(rawContext) as StudentAiFollowUpContext
+  } catch (err) {
+    console.error('오답 AI 해설 문맥을 불러오지 못했습니다:', err)
+    return null
+  } finally {
+    sessionStorage.removeItem('student_ai_followup_context')
+  }
+}
+
 export function StudentWorkspacePage() {
   const { distributionCode } = useParams<{ distributionCode: string }>()
   const { token } = useAuth()
@@ -29,6 +51,15 @@ export function StudentWorkspacePage() {
   const [asking, setAsking] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false)
+  const [followUpContext, setFollowUpContext] = useState<StudentAiFollowUpContext | null>(null)
+
+  useEffect(() => {
+    const context = consumeStudentAiFollowUpContext()
+    if (!context) return
+
+    setFollowUpContext(context)
+    setQuestion(context.prompt)
+  }, [])
 
   useEffect(() => {
     if (!distributionCode || !token) return
@@ -171,6 +202,19 @@ export function StudentWorkspacePage() {
 
           <Card className="workspace-card workspace-chat-card">
             <CardBody>
+              {followUpContext && (
+                <div className="student-follow-up-callout">
+                  <div className="workspace-main-eyebrow">오답 AI 해설 준비됨</div>
+                  <strong>문제 {followUpContext.questionNumber}</strong>
+                  <p>{followUpContext.prompt}</p>
+                  <p className="student-follow-up-meta">
+                    선택 답: {followUpContext.selectedOptionLabel}
+                    {followUpContext.conceptTags.length > 0 && ` · 관련 개념: ${followUpContext.conceptTags.join(', ')}`}
+                  </p>
+                  <p className="student-follow-up-explanation">{followUpContext.explanation}</p>
+                  <p className="student-follow-up-helper">아래 질문 칸에 자동으로 들어가며, 필요하면 수정해서 다시 물어볼 수 있습니다.</p>
+                </div>
+              )}
               <div className="workspace-panel-inline-header">
                 <h3 className="workspace-card-title">자료 기반 AI 질문</h3>
                 <span className="workspace-mini-chip">LIVE</span>
