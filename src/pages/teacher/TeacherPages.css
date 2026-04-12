@@ -41,6 +41,28 @@
   gap: 1rem;
 }
 
+.workspace-main-stack {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.teacher-workspace-primary-card,
+.teacher-channel-primary-card {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.teacher-workspace-primary-card .workspace-card-title,
+.teacher-channel-primary-card .workspace-card-title {
+  margin: 0;
+}
+
+.teacher-workspace-primary-card .workspace-side-description,
+.teacher-channel-primary-card .workspace-side-description {
+  margin-top: 0.75rem;
+}
+
 @media (max-width: 1024px) {
   .teacher-shell-actions {
     width: 100%;

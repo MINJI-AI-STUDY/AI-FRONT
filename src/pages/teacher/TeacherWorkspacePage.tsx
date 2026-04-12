@@ -89,11 +89,6 @@ export function TeacherWorkspacePage() {
             </span>
             {rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
           </Button>
-          {questionSet && (
-            <Button variant="primary" onClick={() => navigate(`/teacher/question-sets/${questionSet.questionSetId}/review`, { state: { questionSet } })}>
-              검토 화면 열기
-            </Button>
-          )}
           <Link to="/teacher"><Button variant="outline">교사 홈</Button></Link>
         </div>
       </div>
@@ -121,6 +116,32 @@ export function TeacherWorkspacePage() {
               </button>
             </div>
           </div>
+
+          <Card className="workspace-card teacher-workspace-primary-card">
+            <CardBody>
+              <div className="workspace-panel-inline-header">
+                <div>
+                  <div className="workspace-main-eyebrow">문서 중심 작업</div>
+                  <h3 className="workspace-card-title">{questionSet ? '생성된 문제를 검토하고 배포하세요' : '이 자료에서 바로 문제를 생성하세요'}</h3>
+                </div>
+                {questionSet ? (
+                  <Button variant="primary" onClick={() => navigate(`/teacher/question-sets/${questionSet.questionSetId}/review`, { state: { questionSet } })}>
+                    검토 화면 열기
+                  </Button>
+                ) : (
+                  <Button variant="primary" onClick={handleGenerate} loading={generating}>
+                    AI 문제 생성
+                  </Button>
+                )}
+              </div>
+              <p className="workspace-side-description">
+                {questionSet
+                  ? '생성 결과와 배포 상태를 먼저 확인한 뒤 문서와 나란히 검토를 이어갈 수 있습니다.'
+                  : '현재 문서를 기준으로 바로 문제를 생성해보세요. 세부 설정은 우측 도구에서 조정할 수 있습니다.'}
+              </p>
+            </CardBody>
+          </Card>
+
           <MaterialDocumentViewer materialId={materialId} token={token} />
         </section>
 
