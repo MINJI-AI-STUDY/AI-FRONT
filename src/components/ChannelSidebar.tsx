@@ -101,7 +101,15 @@ export function ChannelSidebar({
 
         <nav className="channel-sidebar-list" aria-label="채널 목록">
           {channels.map((channel) => (
-            <Link key={channel.channelId} to={`/${basePath}/channels/${channel.channelId}`} className={`channel-sidebar-item ${activeChannelId === channel.channelId ? 'active' : ''}`}>
+            <Link
+              key={channel.channelId}
+              to={`/${basePath}/channels/${channel.channelId}`}
+              className={`channel-sidebar-item ${activeChannelId === channel.channelId ? 'active' : ''}`}
+              style={{ touchAction: 'manipulation' }}
+              onClick={() => {
+                if (isCompactViewport) setDrawerOpen(false)
+              }}
+            >
               <div className="channel-sidebar-name"># {channel.name}</div>
               <div className="channel-sidebar-description">{channel.description || '설명 없음'}</div>
             </Link>

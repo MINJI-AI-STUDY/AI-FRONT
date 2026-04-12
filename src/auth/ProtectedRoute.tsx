@@ -23,14 +23,41 @@ export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
   const { user, token, loading } = useAuth()
   const location = useLocation()
 
+  const loadingShell = (
+    <div className="workspace-page protected-route-loading-shell" aria-busy="true">
+      <div className="workspace-header">
+        <div className="workspace-header-content workspace-loading-copy">
+          <div className="workspace-loading-chip" style={{ width: '6rem' }} />
+          <div className="workspace-loading-line" style={{ width: '16rem', maxWidth: '70%' }} />
+          <div className="workspace-loading-line" style={{ width: '24rem', maxWidth: '92%', height: '0.8rem' }} />
+        </div>
+      </div>
+      <div className="workspace-layout protected-route-loading-layout sidebar-collapsed">
+        <section className="workspace-main protected-route-loading-stage">
+          <div className="workspace-main-header">
+            <div className="workspace-main-title workspace-loading-copy">
+              <div className="workspace-loading-line" style={{ width: '10rem' }} />
+              <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '82%' }} />
+            </div>
+          </div>
+          <div className="workspace-loading-document">
+            <div className="workspace-loading-toolbar">
+              <div className="workspace-loading-toolbar-copy">
+                <div className="workspace-loading-line" style={{ width: '9rem' }} />
+                <div className="workspace-loading-line" style={{ width: '15rem', height: '0.8rem' }} />
+              </div>
+              <div className="workspace-loading-button" style={{ width: '7rem', height: '2.6rem' }} />
+            </div>
+            <div className="workspace-loading-frame" />
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+
   // 로딩 중이면 로딩 표시
   if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner" />
-        <p>로딩 중...</p>
-      </div>
-    )
+    return loadingShell
   }
 
   // 토큰이 없으면 로그인 페이지로 리다이렉트
@@ -40,12 +67,7 @@ export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
 
   // 토큰은 있지만 사용자 정보가 아직 복원되지 않았다면 로딩 상태를 유지
   if (!user) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner" />
-        <p>사용자 정보를 확인 중...</p>
-      </div>
-    )
+    return loadingShell
   }
 
   // 역할이 지정되어 있고, 사용자 역할이 허용되지 않으면 접근 거부

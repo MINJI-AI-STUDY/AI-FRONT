@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUser = async (accessToken = token) => {
     if (!accessToken) {
       setUser(null)
-      return
+      return false
     }
 
     setLoading(true)
@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const userData = await getCurrentUser(accessToken)
       setUser(userData)
+      return true
     } catch (err) {
       if (err instanceof ApiError && err.status === 401 && refreshToken) {
         try {
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setRefreshToken(refreshed.refreshToken)
           const retriedUser = await getCurrentUser(refreshed.accessToken)
           setUser(retriedUser)
-          return
+          return true
         } catch (refreshErr) {
           console.error('토큰 재발급 실패:', refreshErr)
         }
@@ -67,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(null)
       setRefreshToken(null)
       setUser(null)
+      return false
     } finally {
       setLoading(false)
     }
@@ -90,6 +92,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken)
     setToken(newToken)
     setRefreshToken(newRefreshToken)
+
+    const hydrated = await fetchUser(newToken)
+    if (!hydrated) {
+      throw new Error('LOGIN_BOOTSTRAP_FAILED')
+    }
   }
 
   /**
