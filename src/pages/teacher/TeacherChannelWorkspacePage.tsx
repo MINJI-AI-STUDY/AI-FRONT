@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
-import { Button, ChannelSidebar, Input, MaterialDocumentViewer, Modal } from '../../components'
+import { Button, Card, CardBody, ChannelSidebar, Input, MaterialDocumentViewer, Modal } from '../../components'
 import {
   createChannel,
   generateQuestionsInChannel,
@@ -335,12 +335,12 @@ export function TeacherChannelWorkspacePage() {
 
         <div className="channel-content-shell teacher-channel-content-shell">
           <div className="workspace-header">
-            <div className="workspace-header-content">
-              <div className="workspace-section-meta">교사 · 채널 운영</div>
-              <h1 className="page-title">{workspace.channel.name}</h1>
-              <p className="page-description">현재 입장 학생: {studentNames || '없음'}</p>
-            </div>
-            <div className="workspace-actions teacher-shell-actions">
+        <div className="workspace-header-content">
+          <div className="workspace-section-meta">교사 · 채널 운영</div>
+          <h1 className="page-title">{workspace.channel.name}</h1>
+          <p className="page-description">현재 입장 학생: {studentNames || '없음'}</p>
+        </div>
+        <div className="workspace-actions teacher-shell-actions">
               <Button variant="outline" size="sm" onClick={() => setLeftSidebarOpen((current) => !current)}>
                 <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
                   {leftSidebarOpen ? 'left_panel_close' : 'left_panel_open'}
@@ -350,15 +350,11 @@ export function TeacherChannelWorkspacePage() {
               <Button variant="outline" size="sm" onClick={() => setRightPanelOpen((current) => !current)}>
                 <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
                   {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
-                </span>
-                {rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setUploadModalOpen(true)}>
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.4rem' }}>upload_file</span>
-                PDF 업로드
-              </Button>
-            </div>
-          </div>
+              </span>
+              {rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
+          </Button>
+        </div>
+      </div>
 
           <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''}`}>
             <section className="workspace-main teacher-main-stage">
@@ -370,6 +366,32 @@ export function TeacherChannelWorkspacePage() {
                   </p>
                 </div>
               </div>
+
+              <Card className="workspace-card teacher-channel-primary-card">
+                <CardBody>
+                  <div className="workspace-panel-inline-header">
+                    <div>
+                      <div className="workspace-main-eyebrow">채널 문서 흐름</div>
+                      <h3 className="workspace-card-title">{selectedMaterial?.title ?? 'PDF를 업로드해 채널 흐름을 시작하세요'}</h3>
+                    </div>
+                    {latestReviewRequiredQuestionSet ? (
+                      <Button size="sm" onClick={() => openReviewModal(latestReviewRequiredQuestionSet.questionSetId)}>검토 열기</Button>
+                    ) : selectedMaterial ? (
+                      <Button size="sm" onClick={() => setGenerateModalOpen(true)}>문제 생성</Button>
+                    ) : (
+                      <Button size="sm" onClick={() => setUploadModalOpen(true)}>PDF 업로드</Button>
+                    )}
+                  </div>
+                  <p className="workspace-side-description">
+                    {latestReviewRequiredQuestionSet
+                      ? '최신 생성 세트의 검토/배포 상태를 먼저 확인한 뒤 문서와 함께 마무리하세요.'
+                      : selectedMaterial
+                        ? `선택한 자료 #${selectedMaterial.docNo} 기준으로 문제 생성과 리뷰 흐름을 바로 이어갈 수 있습니다.`
+                        : '먼저 PDF를 채널에 올리면 학생과 함께 보는 문서 중심 흐름을 시작할 수 있습니다.'}
+                  </p>
+                </CardBody>
+              </Card>
+
               {selectedMaterial ? (
                 <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} />
               ) : (

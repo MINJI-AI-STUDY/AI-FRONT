@@ -247,11 +247,8 @@ export function StudentChannelWorkspacePage() {
       <div>
         <div className="workspace-main-eyebrow">활성 문제 세트</div>
         <strong>{activeQuestionSet.title}</strong>
-        <p>현재 채널에 배포된 문제 세트를 바로 열 수 있습니다.</p>
+        <p>현재 채널에 배포된 문제 세트를 사용할 수 있습니다.</p>
       </div>
-      <Link to={`/student/question-sets/${activeQuestionSet.distributionCode}/workspace`} className="student-workspace-cta-link">
-        <Button size="sm">문제 풀이 열기</Button>
-      </Link>
     </div>
   ) : (
     <div className="student-right-panel-callout student-right-panel-callout--empty">
@@ -262,12 +259,6 @@ export function StudentChannelWorkspacePage() {
       </div>
     </div>
   )
-
-  const activeQuestionSetAction = activeQuestionSet ? (
-    <Link to={`/student/question-sets/${activeQuestionSet.distributionCode}/workspace`} className="student-workspace-cta-link">
-      <Button size="sm">문제 풀이 열기</Button>
-    </Link>
-  ) : null
 
   return (
     <div className="workspace-page student-workspace-page channel-workspace-page">
@@ -291,7 +282,6 @@ export function StudentChannelWorkspacePage() {
               <p className="page-description">현재 입장 학생: {participantNames || '없음'}</p>
             </div>
             <div className="workspace-actions">
-              {activeQuestionSetAction}
               <button
                 type="button"
                 className="workspace-tool-button"
@@ -322,6 +312,25 @@ export function StudentChannelWorkspacePage() {
                 </div>
                 <div className="student-pdf-meta-chip">{selectedMaterialLabel}</div>
               </div>
+
+              {activeQuestionSet && (
+                <Card className="student-channel-primary-card">
+                  <CardBody>
+                    <div className="workspace-panel-inline-header">
+                      <div>
+                        <div className="workspace-main-eyebrow">활성 과제</div>
+                        <h3 className="workspace-card-title">{activeQuestionSet.title}</h3>
+                      </div>
+                      <Link to={`/student/question-sets/${activeQuestionSet.distributionCode}/workspace`} className="student-workspace-cta-link">
+                        <Button size="sm">문제 풀이 열기</Button>
+                      </Link>
+                    </div>
+                    <p className="workspace-side-description">
+                      이 채널에 연결된 문제 세트를 바로 열어 PDF와 함께 풀이를 이어갈 수 있습니다.
+                    </p>
+                  </CardBody>
+                </Card>
+              )}
 
               <div className="student-document-stage">
                 {selectedMaterial ? (
