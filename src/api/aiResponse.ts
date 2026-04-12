@@ -30,14 +30,14 @@ export const AI_RESPONSE_MESSAGES: Record<AiResponseState, {
   action: string
 }> = {
   grounded: {
-    badge: '자료 근거 응답',
-    description: '자료를 기반으로 작성된 답변입니다.',
+    badge: '핵심 답변',
+    description: '자료를 바탕으로 핵심만 간단히 정리한 답변입니다.',
     action: '',
   },
   insufficientEvidence: {
-    badge: '근거 부족 안내',
-    description: '이 답변은 자료에서 직접적인 근거를 찾을 수 없습니다.',
-    action: '질문을 더 구체화하거나 다른 자료를 선택해 보세요.',
+    badge: '근거 제한 안내',
+    description: '자료 근거가 충분하지 않아 보수적으로 답했습니다.',
+    action: '관련 문단을 더 확인하거나 질문을 조금 더 구체화해 보세요.',
   },
   runtimeFailure: {
     badge: 'AI 처리 실패',
