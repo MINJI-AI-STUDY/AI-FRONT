@@ -102,6 +102,7 @@ export interface QuestionSetResponse {
   questionSetId: string
   status: 'REVIEW_REQUIRED' | 'PUBLISHED' | 'CLOSED'
   materialId: string
+  channelId: string
   distributionCode: string | null
   distributionLink: string | null
   dueAt: string | null
@@ -111,6 +112,7 @@ export interface QuestionSetResponse {
 export interface GenerateQuestionsRequest {
   questionCount: number
   difficulty: 'EASY' | 'MEDIUM' | 'HARD'
+  materialId?: string
 }
 
 /** 문제 생성 API */
@@ -121,6 +123,18 @@ export async function generateQuestions(
 ): Promise<QuestionSetResponse> {
   return post<QuestionSetResponse>(
     `/api/teacher/materials/${materialId}/question-sets/generate`,
+    data,
+    token,
+  )
+}
+
+export async function generateQuestionsInChannel(
+  channelId: string,
+  data: GenerateQuestionsRequest,
+  token: string,
+): Promise<QuestionSetResponse> {
+  return post<QuestionSetResponse>(
+    `/api/teacher/channels/${channelId}/question-sets/generate`,
     data,
     token,
   )
@@ -255,6 +269,13 @@ export async function getQuestionSetsByMaterial(
   return get<QuestionSetResponse[]>(`/api/teacher/materials/${materialId}/question-sets`, token)
 }
 
+export async function getQuestionSetsByChannel(
+  channelId: string,
+  token: string,
+): Promise<QuestionSetResponse[]> {
+  return get<QuestionSetResponse[]>(`/api/teacher/channels/${channelId}/question-sets`, token)
+}
+
 export interface ChannelResponse {
   channelId: string
   schoolId: string
@@ -295,6 +316,16 @@ export interface ChannelMessageResponse {
 export interface ChannelWorkspaceResponse {
   channel: ChannelResponse
   materials: MaterialSummaryResponse[]
+  questionSets?: Array<{
+    questionSetId: string
+    materialId: string
+    channelId: string
+    status: 'REVIEW_REQUIRED' | 'PUBLISHED' | 'CLOSED'
+    distributionCode: string | null
+    dueAt: string | null
+    createdAt: string
+    questionCount: number
+  }>
   recentMessages: ChannelMessageResponse[]
   participants: ChannelParticipantResponse[]
 }

@@ -1,8 +1,25 @@
-import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
-import { Button, Card, CardBody, ChannelSidebar, MaterialDocumentViewer, Modal, Input } from '../../components'
-import { createChannel, getQuestionSetsByMaterial, getTeacherChannelWorkspace, getTeacherChannels, sendChannelMessage, updateChannel, uploadMaterial, type ChannelMessageResponse, type ChannelParticipantResponse, type ChannelResponse, type ChannelWorkspaceResponse, type QuestionSetResponse } from '../../api/teacher'
+import { Button, ChannelSidebar, Input, MaterialDocumentViewer, Modal } from '../../components'
+import {
+  createChannel,
+  generateQuestionsInChannel,
+  getQuestionSetById,
+  getQuestionSetsByChannel,
+  publishQuestionSet,
+  getTeacherChannelWorkspace,
+  getTeacherChannels,
+  updateQuestion,
+  updateChannel,
+  uploadMaterial,
+  type ChannelMessageResponse,
+  type ChannelParticipantResponse,
+  type ChannelResponse,
+  type ChannelWorkspaceResponse,
+  type QuestionSetResponse,
+  type UpdateQuestionRequest,
+} from '../../api/teacher'
 import { enterChannel, heartbeatChannel, leaveChannel, subscribeChannelEvents } from '../../api/realtime'
 import type { ChannelEventResponse } from '../../api/realtime_types'
 import '../WorkspacePages.css'
@@ -13,7 +30,7 @@ export function TeacherChannelWorkspacePage() {
   const [channels, setChannels] = useState<ChannelResponse[]>([])
   const [workspace, setWorkspace] = useState<ChannelWorkspaceResponse | null>(null)
   const [selectedMaterialId, setSelectedMaterialId] = useState<string | null>(null)
-  const [message, setMessage] = useState('')
+  const [channelNameDraft, setChannelNameDraft] = useState('')
   const [newChannelName, setNewChannelName] = useState('')
   const [uploadTitle, setUploadTitle] = useState('')
   const [uploadDescription, setUploadDescription] = useState('')
@@ -24,20 +41,35 @@ export function TeacherChannelWorkspacePage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
+  const [generateModalOpen, setGenerateModalOpen] = useState(false)
+  const [reviewModalOpen, setReviewModalOpen] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [questionCount, setQuestionCount] = useState(5)
+  const [difficulty, setDifficulty] = useState<'EASY' | 'MEDIUM' | 'HARD'>('MEDIUM')
+  const [generating, setGenerating] = useState(false)
+  const [reviewQuestionSet, setReviewQuestionSet] = useState<QuestionSetResponse | null>(null)
+  const [reviewError, setReviewError] = useState<string | null>(null)
+  const [reviewSavingQuestionId, setReviewSavingQuestionId] = useState<string | null>(null)
+  const [publishing, setPublishing] = useState(false)
+  const [reviewDueAt, setReviewDueAt] = useState('')
+  const [publishCode, setPublishCode] = useState<string | null>(null)
 
   useEffect(() => {
     if (!token || !channelId) return
+
     const load = async () => {
       try {
         const [channelData, workspaceData] = await Promise.all([
           getTeacherChannels(token),
           getTeacherChannelWorkspace(channelId, token),
         ])
+
         setChannels(channelData)
         setWorkspace(workspaceData)
         setSelectedMaterialId(workspaceData.materials[0]?.materialId ?? null)
+        setChannelNameDraft(workspaceData.channel.name)
+
         await enterChannel(channelId, token)
       } catch (err) {
         console.error('교사 채널 워크스페이스 로드 실패:', err)
@@ -46,7 +78,9 @@ export function TeacherChannelWorkspacePage() {
         setLoading(false)
       }
     }
+
     load()
+
     const interval = setInterval(() => heartbeatChannel(channelId, token), 15000)
     const eventSource = subscribeChannelEvents(channelId, token, (event: ChannelEventResponse) => {
       setWorkspace((prev) => {
@@ -60,6 +94,7 @@ export function TeacherChannelWorkspacePage() {
         return prev
       })
     })
+
     return () => {
       clearInterval(interval)
       eventSource.close()
@@ -67,17 +102,25 @@ export function TeacherChannelWorkspacePage() {
     }
   }, [channelId, token])
 
-  const selectedMaterial = workspace?.materials.find((item) => item.materialId === selectedMaterialId) ?? workspace?.materials[0] ?? null
+  const selectedMaterial = useMemo(
+    () => workspace?.materials.find((item) => item.materialId === selectedMaterialId) ?? workspace?.materials[0] ?? null,
+    [selectedMaterialId, workspace],
+  )
 
   useEffect(() => {
-    if (!token || !selectedMaterial) {
+    if (selectedMaterialId || !workspace?.materials.length) return
+    setSelectedMaterialId(workspace.materials[0].materialId)
+  }, [selectedMaterialId, workspace?.materials])
+
+  useEffect(() => {
+    if (!token || !channelId) {
       setQuestionSets([])
       return
     }
 
     const loadQuestionSets = async () => {
       try {
-        const data = await getQuestionSetsByMaterial(selectedMaterial.materialId, token)
+        const data = await getQuestionSetsByChannel(channelId, token)
         setQuestionSets(data)
       } catch (err) {
         console.error('문제 세트 목록 조회 실패:', err)
@@ -86,17 +129,11 @@ export function TeacherChannelWorkspacePage() {
     }
 
     loadQuestionSets()
-  }, [selectedMaterial, token])
+  }, [channelId, token])
 
   const latestQuestionSet = questionSets[0] ?? null
   const latestReviewRequiredQuestionSet = questionSets.find((item) => item.status === 'REVIEW_REQUIRED') ?? null
   const latestPublishedQuestionSet = questionSets.find((item) => item.status === 'PUBLISHED') ?? null
-
-  const handleSendMessage = async () => {
-    if (!channelId || !token || !message.trim()) return
-    await sendChannelMessage(channelId, message.trim(), token)
-    setMessage('')
-  }
 
   const handleCreateChannel = async () => {
     if (!token || !newChannelName.trim()) return
@@ -112,14 +149,23 @@ export function TeacherChannelWorkspacePage() {
   }
 
   const handleRenameChannel = async () => {
-    if (!token || !workspace || !newChannelName.trim()) return
+    if (!token || !workspace || !channelNameDraft.trim()) return
     try {
-      const updated = await updateChannel(workspace.channel.channelId, { name: newChannelName.trim(), description: workspace.channel.description ?? '', sortOrder: workspace.channel.sortOrder, active: workspace.channel.active }, token)
-      setWorkspace((prev) => prev ? { ...prev, channel: updated } : prev)
-      setChannels((prev) => prev.map((item) => item.channelId === updated.channelId ? updated : item))
-      setNewChannelName('')
+      const updated = await updateChannel(
+        workspace.channel.channelId,
+        {
+          name: channelNameDraft.trim(),
+          description: workspace.channel.description ?? '',
+          sortOrder: workspace.channel.sortOrder,
+          active: workspace.channel.active,
+        },
+        token,
+      )
+      setWorkspace((prev) => (prev ? { ...prev, channel: updated } : prev))
+      setChannels((prev) => prev.map((item) => (item.channelId === updated.channelId ? updated : item)))
+      setChannelNameDraft(updated.name)
     } catch (err) {
-      // Error handling
+      console.error('채널 이름 수정 실패:', err)
     }
   }
 
@@ -127,8 +173,12 @@ export function TeacherChannelWorkspacePage() {
     if (!token || !channelId || !uploadFile || !uploadTitle.trim()) return
     try {
       setUploadError(null)
-      const uploaded = await uploadMaterial(uploadFile, { channelId, title: uploadTitle.trim(), description: uploadDescription }, token)
-      setWorkspace((prev) => prev ? { ...prev, materials: [uploaded, ...prev.materials] } : prev)
+      const uploaded = await uploadMaterial(
+        uploadFile,
+        { channelId, title: uploadTitle.trim(), description: uploadDescription },
+        token,
+      )
+      setWorkspace((prev) => (prev ? { ...prev, materials: [uploaded, ...prev.materials] } : prev))
       setSelectedMaterialId(uploaded.materialId)
       setUploadTitle('')
       setUploadDescription('')
@@ -139,20 +189,237 @@ export function TeacherChannelWorkspacePage() {
     }
   }
 
+  const toOptionsTuple = (options: string[]): [string, string, string, string] => [
+    options[0] ?? '',
+    options[1] ?? '',
+    options[2] ?? '',
+    options[3] ?? '',
+  ]
+
+  const toConceptTagsTuple = (conceptTags: string[]): [string] | [string, string] => {
+    const tags = conceptTags.map((item) => item.trim()).filter(Boolean).slice(0, 2)
+    if (tags.length >= 2) return [tags[0], tags[1]]
+    return [tags[0] ?? '핵심개념']
+  }
+
+  const handleGenerateInChannel = async () => {
+    if (!token || !channelId || !selectedMaterial) return
+    try {
+      setGenerating(true)
+      setReviewError(null)
+      const generated = await generateQuestionsInChannel(
+        channelId,
+        {
+          questionCount,
+          difficulty,
+          materialId: selectedMaterial.materialId,
+        },
+        token,
+      )
+      setQuestionSets((prev) => [generated, ...prev.filter((item) => item.questionSetId !== generated.questionSetId)])
+      setReviewQuestionSet(generated)
+      setPublishCode(null)
+      setReviewDueAt('')
+      setGenerateModalOpen(false)
+      setReviewModalOpen(true)
+    } catch (err) {
+      console.error('채널 문제 생성 실패:', err)
+      setReviewError('문제 생성에 실패했습니다. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const openReviewModal = async (questionSetId: string) => {
+    if (!token) return
+    try {
+      setReviewError(null)
+      const latest = await getQuestionSetById(questionSetId, token)
+      setReviewQuestionSet(latest)
+      setPublishCode(latest.distributionCode)
+      setReviewModalOpen(true)
+    } catch (err) {
+      console.error('문제 세트 조회 실패:', err)
+      setReviewError('검토할 문제 세트를 불러오지 못했습니다.')
+    }
+  }
+
+  const handleToggleExcluded = async (questionId: string, excluded: boolean) => {
+    if (!token || !reviewQuestionSet) return
+    const question = reviewQuestionSet.questions.find((item) => item.id === questionId)
+    if (!question) return
+
+    const payload: UpdateQuestionRequest = {
+      stem: question.stem,
+      options: toOptionsTuple(question.options),
+      correctOptionIndex: question.correctOptionIndex,
+      explanation: question.explanation,
+      conceptTags: toConceptTagsTuple(question.conceptTags),
+      excluded,
+    }
+
+    try {
+      setReviewSavingQuestionId(questionId)
+      setReviewError(null)
+      const updated = await updateQuestion(reviewQuestionSet.questionSetId, questionId, payload, token)
+      setReviewQuestionSet(updated)
+      setQuestionSets((prev) => prev.map((item) => (item.questionSetId === updated.questionSetId ? updated : item)))
+    } catch (err) {
+      console.error('문항 제외 상태 저장 실패:', err)
+      setReviewError('문항 상태 저장에 실패했습니다.')
+    } finally {
+      setReviewSavingQuestionId(null)
+    }
+  }
+
+  const handlePublishFromReview = async () => {
+    if (!token || !reviewQuestionSet) return
+    try {
+      setPublishing(true)
+      setReviewError(null)
+      const normalizedDueAt = reviewDueAt ? `${reviewDueAt}:00` : undefined
+      const published = await publishQuestionSet(
+        reviewQuestionSet.questionSetId,
+        token,
+        normalizedDueAt ? { dueAt: normalizedDueAt } : undefined,
+      )
+      setReviewQuestionSet(published)
+      setPublishCode(published.distributionCode)
+      setQuestionSets((prev) => prev.map((item) => (item.questionSetId === published.questionSetId ? published : item)))
+    } catch (err) {
+      console.error('문제 세트 배포 실패:', err)
+      setReviewError('배포에 실패했습니다. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setPublishing(false)
+    }
+  }
+
+  const channelSidebarFooter = (
+    <>
+      <section className="channel-sidebar-section teacher-channel-settings">
+        <div>
+          <div className="workspace-main-eyebrow">채널 관리</div>
+          <strong>현재 채널 설정</strong>
+        </div>
+        <div className="workspace-inline-form">
+          <Input
+            label="채널 이름"
+            value={channelNameDraft}
+            onChange={(e) => setChannelNameDraft(e.target.value)}
+            placeholder="현재 채널 이름"
+          />
+          <Button variant="outline" onClick={handleRenameChannel} disabled={!channelNameDraft.trim()}>
+            저장
+          </Button>
+        </div>
+        <div className="workspace-sidebar-actions">
+          <Button variant="outline" onClick={() => setCreateModalOpen(true)}>
+            <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.5rem' }}>add</span>
+            새 채널 생성
+          </Button>
+        </div>
+      </section>
+
+      <section className="channel-sidebar-section">
+        <div>
+          <div className="workspace-main-eyebrow">현재 PDF</div>
+          <strong>{selectedMaterial?.title ?? '채널 PDF 없음'}</strong>
+        </div>
+        <p className="workspace-side-description">
+          선택한 PDF를 기준으로 문제 생성과 검토를 이어갑니다.
+        </p>
+        <div className="workspace-questions-list teacher-material-list">
+          {workspace?.materials.map((material) => (
+            <button
+              key={material.materialId}
+              type="button"
+              className={`workspace-option ${selectedMaterial?.materialId === material.materialId ? 'selected' : ''}`}
+              onClick={() => setSelectedMaterialId(material.materialId)}
+            >
+              <span>#{material.docNo}</span>
+              <span>{material.title}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {selectedMaterial && (
+        <section className="channel-sidebar-section">
+          <div>
+            <div className="workspace-main-eyebrow">문제 흐름</div>
+            <strong>현재 채널 모달 플로우</strong>
+          </div>
+          <div className="workspace-sidebar-actions">
+            <Button onClick={() => { setGenerateModalOpen(true); setReviewError(null) }}>문제 생성</Button>
+            <Button
+              variant="outline"
+              disabled={!latestReviewRequiredQuestionSet}
+              onClick={() => latestReviewRequiredQuestionSet && openReviewModal(latestReviewRequiredQuestionSet.questionSetId)}
+            >
+              최근 검토 열기
+            </Button>
+          </div>
+          {latestReviewRequiredQuestionSet ? (
+            <div className="teacher-channel-task-card review-required-card">
+              <div>
+                <div className="workspace-main-eyebrow">Review Required</div>
+                <strong className="student-channel-task-title">최근 생성 세트 검토 필요</strong>
+                <p className="student-channel-task-description">
+                  현재 PDF 기준으로 생성된 최신 세트가 검토/배포 전 상태입니다.
+                </p>
+              </div>
+              <Button size="sm" onClick={() => openReviewModal(latestReviewRequiredQuestionSet.questionSetId)}>검토 모달 열기</Button>
+            </div>
+          ) : latestQuestionSet ? (
+            <div className="student-channel-task-empty">최근 생성 세트는 이미 검토가 끝났거나, 아직 새로 생성된 세트가 없습니다.</div>
+          ) : null}
+          {latestPublishedQuestionSet ? (
+            <div className="teacher-channel-task-card">
+              <div>
+                <div className="workspace-main-eyebrow">Published</div>
+                <strong className="student-channel-task-title">최근 배포 코드</strong>
+                <p className="student-channel-task-description">
+                  배포 코드 <strong>{latestPublishedQuestionSet.distributionCode}</strong> · 학생은 이 채널 PDF와 연결된 문제 세트로 입장할 수 있습니다.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => openReviewModal(latestPublishedQuestionSet.questionSetId)}>배포 세트 보기</Button>
+            </div>
+          ) : (
+            <div className="student-channel-task-empty">이 PDF에서 아직 배포된 문제 세트가 없습니다.</div>
+          )}
+        </section>
+      )}
+    </>
+  )
+
   if (loading) return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
   if (error) return <div className="error-container"><p>{error}</p></div>
   if (!workspace || !token || !channelId) return <div className="error-container"><p>채널 운영 화면을 찾을 수 없습니다.</p></div>
 
+  const studentNames = workspace.participants
+    .filter((item: ChannelParticipantResponse) => item.role === 'STUDENT')
+    .map((item) => item.displayName)
+    .join(', ')
+
   return (
     <div className="workspace-page teacher-workspace-page channel-workspace-page">
-      <div className="channel-shell">
-        <ChannelSidebar channels={channels} activeChannelId={channelId} basePath="teacher" />
-        <div className="channel-content-shell">
+      <div className={`channel-shell teacher-channel-shell ${!sidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
+        {sidebarOpen && (
+          <ChannelSidebar
+            channels={channels}
+            activeChannelId={channelId}
+            basePath="teacher"
+            description="채널을 전환하거나 현재 채널의 운영 도구를 바로 사용할 수 있습니다."
+            footer={channelSidebarFooter}
+          />
+        )}
+
+        <div className="channel-content-shell teacher-channel-content-shell">
           <div className="workspace-header">
             <div className="workspace-header-content">
               <div className="workspace-section-meta">교사 · 채널 운영</div>
               <h1 className="page-title">{workspace.channel.name}</h1>
-              <p className="page-description">현재 입장 학생: {workspace.participants.filter((item: ChannelParticipantResponse) => item.role === 'STUDENT').map((item) => item.displayName).join(', ') || '없음'}</p>
+              <p className="page-description">현재 입장 학생: {studentNames || '없음'}</p>
             </div>
             <div className="workspace-actions">
               <button
@@ -162,124 +429,33 @@ export function TeacherChannelWorkspacePage() {
                 aria-label={sidebarOpen ? '사이드바 닫기' : '사이드바 열기'}
                 title={sidebarOpen ? '사이드바 닫기' : '사이드바 열기'}
               >
-                <span className="material-symbols-outlined">{sidebarOpen ? 'right_panel_close' : 'right_panel_open'}</span>
+                <span className="material-symbols-outlined">{sidebarOpen ? 'left_panel_close' : 'left_panel_open'}</span>
               </button>
+              <Button variant="outline" size="sm" onClick={() => setUploadModalOpen(true)}>
+                <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.4rem' }}>upload_file</span>
+                PDF 업로드
+              </Button>
             </div>
           </div>
 
-          <div className={`workspace-layout channel-layout ${!sidebarOpen ? 'sidebar-collapsed' : ''}`}>
-            <section className="workspace-main">
-              <div className="workspace-main-header">
-                <div className="workspace-main-title"><div>{selectedMaterial?.title ?? '채널 PDF 없음'}</div></div>
+          <section className="workspace-main teacher-main-stage">
+            <div className="workspace-main-header">
+              <div className="workspace-main-title">
+                <div>{selectedMaterial?.title ?? '채널 PDF 없음'}</div>
+                <p className="workspace-side-description">
+                  학생과 함께 보는 PDF를 중앙에 두고, 문제 생성·검토는 왼쪽 채널 도구에서 이어집니다.
+                </p>
               </div>
-              {selectedMaterial ? <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} /> : <div className="workspace-document-placeholder"><p>이 채널에 연결된 PDF가 없습니다.</p></div>}
-            </section>
-            {sidebarOpen && (
-              <aside className="workspace-side teacher-side">
-                <Card className="workspace-card">
-                  <CardBody>
-                    <h3 className="workspace-card-title">채널 관리</h3>
-                    <div className="workspace-chat-form compact-chat-form">
-                      <input className="number-input" value={newChannelName} onChange={(e) => setNewChannelName(e.target.value)} placeholder="현재 채널 새 이름" />
-                      <Button variant="outline" onClick={handleRenameChannel}>수정</Button>
-                    </div>
-                    <div className="workspace-sidebar-actions">
-                      <Button variant="outline" onClick={() => setCreateModalOpen(true)}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.5rem' }}>add</span>
-                        새 채널 생성
-                      </Button>
-                    </div>
-                  </CardBody>
-                </Card>
-                <Card className="workspace-card">
-                  <CardBody>
-                    <h3 className="workspace-card-title">채널 PDF 업로드</h3>
-                    <div className="workspace-sidebar-actions">
-                      <Button onClick={() => setUploadModalOpen(true)}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.5rem' }}>upload_file</span>
-                        PDF 업로드
-                      </Button>
-                    </div>
-                  </CardBody>
-                </Card>
-                <Card className="workspace-card">
-                  <CardBody>
-                    <h3 className="workspace-card-title">채널 PDF 목록</h3>
-                    <div className="workspace-questions-list">
-                      {workspace.materials.map((material) => (
-                        <button type="button" key={material.materialId} className={`workspace-option ${selectedMaterial?.materialId === material.materialId ? 'selected' : ''}`} onClick={() => setSelectedMaterialId(material.materialId)}>
-                          <span>#{material.docNo}</span>
-                          <span>{material.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </CardBody>
-                </Card>
-                {selectedMaterial && (
-                  <Card className="workspace-card">
-                    <CardBody>
-                      <h3 className="workspace-card-title">문제 흐름</h3>
-                      <p className="workspace-side-description">현재 선택한 PDF를 기준으로 문제를 생성하고, 최근 생성 세트를 검토/배포할 수 있습니다.</p>
-                      <div className="workspace-sidebar-actions">
-                        <Link to={`/teacher/materials/${selectedMaterial.materialId}/generate`}>
-                          <Button>이 PDF로 문제 생성</Button>
-                        </Link>
-                        {latestReviewRequiredQuestionSet && (
-                          <Link to={`/teacher/question-sets/${latestReviewRequiredQuestionSet.questionSetId}/review`}>
-                            <Button variant="outline">검토 후 배포하기</Button>
-                          </Link>
-                        )}
-                      </div>
-                      {latestReviewRequiredQuestionSet ? (
-                        <div className="student-channel-task-card teacher-channel-task-card review-required-card">
-                          <div>
-                            <div className="workspace-main-eyebrow">Review Required</div>
-                            <strong className="student-channel-task-title">최근 생성 세트 검토 필요</strong>
-                            <p className="student-channel-task-description">현재 PDF 기준으로 생성된 최신 세트가 아직 검토/배포 전 상태입니다. 채널 문맥을 유지한 채 바로 검토 화면으로 이동하세요.</p>
-                          </div>
-                          <Link to={`/teacher/question-sets/${latestReviewRequiredQuestionSet.questionSetId}/review`}>
-                            <Button>검토 화면 열기</Button>
-                          </Link>
-                        </div>
-                      ) : latestQuestionSet ? (
-                        <div className="student-channel-task-empty">최근 생성 세트는 이미 검토가 끝났거나, 아직 새로 생성된 세트가 없습니다.</div>
-                      ) : null}
-                      {latestPublishedQuestionSet ? (
-                        <div className="student-channel-task-card teacher-channel-task-card">
-                          <div>
-                            <div className="workspace-main-eyebrow">Published</div>
-                            <strong className="student-channel-task-title">최근 배포 코드</strong>
-                            <p className="student-channel-task-description">배포 코드 <strong>{latestPublishedQuestionSet.distributionCode}</strong> · 학생은 이 채널 PDF와 연결된 문제 세트로 바로 입장할 수 있습니다.</p>
-                          </div>
-                          <Link to={`/teacher/question-sets/${latestPublishedQuestionSet.questionSetId}/review`}>
-                            <Button variant="outline">배포 세트 보기</Button>
-                          </Link>
-                        </div>
-                      ) : (
-                        <div className="student-channel-task-empty">이 PDF에서 아직 배포된 문제 세트가 없습니다.</div>
-                      )}
-                    </CardBody>
-                  </Card>
-                )}
-                <Card className="workspace-card workspace-chat-card">
-                  <CardBody>
-                    <h3 className="workspace-card-title">채널 메시지</h3>
-                    <div className="workspace-chat-area">
-                      {workspace.recentMessages.map((item) => <div key={item.messageId} className="workspace-chat-bubble assistant"><strong>{item.displayName}</strong> {item.content}</div>)}
-                    </div>
-                    <div className="workspace-chat-form compact-chat-form">
-                      <input className="number-input" value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage() } }} placeholder="엔터로 메시지 보내기" />
-                      <Button onClick={handleSendMessage}>전송</Button>
-                    </div>
-                  </CardBody>
-                </Card>
-              </aside>
+            </div>
+            {selectedMaterial ? (
+              <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} />
+            ) : (
+              <div className="workspace-document-placeholder"><p>이 채널에 연결된 PDF가 없습니다.</p></div>
             )}
-          </div>
+          </section>
         </div>
       </div>
 
-      {/* Channel Creation Modal */}
       <Modal
         isOpen={createModalOpen}
         onClose={() => { setCreateModalOpen(false); setCreateError(null); setNewChannelName('') }}
@@ -301,7 +477,6 @@ export function TeacherChannelWorkspacePage() {
         </div>
       </Modal>
 
-      {/* PDF Upload Modal */}
       <Modal
         isOpen={uploadModalOpen}
         onClose={() => { setUploadModalOpen(false); setUploadError(null); setUploadTitle(''); setUploadDescription(''); setUploadFile(null) }}
@@ -340,6 +515,129 @@ export function TeacherChannelWorkspacePage() {
         <div className="modal-footer">
           <Button variant="outline" onClick={() => { setUploadModalOpen(false); setUploadError(null); setUploadTitle(''); setUploadDescription(''); setUploadFile(null) }}>취소</Button>
           <Button onClick={handleUpload} disabled={!uploadFile || !uploadTitle.trim()}>업로드</Button>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={generateModalOpen}
+        onClose={() => setGenerateModalOpen(false)}
+        title="문제 생성"
+        size="md"
+      >
+        <div className="modal-form">
+          <div className="workspace-side-description">
+            현재 채널 <strong>{workspace.channel.name}</strong> / 자료 <strong>{selectedMaterial?.title ?? '없음'}</strong> 기준으로 생성합니다.
+          </div>
+          <div className="form-group">
+            <label className="input-label">문항 수</label>
+            <input
+              className="number-input"
+              type="number"
+              min={1}
+              max={10}
+              value={questionCount}
+              onChange={(e) => setQuestionCount(Number(e.target.value))}
+            />
+          </div>
+          <div className="form-group">
+            <label className="input-label">난이도</label>
+            <select className="number-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}>
+              <option value="EASY">쉬움</option>
+              <option value="MEDIUM">보통</option>
+              <option value="HARD">어려움</option>
+            </select>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <Button variant="outline" onClick={() => setGenerateModalOpen(false)}>취소</Button>
+          <Button onClick={handleGenerateInChannel} loading={generating} disabled={!selectedMaterial}>생성 후 검토</Button>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={reviewModalOpen}
+        onClose={() => {
+          setReviewModalOpen(false)
+          setPublishCode(null)
+          setReviewError(null)
+          setReviewDueAt('')
+        }}
+        title="문제 검토 및 배포"
+        size="xl"
+      >
+        <div className="modal-form">
+          {reviewError && <div className="modal-error">{reviewError}</div>}
+          {!reviewQuestionSet ? (
+            <p className="workspace-side-description">검토할 문제 세트를 선택하세요.</p>
+          ) : (
+            <>
+              <div className="workspace-side-description">
+                상태: <strong>{reviewQuestionSet.status}</strong> · 총 {reviewQuestionSet.questions.length}문항
+              </div>
+              <div className="workspace-questions-list" style={{ maxHeight: '380px', overflowY: 'auto' }}>
+                {reviewQuestionSet.questions.map((question, index) => (
+                  <div key={question.id} className="teacher-channel-task-card">
+                    <div>
+                      <div className="workspace-main-eyebrow">문제 {index + 1}</div>
+                      <strong>{question.stem}</strong>
+                      <p className="workspace-side-description" style={{ marginTop: '0.5rem' }}>
+                        {question.options.map((option, optionIndex) => `${String.fromCharCode(65 + optionIndex)}. ${option}`).join(' · ')}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={question.excluded ? 'outline' : 'secondary'}
+                      loading={reviewSavingQuestionId === question.id}
+                      onClick={() => handleToggleExcluded(question.id, !question.excluded)}
+                    >
+                      {question.excluded ? '제외 해제' : '문항 제외'}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+
+              {publishCode ? (
+                <div className="teacher-channel-task-card">
+                  <div>
+                    <div className="workspace-main-eyebrow">배포 완료</div>
+                    <strong>배포 코드: {publishCode}</strong>
+                  </div>
+                </div>
+              ) : (
+                <div className="form-group">
+                  <label className="input-label">마감 일시 (선택)</label>
+                  <input
+                    className="number-input"
+                    type="datetime-local"
+                    value={reviewDueAt}
+                    onChange={(e) => setReviewDueAt(e.target.value)}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        <div className="modal-footer">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setReviewModalOpen(false)
+              setPublishCode(null)
+              setReviewError(null)
+              setReviewDueAt('')
+            }}
+          >
+            닫기
+          </Button>
+          {!publishCode && (
+            <Button
+              onClick={handlePublishFromReview}
+              loading={publishing}
+              disabled={!reviewQuestionSet || reviewQuestionSet.questions.every((question) => question.excluded)}
+            >
+              최종 확인 후 즉시 배포
+            </Button>
+          )}
         </div>
       </Modal>
     </div>

@@ -155,12 +155,23 @@ export interface ChannelMessageResponse {
 export interface ChannelWorkspaceResponse {
   channel: ChannelResponse
   materials: StudentMaterialSummaryResponse[]
+  questionSets?: Array<{
+    questionSetId: string
+    materialId: string
+    channelId: string
+    status: 'REVIEW_REQUIRED' | 'PUBLISHED' | 'CLOSED'
+    distributionCode: string | null
+    dueAt: string | null
+    createdAt: string
+    questionCount: number
+  }>
   recentMessages: ChannelMessageResponse[]
   participants: ChannelParticipantResponse[]
 }
 
 export interface StudentActiveQuestionSetResponse {
   questionSetId: string
+  channelId: string
   materialId: string
   distributionCode: string
   title: string
@@ -177,6 +188,10 @@ export async function getStudentChannelWorkspace(channelId: string, token: strin
 
 export async function getActiveQuestionSetByMaterial(materialId: string, token: string): Promise<StudentActiveQuestionSetResponse> {
   return get<StudentActiveQuestionSetResponse>(`/api/student/materials/${materialId}/active-question-set`, token)
+}
+
+export async function getActiveQuestionSetByChannel(channelId: string, token: string): Promise<StudentActiveQuestionSetResponse> {
+  return get<StudentActiveQuestionSetResponse>(`/api/student/channels/${channelId}/active-question-set`, token)
 }
 
 export async function sendChannelMessage(channelId: string, content: string, token: string): Promise<ChannelMessageResponse> {
