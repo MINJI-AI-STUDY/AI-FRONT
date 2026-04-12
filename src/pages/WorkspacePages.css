@@ -99,6 +99,8 @@
 }
 
 .channel-sidebar-surface {
+  position: relative;
+  z-index: 80;
   display: flex;
   flex: 1;
   min-width: 0;
