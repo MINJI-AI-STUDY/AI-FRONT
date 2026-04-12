@@ -85,6 +85,35 @@
   margin-bottom: 1.5rem;
 }
 
+.profile-alert-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem;
+  border-radius: 0.875rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.profile-alert-card strong {
+  display: block;
+  margin-bottom: 0.375rem;
+  color: #111827;
+}
+
+.profile-alert-card p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.profile-alert-card.warning {
+  background: #fff8f1;
+  border-color: #fed7aa;
+}
+
 .profile-section-title {
   margin: 0 0 1rem;
   font-size: 0.875rem;
@@ -150,6 +179,10 @@
   }
 
   .profile-actions {
+    flex-direction: column;
+  }
+
+  .profile-alert-card {
     flex-direction: column;
   }
 

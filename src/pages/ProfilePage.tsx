@@ -103,6 +103,17 @@ export function ProfilePage() {
 
           <div className="profile-section">
             <h2 className="profile-section-title">개인정보 동의 현황</h2>
+            {!privacyConsent?.consented && (
+              <div className="profile-alert-card warning">
+                <div>
+                  <strong>개인정보 처리방침 동의가 필요합니다.</strong>
+                  <p>서비스를 안정적으로 이용하려면 최신 개인정보 처리방침을 확인하고 동의를 완료해주세요.</p>
+                </div>
+                <Button variant="primary" onClick={() => setIsPrivacyModalOpen(true)}>
+                  지금 확인하고 동의하기
+                </Button>
+              </div>
+            )}
             <div className="profile-info-list">
               <div className="profile-info-item">
                 <span className="profile-info-label">개인정보 처리방침</span>
@@ -120,7 +131,7 @@ export function ProfilePage() {
           </div>
 
           <div className="profile-actions">
-            <Button variant="outline" onClick={() => setIsPrivacyModalOpen(true)}>
+            <Button variant={privacyConsent?.consented ? 'outline' : 'primary'} onClick={() => setIsPrivacyModalOpen(true)}>
               개인정보 처리방침 보기
             </Button>
             <Button variant="secondary" onClick={handleLogout}>
