@@ -44,6 +44,11 @@ export interface UseWorkspaceShellOptions {
   initialLeftOpen?: boolean
   /** Initial right panel open state (default: false — always closed). */
   initialRightOpen?: boolean
+  /**
+   * State scope key. When this key changes, panel open states are reset
+   * to initial defaults to prevent cross-scope leakage.
+   */
+  stateScopeKey?: string
 }
 
 export interface WorkspaceShellReturn extends WorkspaceShellState {
@@ -53,6 +58,12 @@ export interface WorkspaceShellReturn extends WorkspaceShellState {
   setRightPanelOpen: (open: boolean) => void
   toggleLeftSidebar: (nextOpen: boolean) => void
   toggleRightPanel: (nextOpen: boolean) => void
+}
+
+interface ScopedPanelState {
+  scopeKey: string | undefined
+  leftSidebarOpen: boolean
+  rightPanelOpen: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -110,7 +121,12 @@ function injectCssVars() {
 export function useWorkspaceShell(
   options: UseWorkspaceShellOptions = {},
 ): WorkspaceShellReturn {
-  const { initialLeftOpen, initialRightOpen = false } = options
+  const { initialLeftOpen, initialRightOpen = false, stateScopeKey } = options
+  const initialScopedState: ScopedPanelState = {
+    scopeKey: stateScopeKey,
+    leftSidebarOpen: initialLeftOpen ?? false,
+    rightPanelOpen: initialRightOpen,
+  }
 
   // --- Viewport state --------------------------------------------------
 
@@ -152,10 +168,54 @@ export function useWorkspaceShell(
 
   // --- Panel open state ------------------------------------------------
 
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState<boolean>(
-    () => initialLeftOpen ?? false,
+  const [scopedPanelState, setScopedPanelState] = useState<ScopedPanelState>(() => initialScopedState)
+  const resolvedPanelState =
+    scopedPanelState.scopeKey === stateScopeKey ? scopedPanelState : initialScopedState
+
+  const setLeftSidebarOpen = useCallback(
+    (open: boolean) => {
+      setScopedPanelState((prev) => {
+        const base =
+          prev.scopeKey === stateScopeKey
+            ? prev
+            : {
+                scopeKey: stateScopeKey,
+                leftSidebarOpen: initialLeftOpen ?? false,
+                rightPanelOpen: initialRightOpen,
+              }
+        return {
+          ...base,
+          leftSidebarOpen: open,
+          scopeKey: stateScopeKey,
+        }
+      })
+    },
+    [initialLeftOpen, initialRightOpen, stateScopeKey],
   )
-  const [rightPanelOpen, setRightPanelOpen] = useState<boolean>(initialRightOpen)
+
+  const setRightPanelOpen = useCallback(
+    (open: boolean) => {
+      setScopedPanelState((prev) => {
+        const base =
+          prev.scopeKey === stateScopeKey
+            ? prev
+            : {
+                scopeKey: stateScopeKey,
+                leftSidebarOpen: initialLeftOpen ?? false,
+                rightPanelOpen: initialRightOpen,
+              }
+        return {
+          ...base,
+          rightPanelOpen: open,
+          scopeKey: stateScopeKey,
+        }
+      })
+    },
+    [initialLeftOpen, initialRightOpen, stateScopeKey],
+  )
+
+  const leftSidebarOpen = resolvedPanelState.leftSidebarOpen
+  const rightPanelOpen = resolvedPanelState.rightPanelOpen
 
   // --- Overlay exclusivity ---------------------------------------------
 
@@ -167,7 +227,7 @@ export function useWorkspaceShell(
         setRightPanelOpen(false)
       }
     },
-    [isCompactViewport],
+    [isCompactViewport, setLeftSidebarOpen, setRightPanelOpen],
   )
 
   const toggleRightPanel = useCallback(
@@ -178,7 +238,7 @@ export function useWorkspaceShell(
         setLeftSidebarOpen(false)
       }
     },
-    [isCompactViewport],
+    [isCompactViewport, setLeftSidebarOpen, setRightPanelOpen],
   )
 
   // --- Return ----------------------------------------------------------

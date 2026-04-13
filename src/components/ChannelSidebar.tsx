@@ -36,7 +36,9 @@ export function ChannelSidebar({
   const [isCompactViewport, setIsCompactViewport] = useState(initialCompactViewport)
   const isDrawerOpen = isOpen ?? uncontrolledDrawerOpen
 
-  const setDrawerOpen = (nextOpen: boolean) => {
+  const handleToggleDrawer = () => {
+    const nextOpen = !isDrawerOpen
+
     if (onOpenChange) {
       onOpenChange(nextOpen)
       return
@@ -66,64 +68,58 @@ export function ChannelSidebar({
   }, [isOpen])
 
   return (
-    <aside
-      className={`channel-sidebar-panel ${isCompactViewport ? 'channel-sidebar-panel-overlay' : ''} ${isDrawerOpen ? 'is-open' : 'is-closed'} ${className}`.trim()}
-      aria-label="채널 탐색"
-    >
-      {isCompactViewport && isDrawerOpen && (
-        <button
-          type="button"
-          className={`channel-sidebar-backdrop ${isCompactViewport && isDrawerOpen ? 'is-visible' : ''}`}
-          aria-label="채널 목록 닫기"
-          onClick={() => setDrawerOpen(false)}
-        />
-      )}
+    <>
+      <aside
+        className={`channel-sidebar-panel ${isCompactViewport ? 'channel-sidebar-panel-overlay' : ''} ${isDrawerOpen ? 'is-open' : 'is-closed'} ${className}`.trim()}
+        aria-label="채널 탐색"
+        data-testid="left-sidebar-panel"
+      >
+        {isCompactViewport && isDrawerOpen && <div className={`channel-sidebar-backdrop ${isCompactViewport && isDrawerOpen ? 'is-visible' : ''}`} aria-hidden="true" />}
 
-      <div className={`channel-sidebar-surface ${isDrawerOpen ? 'is-open' : 'is-closed'}`}>
-        <div className="channel-sidebar-header">
-          <div>
-            <div className="workspace-main-eyebrow">채널</div>
-            <strong>{title}</strong>
-            {description && <p className="channel-sidebar-summary">{description}</p>}
+        <div className={`channel-sidebar-surface ${isDrawerOpen ? 'is-open' : 'is-closed'}`}>
+          <div className="channel-sidebar-header">
+            <div>
+              <div className="workspace-main-eyebrow">채널</div>
+              <strong>{title}</strong>
+              {description && <p className="channel-sidebar-summary">{description}</p>}
+            </div>
           </div>
 
-          {isCompactViewport && (
-            <button
-              type="button"
-              className="channel-sidebar-toggle"
-              aria-label={isDrawerOpen ? '채널 목록 닫기' : '채널 목록 열기'}
-              title={isDrawerOpen ? '채널 목록 닫기' : '채널 목록 열기'}
-              onClick={() => setDrawerOpen(!isDrawerOpen)}
-            >
-              <span className="material-symbols-outlined">{isDrawerOpen ? 'close' : 'menu'}</span>
-            </button>
+          <nav className="channel-sidebar-list" aria-label="채널 목록">
+            {channels.map((channel) => (
+              <Link
+                key={channel.channelId}
+                to={`/${basePath}/channels/${channel.channelId}`}
+                className={`channel-sidebar-item ${activeChannelId === channel.channelId ? 'active' : ''}`}
+                style={{ touchAction: 'manipulation' }}
+              >
+                <div className="channel-sidebar-name"># {channel.name}</div>
+                <div className="channel-sidebar-description">{channel.description || '설명 없음'}</div>
+              </Link>
+            ))}
+          </nav>
+
+          {footer && (
+            <div className="channel-sidebar-management">
+              <div className="channel-sidebar-management-label">관리</div>
+              <div className="channel-sidebar-footer">{footer}</div>
+            </div>
           )}
         </div>
+      </aside>
 
-        <nav className="channel-sidebar-list" aria-label="채널 목록">
-          {channels.map((channel) => (
-            <Link
-              key={channel.channelId}
-              to={`/${basePath}/channels/${channel.channelId}`}
-              className={`channel-sidebar-item ${activeChannelId === channel.channelId ? 'active' : ''}`}
-              style={{ touchAction: 'manipulation' }}
-              onClick={() => {
-                if (isCompactViewport) setDrawerOpen(false)
-              }}
-            >
-              <div className="channel-sidebar-name"># {channel.name}</div>
-              <div className="channel-sidebar-description">{channel.description || '설명 없음'}</div>
-            </Link>
-          ))}
-        </nav>
-
-        {footer && (
-          <div className="channel-sidebar-management" aria-label="채널 관리">
-            <div className="channel-sidebar-management-label">관리</div>
-            <div className="channel-sidebar-footer">{footer}</div>
-          </div>
-        )}
-      </div>
-    </aside>
+      {onOpenChange && (
+        <button
+          type="button"
+          className="workspace-tool-button workspace-edge-handle workspace-edge-handle--left workspace-edge-handle--floating"
+          onClick={handleToggleDrawer}
+          aria-label={isDrawerOpen ? '채널 목록 닫기' : '채널 목록 열기'}
+          title={isDrawerOpen ? '채널 목록 닫기' : '채널 목록 열기'}
+          data-testid="left-sidebar-handle"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '1rem' }}>{isDrawerOpen ? 'left_panel_close' : 'left_panel_open'}</span>
+        </button>
+      )}
+    </>
   )
 }

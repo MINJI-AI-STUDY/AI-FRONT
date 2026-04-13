@@ -1,6 +1,7 @@
 /**
  * 교사 홈 페이지
  * 액션-우선순위 대시보드 구조
+ * 흐름: 문서 선택 → 현재 문서 반영 → 워크스페이스 진입
  */
 
 import { Link } from 'react-router-dom'
@@ -71,21 +72,22 @@ export function TeacherHomePage() {
   const hasChannels = channels.length > 0
   const hasMaterials = materials.length > 0
   const firstReadyMaterial = materials.find((material) => material.status === 'READY')
+  const spotlightMaterial = firstReadyMaterial ?? materials[0]
 
   return (
-    <div className="teacher-home">
+    <div className="teacher-home" data-testid="teacher-home-page">
       {/* 페이지 헤더 */}
       <div className="page-header">
         <div className="workspace-chip">교사 워크스페이스</div>
         <h1 className="page-title">교사 대시보드</h1>
         <p className="page-description">
-          안녕하세요, {user?.displayName}님. 학습 자료를 관리하고 학생들의 진행 상황을 모니터링하세요.
+          안녕하세요, {user?.displayName}님. 학습 자료를 관리하고, 문서 대시보드 미리보기로 현재 상태와 다음 행동을 먼저 확인하세요.
         </p>
       </div>
 
       {/* 상태 요약 */}
       {hasMaterials && (
-        <section className="dashboard-section">
+        <section className="dashboard-section" data-testid="status-summary-section">
           <div className="status-summary">
             <div className="status-item">
               <span className="status-value">{materials.length}</span>
@@ -112,7 +114,7 @@ export function TeacherHomePage() {
       {/* 주요 액션: 빠른 시작 */}
       <section className="dashboard-section">
         <h2 className="section-title">빠른 액션</h2>
-        <p className="section-helper">자료를 올리고, 준비된 자료를 확인한 뒤, 문제 세트 생성으로 이어지는 흐름을 기준으로 배치했습니다.</p>
+        <p className="section-helper">자료를 올리고, 준비된 문서를 확인한 뒤, 문제 세트 생성과 문서 대시보드 진입으로 이어지는 흐름을 기준으로 배치했습니다.</p>
         <div className="quick-action-cards">
           <Card className="quick-action-card primary">
             <CardBody>
@@ -120,9 +122,9 @@ export function TeacherHomePage() {
                 <div className="quick-action-icon primary">📄</div>
                 <div className="quick-action-text">
                   <h3 className="quick-action-title">새 자료 업로드</h3>
-                  <p className="quick-action-description">
-                    PDF 파일을 업로드하고 AI 분석을 시작합니다. 학생들이 학습할 수 있도록 준비합니다.
-                  </p>
+                    <p className="quick-action-description">
+                    PDF 파일을 업로드하고 AI 분석을 시작합니다. 이후 문서 대시보드에서 상태를 빠르게 확인할 수 있습니다.
+                    </p>
                 </div>
               </div>
               <Link to="/teacher/materials/new">
@@ -138,10 +140,10 @@ export function TeacherHomePage() {
                 <div className="quick-action-text">
                   <h3 className="quick-action-title">문제 세트 생성</h3>
                   <p className="quick-action-description">
-                    업로드한 자료를 기반으로 AI가 문제 세트를 자동 생성합니다.
+                    업로드한 자료를 기반으로 AI가 문제 세트를 자동 생성합니다. 준비된 문서는 대시보드에서 바로 이어서 확인합니다.
                   </p>
                   {firstReadyMaterial && (
-                    <div className="quick-action-context">
+                    <div className="quick-action-context" data-testid="current-spotlight-material">
                       <span className="quick-action-context-label">현재 기준 자료</span>
                       <strong>{firstReadyMaterial.title}</strong>
                       <span>문서 #{firstReadyMaterial.docNo} · {firstReadyMaterial.description || '설명 없음'}</span>
@@ -158,7 +160,7 @@ export function TeacherHomePage() {
       </section>
 
       {firstReadyMaterial && (
-        <section className="dashboard-section">
+        <section className="dashboard-section" data-testid="ready-material-spotlight-section">
           <div className="section-header">
             <h2 className="section-title">문제 생성 준비 완료 자료</h2>
             <span className="section-count">우선 추천 1개</span>
@@ -167,7 +169,7 @@ export function TeacherHomePage() {
             <CardBody>
               <div className="ready-material-content">
                 <div>
-                  <div className="action-meta">READY MATERIAL</div>
+                  <div className="action-meta">분석 완료 자료</div>
                   <h3 className="ready-material-title">{firstReadyMaterial.title}</h3>
                   <p className="ready-material-description">{firstReadyMaterial.description || '설명이 등록되지 않았습니다. 이 자료 기준으로 바로 문제 세트를 생성할 수 있습니다.'}</p>
                 </div>
@@ -260,16 +262,22 @@ export function TeacherHomePage() {
         </div>
       </section>
 
-      {/* 내 업로드 자료 */}
-      <section className="dashboard-section">
+      {/* 내 업로드 자료 - 문서 선택 → 대시보드 진입 흐름 */}
+      <section className="dashboard-section" data-testid="my-materials-section">
         <div className="section-header">
           <h2 className="section-title">내 업로드 자료</h2>
+          {spotlightMaterial && (
+            <Link to={`/teacher/materials/${spotlightMaterial.materialId}/dashboard`}>
+              <Button variant="ghost" size="sm" data-testid="open-document-dashboard-btn">문서 대시보드 열기</Button>
+            </Link>
+          )}
           {materials[0] && (
             <Link to={`/teacher/materials/${materials[0].materialId}`}>
               <Button variant="ghost" size="sm">첫 자료 보기</Button>
             </Link>
           )}
         </div>
+        <p className="section-helper">미리보기는 축약 요약, 상세는 문서 상태 페이지입니다. 교사는 여기서 상태를 먼저 보고 필요한 문서에만 들어가면 됩니다.</p>
         {!hasMaterials ? (
           <Card className="info-card">
             <CardBody>
@@ -285,9 +293,9 @@ export function TeacherHomePage() {
             </CardBody>
           </Card>
         ) : (
-          <div className="materials-list">
+          <div className="materials-list" data-testid="materials-list">
             {materials.slice(0, 5).map((material) => (
-              <Card className="material-item-card" key={material.materialId}>
+              <Card className="material-item-card" key={material.materialId} data-testid={`material-item-${material.materialId}`}>
                 <CardBody>
                   <div className="material-item-content">
                     <div className="material-item-info">
@@ -306,7 +314,7 @@ export function TeacherHomePage() {
                       <Link to={`/teacher/materials/${material.materialId}`}>
                         <Button variant="outline" size="sm">상세</Button>
                       </Link>
-                      <Button variant="ghost" size="sm" onClick={() => setModalMaterialId(material.materialId)}>미리보기</Button>
+                      <Button variant="ghost" size="sm" onClick={() => setModalMaterialId(material.materialId)} data-testid={`dashboard-preview-btn-${material.materialId}`}>대시보드 미리보기</Button>
                     </div>
                   </div>
                 </CardBody>

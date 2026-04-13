@@ -62,7 +62,7 @@ export function TeacherChannelWorkspacePage() {
     toggleLeftSidebar,
     toggleRightPanel,
     leftPanelMode,
-  } = useWorkspaceShell()
+  } = useWorkspaceShell({ stateScopeKey: `teacher-channel-${channelId ?? 'unknown'}` })
 
   useEffect(() => {
     if (!token || !channelId) return
@@ -146,6 +146,19 @@ export function TeacherChannelWorkspacePage() {
   const latestPublishedQuestionSet = questionSets.find((item) => item.status === 'PUBLISHED') ?? null
   const recentTeacherMessages = [...(workspace?.recentMessages ?? [])].slice(-5).reverse()
 
+  const rightPanelHandle = (
+    <button
+      type="button"
+      className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right workspace-edge-handle--floating"
+      onClick={() => toggleRightPanel(!rightPanelOpen)}
+      aria-label={rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
+      title={rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
+      data-testid="right-panel-toggle"
+    >
+      <span className="material-symbols-outlined">{rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}</span>
+    </button>
+  )
+
   const handleCreateChannel = async () => {
     if (!token || !newChannelName.trim()) return
     try {
@@ -154,7 +167,7 @@ export function TeacherChannelWorkspacePage() {
       setChannels((prev) => [...prev, created])
       setNewChannelName('')
       setCreateModalOpen(false)
-    } catch (err) {
+    } catch {
       setCreateError('채널 생성에 실패했습니다.')
     }
   }
@@ -195,7 +208,7 @@ export function TeacherChannelWorkspacePage() {
       setUploadDescription('')
       setUploadFile(null)
       setUploadModalOpen(false)
-    } catch (err) {
+    } catch {
       setUploadError('업로드에 실패했습니다.')
     }
   }
@@ -319,9 +332,14 @@ export function TeacherChannelWorkspacePage() {
               <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
             </div>
             <div className="channel-sidebar-list">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="workspace-loading-row" style={{ padding: '0.875rem 0.9375rem' }}>
-                  <div className="workspace-loading-line" style={{ width: index === 0 ? '60%' : '72%' }} />
+              {[
+                { key: 'channel-loading-item-1', width: '60%' },
+                { key: 'channel-loading-item-2', width: '72%' },
+                { key: 'channel-loading-item-3', width: '72%' },
+                { key: 'channel-loading-item-4', width: '72%' },
+              ].map((item) => (
+                <div key={item.key} className="workspace-loading-row" style={{ padding: '0.875rem 0.9375rem' }}>
+                  <div className="workspace-loading-line" style={{ width: item.width }} />
                   <div className="workspace-loading-line" style={{ width: '84%', height: '0.8rem' }} />
                 </div>
               ))}
@@ -329,19 +347,21 @@ export function TeacherChannelWorkspacePage() {
           </aside>
 
           <div className="channel-content-shell teacher-channel-content-shell">
-            <div className="workspace-header">
-              <div className="workspace-header-content workspace-loading-copy">
-                <div className="workspace-loading-chip" style={{ width: '7rem' }} />
-                <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '70%' }} />
-                <div className="workspace-loading-line" style={{ width: '24rem', maxWidth: '92%', height: '0.8rem' }} />
-              </div>
-              <div className="workspace-actions teacher-shell-actions">
-                <div className="workspace-loading-button" style={{ width: '8.5rem', height: '2.75rem' }} />
-                <div className="workspace-loading-button" style={{ width: '8rem', height: '2.75rem' }} />
-              </div>
-            </div>
+        <div className="workspace-header">
+          <div className="workspace-header-content workspace-loading-copy">
+            <div className="workspace-loading-chip" style={{ width: '7rem' }} />
+            <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '70%' }} />
+            <div className="workspace-loading-line" style={{ width: '24rem', maxWidth: '92%', height: '0.8rem' }} />
+          </div>
+          <div className="workspace-actions teacher-shell-actions">
+            <div className="workspace-loading-button" style={{ width: '8.5rem', height: '2.75rem' }} />
+            <div className="workspace-loading-button" style={{ width: '8rem', height: '2.75rem' }} />
+          </div>
+        </div>
 
-            <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'teacher-workspace-layout--overlay' : ''}`}>
+        {rightPanelHandle}
+
+        <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'teacher-workspace-layout--overlay' : ''}`}>
               <section className="workspace-main teacher-main-stage">
                 <div className="workspace-main-header">
                   <div className="workspace-main-title workspace-loading-copy">
@@ -379,23 +399,19 @@ export function TeacherChannelWorkspacePage() {
 
               {rightPanelOpen && (
                 <>
-                  {rightPanelMode === 'overlay' && (
-                    <button
-                      type="button"
-                      className="right-panel-backdrop is-visible"
-                      aria-label="보조 패널 닫기"
-                      onClick={() => toggleRightPanel(false)}
-                      data-testid="right-panel-backdrop"
-                    />
-                  )}
+                  {rightPanelMode === 'overlay' && <div className="right-panel-backdrop is-visible" aria-hidden="true" data-testid="right-panel-backdrop" />}
                 <aside className={`workspace-side teacher-channel-aux-panel ${rightPanelMode === 'overlay' ? 'teacher-channel-aux-panel--overlay' : ''}`} data-testid="right-panel">
                   <div className="workspace-loading-sidebar">
-                    {Array.from({ length: 3 }).map((_, index) => (
-                      <div key={index} className="workspace-loading-row">
-                        <div className="workspace-loading-chip" style={{ width: index === 0 ? '6rem' : '7rem' }} />
+                    {[
+                      { key: 'teacher-panel-loading-1', chipWidth: '6rem', blockHeight: '4.5rem' },
+                      { key: 'teacher-panel-loading-2', chipWidth: '7rem', blockHeight: '5.5rem' },
+                      { key: 'teacher-panel-loading-3', chipWidth: '7rem', blockHeight: '4.5rem' },
+                    ].map((item) => (
+                      <div key={item.key} className="workspace-loading-row">
+                        <div className="workspace-loading-chip" style={{ width: item.chipWidth }} />
                         <div className="workspace-loading-line" style={{ width: '72%' }} />
                         <div className="workspace-loading-line" style={{ width: '92%', height: '0.8rem' }} />
-                        <div className="workspace-loading-block" style={{ height: index === 1 ? '5.5rem' : '4.5rem' }} />
+                        <div className="workspace-loading-block" style={{ height: item.blockHeight }} />
                       </div>
                     ))}
                   </div>
@@ -429,27 +445,16 @@ export function TeacherChannelWorkspacePage() {
         />
 
         <div className="channel-content-shell teacher-channel-content-shell">
-          <div className="workspace-header">
-        <div className="workspace-header-content">
-          <div className="workspace-section-meta">교사 · 채널 운영</div>
-          <h1 className="page-title">{workspace.channel.name}</h1>
-          <p className="page-description">현재 입장 학생: {studentNames || '없음'}</p>
-        </div>
-        <div className="workspace-actions teacher-shell-actions">
-              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--left" onClick={() => toggleLeftSidebar(!leftSidebarOpen)} data-testid="left-sidebar-toggle">
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
-                  {leftSidebarOpen ? 'left_panel_close' : 'left_panel_open'}
-                </span>
-                {leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
-              </Button>
-              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--right" onClick={() => toggleRightPanel(!rightPanelOpen)} data-testid="right-panel-toggle">
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
-                  {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
-              </span>
-              {rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
-          </Button>
-        </div>
+        <div className="workspace-header">
+          <div className="workspace-header-content">
+            <div className="workspace-section-meta">교사 · 채널 운영</div>
+            <h1 className="page-title">{workspace.channel.name}</h1>
+            <p className="page-description">현재 입장 학생: {studentNames || '없음'}</p>
+          </div>
+          <div className="workspace-actions teacher-shell-actions" />
       </div>
+
+      {rightPanelHandle}
 
           <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'teacher-workspace-layout--overlay' : ''}`} data-testid="workspace-layout">
             <section className="workspace-main teacher-main-stage" data-testid="pdf-viewer-area">
@@ -502,28 +507,65 @@ export function TeacherChannelWorkspacePage() {
 
             {rightPanelOpen && (
               <>
-                {rightPanelMode === 'overlay' && (
-                  <button
-                    type="button"
-                    className="right-panel-backdrop is-visible"
-                    aria-label="보조 패널 닫기"
-                    onClick={() => toggleRightPanel(false)}
-                    data-testid="right-panel-backdrop"
-                  />
-                )}
+                {rightPanelMode === 'overlay' && <div className="right-panel-backdrop is-visible" aria-hidden="true" data-testid="right-panel-backdrop" />}
                 <aside className={`workspace-side teacher-channel-aux-panel ${rightPanelMode === 'overlay' ? 'teacher-channel-aux-panel--overlay' : ''}`} data-testid="right-panel">
                 <div className="workspace-panel-inline-header teacher-panel-header">
                   <div>
                     <div className="workspace-main-eyebrow">보조 패널</div>
                     <h3 className="workspace-card-title">채널 도구와 흐름</h3>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => toggleRightPanel(false)}>
-                    닫기
-                  </Button>
                 </div>
 
-                <div className="teacher-panel-stack">
-                  <section className="channel-sidebar-section teacher-channel-settings">
+                <div className="teacher-panel-stack teacher-assist-panel" data-testid="teacher-assist-panel">
+                  <section className="channel-sidebar-section teacher-channel-settings teacher-panel-summary">
+                    <div>
+                      <div className="workspace-main-eyebrow">현재 작업 순서</div>
+                      <strong>1. 문서 선택 → 2. 문제 생성 → 3. 채널 대화 확인</strong>
+                    </div>
+                    <p className="workspace-side-description">
+                      지금 선택한 PDF를 바꾸고, 바로 문제를 만들고, 최근 대화와 배포 상태를 이어서 확인하세요.
+                    </p>
+                    <div className="workspace-sidebar-actions teacher-panel-quick-actions">
+                      <Button
+                        onClick={() => { setGenerateModalOpen(true); setReviewError(null) }}
+                        data-testid="ask-ai-action"
+                      >
+                        문제 생성
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => document.getElementById('teacher-channel-chat-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                        data-testid="channel-chat-action"
+                      >
+                        채널 대화 보기
+                      </Button>
+                    </div>
+                  </section>
+
+                  <section className="channel-sidebar-section" data-testid="document-select">
+                    <div>
+                      <div className="workspace-main-eyebrow">문서 전환</div>
+                      <strong>{selectedMaterial?.title ?? '채널 PDF 없음'}</strong>
+                    </div>
+                    <p className="workspace-side-description">
+                      문서를 바꾸면 문제 생성과 배포 흐름이 바로 새 자료 기준으로 이어집니다.
+                    </p>
+                    <div className="workspace-questions-list teacher-material-list">
+                      {workspace.materials.map((material) => (
+                        <button
+                          key={material.materialId}
+                          type="button"
+                          className={`workspace-option ${selectedMaterial?.materialId === material.materialId ? 'selected' : ''}`}
+                          onClick={() => setSelectedMaterialId(material.materialId)}
+                        >
+                          <span>#{material.docNo}</span>
+                          <span>{material.title}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="channel-sidebar-section">
                     <div>
                       <div className="workspace-main-eyebrow">채널 관리</div>
                       <strong>현재 채널 설정</strong>
@@ -547,35 +589,12 @@ export function TeacherChannelWorkspacePage() {
                     </div>
                   </section>
 
-                  <section className="channel-sidebar-section">
+                  <section className="channel-sidebar-section" id="teacher-channel-chat-section">
                     <div>
-                      <div className="workspace-main-eyebrow">현재 PDF</div>
-                      <strong>{selectedMaterial?.title ?? '채널 PDF 없음'}</strong>
+                      <div className="workspace-main-eyebrow">채널 대화</div>
+                      <strong>최근 메시지</strong>
                     </div>
-                    <p className="workspace-side-description">
-                      선택한 PDF를 기준으로 문제 생성과 검토를 이어갑니다.
-                    </p>
-                    <div className="workspace-questions-list teacher-material-list">
-                      {workspace.materials.map((material) => (
-                        <button
-                          key={material.materialId}
-                          type="button"
-                          className={`workspace-option ${selectedMaterial?.materialId === material.materialId ? 'selected' : ''}`}
-                          onClick={() => setSelectedMaterialId(material.materialId)}
-                        >
-                          <span>#{material.docNo}</span>
-                          <span>{material.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-
-                  <section className="channel-sidebar-section">
-                    <div>
-                      <div className="workspace-main-eyebrow">채널 최근 메시지</div>
-                      <strong>교사 · 채널 공용 대화</strong>
-                    </div>
-                    <p className="workspace-side-description">workspace.recentMessages 기준으로 채널 전체 흐름만 확인합니다.</p>
+                    <p className="workspace-side-description">최근 대화만 빠르게 보고, 필요한 경우 위의 문제 생성 흐름으로 바로 전환하세요.</p>
                     <div className="teacher-channel-message-list">
                       {recentTeacherMessages.length === 0 ? (
                         <div className="student-channel-task-empty">아직 메시지가 없습니다.</div>
@@ -592,8 +611,8 @@ export function TeacherChannelWorkspacePage() {
 
                   <section className="channel-sidebar-section">
                     <div>
-                      <div className="workspace-main-eyebrow">문제 흐름</div>
-                      <strong>현재 채널 모달 플로우</strong>
+                      <div className="workspace-main-eyebrow">배포 상태</div>
+                      <strong>문제 흐름</strong>
                     </div>
                     <div className="workspace-sidebar-actions">
                       <Button onClick={() => { setGenerateModalOpen(true); setReviewError(null) }}>문제 생성</Button>
@@ -608,10 +627,10 @@ export function TeacherChannelWorkspacePage() {
                     {latestReviewRequiredQuestionSet ? (
                       <div className="teacher-channel-task-card review-required-card">
                         <div>
-                          <div className="workspace-main-eyebrow">Review Required</div>
+                          <div className="workspace-main-eyebrow">검토 필요</div>
                           <strong className="student-channel-task-title">최근 생성 세트 검토 필요</strong>
                           <p className="student-channel-task-description">
-                            현재 PDF 기준으로 생성된 최신 세트가 검토/배포 전 상태입니다.
+                            현재 PDF 기준으로 생성된 최신 세트의 검토와 배포 상태만 보여줍니다.
                           </p>
                         </div>
                         <Button size="sm" onClick={() => openReviewModal(latestReviewRequiredQuestionSet.questionSetId)}>검토 모달 열기</Button>
@@ -622,10 +641,10 @@ export function TeacherChannelWorkspacePage() {
                     {latestPublishedQuestionSet ? (
                       <div className="teacher-channel-task-card">
                         <div>
-                          <div className="workspace-main-eyebrow">Published</div>
+                          <div className="workspace-main-eyebrow">배포 완료</div>
                           <strong className="student-channel-task-title">최근 배포 코드</strong>
                           <p className="student-channel-task-description">
-                            배포 코드 <strong>{latestPublishedQuestionSet.distributionCode}</strong> · 학생은 이 채널 PDF와 연결된 문제 세트로 입장할 수 있습니다.
+                            배포 코드 <strong>{latestPublishedQuestionSet.distributionCode}</strong> · 학생 입장용 코드만 간단히 확인하세요.
                           </p>
                         </div>
                         <div className="workspace-sidebar-actions">
@@ -683,11 +702,11 @@ export function TeacherChannelWorkspacePage() {
             placeholder="자료 제목을 입력하세요"
           />
           <div className="form-group">
-            <label className="input-label">설명</label>
-            <textarea className="textarea" rows={3} value={uploadDescription} onChange={(e) => setUploadDescription(e.target.value)} placeholder="자료에 대한 설명을 입력하세요" />
+            <label className="input-label" htmlFor="upload-description">설명</label>
+            <textarea id="upload-description" className="textarea" rows={3} value={uploadDescription} onChange={(e) => setUploadDescription(e.target.value)} placeholder="자료에 대한 설명을 입력하세요" />
           </div>
           <div className="form-group">
-            <label className="input-label">PDF 파일</label>
+            <label className="input-label" htmlFor="pdf-upload">PDF 파일</label>
             <div className="file-input-wrapper">
               <input
                 type="file"
@@ -727,8 +746,9 @@ export function TeacherChannelWorkspacePage() {
             </div>
           )}
           <div className="form-group">
-            <label className="input-label">문항 수</label>
+            <label className="input-label" htmlFor="channel-question-count">문항 수</label>
             <input
+              id="channel-question-count"
               className="number-input"
               type="number"
               min={1}
@@ -738,8 +758,8 @@ export function TeacherChannelWorkspacePage() {
             />
           </div>
           <div className="form-group">
-            <label className="input-label">난이도</label>
-            <select className="number-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}>
+            <label className="input-label" htmlFor="channel-question-difficulty">난이도</label>
+            <select id="channel-question-difficulty" className="number-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}>
               <option value="EASY">쉬움</option>
               <option value="MEDIUM">보통</option>
               <option value="HARD">어려움</option>
@@ -770,7 +790,7 @@ export function TeacherChannelWorkspacePage() {
           ) : (
             <>
               <div className="workspace-side-description">
-                상태: <strong>{reviewQuestionSet.status}</strong> · 총 {reviewQuestionSet.questions.length}문항
+                상태: <strong>{reviewQuestionSet.status === 'REVIEW_REQUIRED' ? '검토 필요' : reviewQuestionSet.status === 'PUBLISHED' ? '배포 완료' : reviewQuestionSet.status === 'CLOSED' ? '종료' : reviewQuestionSet.status}</strong> · 총 {reviewQuestionSet.questions.length}문항
               </div>
               <div className="workspace-questions-list" style={{ maxHeight: '380px', overflowY: 'auto' }}>
                 {reviewQuestionSet.questions.map((question, index) => (
@@ -803,8 +823,9 @@ export function TeacherChannelWorkspacePage() {
                 </div>
               ) : (
                 <div className="form-group">
-                  <label className="input-label">마감 일시 (선택)</label>
+                  <label className="input-label" htmlFor="review-due-at">마감 일시 (선택)</label>
                   <input
+                    id="review-due-at"
                     className="number-input"
                     type="datetime-local"
                     value={reviewDueAt}

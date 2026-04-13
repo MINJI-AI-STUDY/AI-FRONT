@@ -94,16 +94,10 @@ async function request<T>(
     headers['Authorization'] = `Bearer ${token}`
   }
 
-  let response: Response
-  try {
-    response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...fetchOptions,
-      headers,
-    })
-  } catch (fetchError) {
-    // 네트워크 오류 (DNS, CORS, 연결 거부 등) — TypeError로 전달됨
-    throw fetchError
-  }
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...fetchOptions,
+    headers,
+  })
 
   // 응답이 성공적이지 않으면 에러 발생
   if (!response.ok) {

@@ -53,7 +53,22 @@ export function StudentWorkspacePage() {
   const [error, setError] = useState<string | null>(null)
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false)
   const [followUpContext, setFollowUpContext] = useState<StudentAiFollowUpContext | null>(null)
-  const { rightPanelOpen: rightSidebarOpen, rightPanelMode, toggleRightPanel, setRightPanelOpen } = useWorkspaceShell()
+  const { rightPanelOpen: rightSidebarOpen, rightPanelMode, toggleRightPanel, setRightPanelOpen } = useWorkspaceShell({
+    stateScopeKey: `student-workspace-${distributionCode ?? 'unknown'}`,
+  })
+
+  const rightPanelHandle = (
+    <button
+      type="button"
+      className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right workspace-edge-handle--floating"
+      onClick={() => toggleRightPanel(!rightSidebarOpen)}
+      aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
+      title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
+      data-testid="right-panel-toggle"
+    >
+      <span className="material-symbols-outlined">{rightSidebarOpen ? 'right_panel_close' : 'right_panel_open'}</span>
+    </button>
+  )
 
   useEffect(() => {
     const context = consumeStudentAiFollowUpContext()
@@ -138,122 +153,125 @@ export function StudentWorkspacePage() {
 
   if (loading) {
     return (
-      <div className="workspace-page student-workspace-page" aria-busy="true">
-        <div className="workspace-header">
-          <div className="workspace-header-content workspace-loading-copy">
-            <div className="workspace-loading-chip" style={{ width: '6rem' }} />
-            <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '72%' }} />
-            <div className="workspace-loading-line" style={{ width: '24rem', maxWidth: '92%', height: '0.8rem' }} />
-          </div>
-          <div className="workspace-actions">
-            <div className="workspace-loading-button" style={{ width: '8rem', height: '2.75rem' }} />
-            <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
-          </div>
-        </div>
-
-        <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
-          <section className="workspace-main student-workspace-stage">
-            <div className="workspace-main-header">
-              <div className="workspace-main-title workspace-loading-copy">
-                <div className="workspace-loading-line" style={{ width: '10rem' }} />
-                <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '85%' }} />
-                <div className="workspace-loading-line" style={{ width: '24rem', maxWidth: '100%', height: '0.8rem' }} />
-              </div>
-              <div className="workspace-main-toolbar">
-                <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
-                <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
-              </div>
+      <>
+        <div className="workspace-page student-workspace-page" aria-busy="true">
+          <div className="workspace-header">
+            <div className="workspace-header-content workspace-loading-copy">
+              <div className="workspace-loading-chip" style={{ width: '6rem' }} />
+              <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '72%' }} />
+              <div className="workspace-loading-line" style={{ width: '24rem', maxWidth: '92%', height: '0.8rem' }} />
             </div>
+            <div className="workspace-actions">
+              <div className="workspace-loading-button" style={{ width: '8rem', height: '2.75rem' }} />
+              <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
+            </div>
+          </div>
 
-            <div className="student-document-stage">
-              <div className="document-viewer-shell workspace-document-stage">
-                <div className="document-viewer-toolbar">
-                  <div className="document-viewer-toolbar-title workspace-loading-copy">
-                    <div className="workspace-loading-line" style={{ width: '8.5rem' }} />
-                    <div className="workspace-loading-line" style={{ width: '13rem', height: '0.8rem' }} />
-                  </div>
-                  <div className="workspace-loading-button" style={{ width: '7rem', height: '2.6rem' }} />
+          <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
+            <section className="workspace-main student-workspace-stage">
+              <div className="workspace-main-header">
+                <div className="workspace-main-title workspace-loading-copy">
+                  <div className="workspace-loading-line" style={{ width: '10rem' }} />
+                  <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '85%' }} />
+                  <div className="workspace-loading-line" style={{ width: '24rem', maxWidth: '100%', height: '0.8rem' }} />
                 </div>
-                <div className="document-viewer-frame-shell">
-                  <div className="workspace-loading-frame" />
+                <div className="workspace-main-toolbar">
+                  <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
+                  <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
                 </div>
               </div>
-            </div>
 
-            <Card className="workspace-card student-workspace-quiz-card">
-              <CardBody>
-                <div className="workspace-panel-inline-header">
-                  <div className="workspace-loading-copy">
-                    <div className="workspace-loading-chip" style={{ width: '6.5rem' }} />
-                    <div className="workspace-loading-line" style={{ width: '14rem' }} />
+              <div className="student-document-stage">
+                <div className="document-viewer-shell workspace-document-stage">
+                  <div className="document-viewer-toolbar">
+                    <div className="document-viewer-toolbar-title workspace-loading-copy">
+                      <div className="workspace-loading-line" style={{ width: '8.5rem' }} />
+                      <div className="workspace-loading-line" style={{ width: '13rem', height: '0.8rem' }} />
+                    </div>
+                    <div className="workspace-loading-button" style={{ width: '7rem', height: '2.6rem' }} />
                   </div>
-                  <div className="workspace-loading-button" style={{ width: '6.5rem', height: '2.5rem' }} />
+                  <div className="document-viewer-frame-shell">
+                    <div className="workspace-loading-frame" />
+                  </div>
                 </div>
-                <div className="workspace-loading-row">
-                  <div className="workspace-loading-line" style={{ width: '80%' }} />
-                  <div className="workspace-loading-block" style={{ height: '7rem' }} />
-                  <div className="workspace-loading-block" style={{ height: '7rem' }} />
-                </div>
-                <div className="workspace-loading-button" style={{ width: '10rem', height: '2.75rem', marginTop: '1rem' }} />
-              </CardBody>
-            </Card>
+              </div>
 
-            <Card className="workspace-card workspace-chat-card">
-              <CardBody>
-                <div className="workspace-panel-inline-header">
-                  <div className="workspace-loading-copy">
-                    <div className="workspace-loading-chip" style={{ width: '7rem' }} />
-                    <div className="workspace-loading-line" style={{ width: '16rem' }} />
-                  </div>
-                  <div className="workspace-loading-chip" style={{ width: '3.5rem' }} />
-                </div>
-                <div className="workspace-loading-sidebar">
-                  <div className="workspace-loading-row">
-                    <div className="workspace-loading-line" style={{ width: '85%' }} />
-                    <div className="workspace-loading-block" style={{ height: '5rem' }} />
+              <Card className="workspace-card student-workspace-quiz-card">
+                <CardBody>
+                  <div className="workspace-panel-inline-header">
+                    <div className="workspace-loading-copy">
+                      <div className="workspace-loading-chip" style={{ width: '6.5rem' }} />
+                      <div className="workspace-loading-line" style={{ width: '14rem' }} />
+                    </div>
+                    <div className="workspace-loading-button" style={{ width: '6.5rem', height: '2.5rem' }} />
                   </div>
                   <div className="workspace-loading-row">
-                    <div className="workspace-loading-line" style={{ width: '78%' }} />
-                    <div className="workspace-loading-block" style={{ height: '5rem' }} />
+                    <div className="workspace-loading-line" style={{ width: '80%' }} />
+                    <div className="workspace-loading-block" style={{ height: '7rem' }} />
+                    <div className="workspace-loading-block" style={{ height: '7rem' }} />
                   </div>
-                </div>
-                <div className="workspace-loading-button" style={{ width: '100%', height: '3rem', marginTop: '1rem' }} />
-              </CardBody>
-            </Card>
-          </section>
-
-          {rightSidebarOpen && (
-            <>
-              {rightPanelMode === 'overlay' && (
-                <button
-                  type="button"
-                  className="right-panel-backdrop is-visible"
-                  aria-label="학습 도구 패널 닫기"
-                  onClick={() => toggleRightPanel(false)}
-                />
-              )}
-              <aside className={`workspace-side student-side student-workspace-side ${rightPanelMode === 'overlay' ? 'student-workspace-side--overlay' : ''}`}>
-                <Card className="workspace-card">
-                  <CardBody>
-                  <div className="workspace-loading-sidebar">
-                    <div className="workspace-loading-row">
-                      <div className="workspace-loading-chip" style={{ width: '7rem' }} />
-                      <div className="workspace-loading-line" style={{ width: '16rem', maxWidth: '90%' }} />
-                      <div className="workspace-loading-block" style={{ height: '4.75rem' }} />
-                    </div>
-                    <div className="workspace-loading-row">
-                      <div className="workspace-loading-chip" style={{ width: '6rem' }} />
-                      <div className="workspace-loading-line" style={{ width: '82%' }} />
-                      <div className="workspace-loading-block" style={{ height: '6.5rem' }} />
-                    </div>
-                  </div>
+                  <div className="workspace-loading-button" style={{ width: '10rem', height: '2.75rem', marginTop: '1rem' }} />
                 </CardBody>
               </Card>
-              </aside>
-            </>
-          )}
+
+              <Card className="workspace-card workspace-chat-card">
+                <CardBody>
+                  <div className="workspace-panel-inline-header">
+                    <div className="workspace-loading-copy">
+                      <div className="workspace-loading-chip" style={{ width: '7rem' }} />
+                      <div className="workspace-loading-line" style={{ width: '16rem' }} />
+                    </div>
+                    <div className="workspace-loading-chip" style={{ width: '3.5rem' }} />
+                  </div>
+                  <div className="workspace-loading-sidebar">
+                    <div className="workspace-loading-row">
+                      <div className="workspace-loading-line" style={{ width: '85%' }} />
+                      <div className="workspace-loading-block" style={{ height: '5rem' }} />
+                    </div>
+                    <div className="workspace-loading-row">
+                      <div className="workspace-loading-line" style={{ width: '78%' }} />
+                      <div className="workspace-loading-block" style={{ height: '5rem' }} />
+                    </div>
+                  </div>
+                  <div className="workspace-loading-button" style={{ width: '100%', height: '3rem', marginTop: '1rem' }} />
+                </CardBody>
+              </Card>
+            </section>
+
+            {rightSidebarOpen && (
+              <>
+                {rightPanelMode === 'overlay' && (
+                  <button
+                    type="button"
+                    className="right-panel-backdrop is-visible"
+                    aria-label="학습 도구 패널 닫기"
+                    onClick={() => toggleRightPanel(false)}
+                  />
+                )}
+                <aside className={`workspace-side student-side student-workspace-side ${rightPanelMode === 'overlay' ? 'student-workspace-side--overlay' : ''}`}>
+                  <Card className="workspace-card">
+                    <CardBody>
+                      <div className="workspace-loading-sidebar">
+                        <div className="workspace-loading-row">
+                          <div className="workspace-loading-chip" style={{ width: '7rem' }} />
+                          <div className="workspace-loading-line" style={{ width: '16rem', maxWidth: '90%' }} />
+                          <div className="workspace-loading-block" style={{ height: '4.75rem' }} />
+                        </div>
+                        <div className="workspace-loading-row">
+                          <div className="workspace-loading-chip" style={{ width: '6rem' }} />
+                          <div className="workspace-loading-line" style={{ width: '82%' }} />
+                          <div className="workspace-loading-block" style={{ height: '6.5rem' }} />
+                        </div>
+                      </div>
+                    </CardBody>
+                  </Card>
+                </aside>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+        {rightPanelHandle}
+      </>
     )
   }
   if (!questionSet || !token) {
@@ -270,18 +288,10 @@ export function StudentWorkspacePage() {
         </div>
         <div className="workspace-actions">
           <Link to="/student"><Button variant="outline">학생 홈</Button></Link>
-          <button
-            type="button"
-            className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right"
-            onClick={() => toggleRightPanel(!rightSidebarOpen)}
-            aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
-            title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
-            data-testid="right-panel-toggle"
-          >
-            <span className="material-symbols-outlined">{rightSidebarOpen ? 'right_panel_close' : 'right_panel_open'}</span>
-          </button>
         </div>
       </div>
+
+      {rightPanelHandle}
 
       {error && <div className="error-message">{error}</div>}
 
