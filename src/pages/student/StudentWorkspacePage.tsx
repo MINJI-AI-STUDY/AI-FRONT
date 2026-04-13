@@ -238,29 +238,6 @@ export function StudentWorkspacePage() {
                   <div className="workspace-loading-button" style={{ width: '10rem', height: '2.75rem', marginTop: '1rem' }} />
                 </CardBody>
               </Card>
-
-              <Card className="workspace-card workspace-chat-card">
-                <CardBody>
-                  <div className="workspace-panel-inline-header">
-                    <div className="workspace-loading-copy">
-                      <div className="workspace-loading-chip" style={{ width: '7rem' }} />
-                      <div className="workspace-loading-line" style={{ width: '16rem' }} />
-                    </div>
-                    <div className="workspace-loading-chip" style={{ width: '3.5rem' }} />
-                  </div>
-                  <div className="workspace-loading-sidebar">
-                    <div className="workspace-loading-row">
-                      <div className="workspace-loading-line" style={{ width: '85%' }} />
-                      <div className="workspace-loading-block" style={{ height: '5rem' }} />
-                    </div>
-                    <div className="workspace-loading-row">
-                      <div className="workspace-loading-line" style={{ width: '78%' }} />
-                      <div className="workspace-loading-block" style={{ height: '5rem' }} />
-                    </div>
-                  </div>
-                  <div className="workspace-loading-button" style={{ width: '100%', height: '3rem', marginTop: '1rem' }} />
-                </CardBody>
-              </Card>
             </section>
 
             {rightSidebarOpen && (
@@ -345,38 +322,6 @@ export function StudentWorkspacePage() {
             <MaterialDocumentViewer materialId={questionSet.materialId} token={token} />
           </div>
 
-          <div className="workspace-main-stack">
-            <Card className="workspace-card student-workspace-quiz-card">
-              <CardBody>
-                <div className="workspace-panel-inline-header">
-                  <div>
-                    <div className="workspace-main-eyebrow">문제 풀이</div>
-                    <h3 className="workspace-card-title">정답 선택 후 바로 제출</h3>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={() => setIsQuizModalOpen(true)}>
-                    집중 모드
-                  </Button>
-                </div>
-                <div className="workspace-questions-list">
-                  {questionSet.questions.map((item, index) => (
-                    <div key={item.id} className="workspace-question-item">
-                      <p className="workspace-question-title">문제 {index + 1}. {item.stem}</p>
-                      <div className="workspace-options-grid">
-                        {item.options.map((option, optionIndex) => (
-                          <button key={`${item.id}-${option}`} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
-                            <span>{String.fromCharCode(65 + optionIndex)}</span>
-                            <span>{option}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <Button loading={submitting} onClick={handleSubmit} data-testid="student-submit-cta">정답 제출하기</Button>
-              </CardBody>
-            </Card>
-          </div>
-
         </section>
 
         {rightSidebarOpen && (
@@ -396,10 +341,10 @@ export function StudentWorkspacePage() {
                 <h3 className="workspace-card-title">풀이 요약</h3>
                 <span className="workspace-mini-chip">QUIZ</span>
                 <Button variant="ghost" size="sm" onClick={() => setIsQuizModalOpen(true)}>
-                  중앙 확대
+                  문제 풀기 열기
                 </Button>
               </div>
-              <p className="workspace-side-description">중앙에서는 문제를 풀고, 이 패널에서는 진행도와 AI 질문을 함께 이어갑니다.</p>
+              <p className="workspace-side-description">중앙은 학습 문서 집중 상태로 유지하고, 문제 풀이와 AI 질문은 이 패널과 모달에서 이어갑니다.</p>
               <div className="student-quiz-progress-card student-quiz-progress-card--compact">
                 <strong>{Object.keys(answers).length} / {questionSet.questions.length} 문항 응답</strong>
                 <p>응답 수를 확인한 뒤 중앙 문제 영역에서 계속 풀이하거나, 집중 모드로 크게 볼 수 있습니다.</p>
@@ -415,7 +360,7 @@ export function StudentWorkspacePage() {
                 </div>
               </div>
               <div className="workspace-sidebar-actions">
-                <Button variant="outline" onClick={() => setIsQuizModalOpen(true)}>집중 모드 열기</Button>
+                <Button variant="outline" onClick={() => setIsQuizModalOpen(true)}>문제 풀기 열기</Button>
                 <Button loading={submitting} onClick={handleSubmit}>정답 제출하기</Button>
               </div>
             </CardBody>

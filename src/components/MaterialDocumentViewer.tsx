@@ -231,6 +231,7 @@ export function MaterialDocumentViewer({
 
   const buildViewerUrl = (page: number) =>
     `${documentUrl}#toolbar=0&navpanes=0&scrollbar=0&page=${page}&view=FitH`;
+  const viewerSrc = buildViewerUrl(currentPage)
 
   useEffect(() => {
     let objectUrl: string | null = null;
@@ -331,8 +332,9 @@ export function MaterialDocumentViewer({
       <div className="document-viewer-frame-shell is-single">
         <div className="document-viewer-spread is-single">
           <iframe
+            key={`${materialId}-${currentPage}`}
             className="workspace-document-frame"
-            src={buildViewerUrl(currentPage)}
+            src={viewerSrc}
             title={`학습 자료 PDF ${currentPage}페이지`}
             loading="lazy"
           />
