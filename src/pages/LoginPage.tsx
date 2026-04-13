@@ -26,6 +26,7 @@ export function LoginPage() {
 
   // Student PIN login states
   const [schoolId, setSchoolId] = useState('')
+  const [selectedSchoolName, setSelectedSchoolName] = useState('')
   const [studentName, setStudentName] = useState('')
   const [pin, setPin] = useState('')
   const [schoolError, setSchoolError] = useState<string | null>(null)
@@ -37,6 +38,17 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname
+
+  const switchTab = (nextTab: LoginTab) => {
+    setActiveTab(nextTab)
+    setError(null)
+
+    if (nextTab === 'teacher') {
+      setSchoolId('')
+      setSelectedSchoolName('')
+      setSchoolError(null)
+    }
+  }
 
   /**
    * 교사/운영자 로그인 폼 제출 핸들러
@@ -72,10 +84,15 @@ export function LoginPage() {
       return
     }
 
+    if (!selectedSchoolName) {
+      setSchoolError('학교 목록에서 정확한 학교를 다시 선택해주세요')
+      return
+    }
+
     setLoading(true)
 
     try {
-      const response = await studentPinLogin({ schoolId, studentName, pin })
+      const response = await studentPinLogin({ schoolId, studentName: studentName.trim(), pin: pin.trim() })
       await login(response.accessToken, response.refreshToken)
       const homePath = roleHomePaths[response.role]
       navigate(from || homePath, { replace: true })
@@ -99,14 +116,14 @@ export function LoginPage() {
             <button
               type="button"
               className={`login-tab ${activeTab === 'teacher' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('teacher'); setError(null) }}
+              onClick={() => switchTab('teacher')}
             >
               교직원 / 운영자
             </button>
             <button
               type="button"
               className={`login-tab ${activeTab === 'student' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('student'); setError(null) }}
+              onClick={() => switchTab('student')}
             >
               학생 (PIN)
             </button>
@@ -147,8 +164,9 @@ export function LoginPage() {
                 <p>학교를 검색해서 선택한 뒤, 실명과 PIN 번호를 입력하세요. 학교를 입력만 하면 로그인되지 않고 꼭 선택해야 합니다.</p>
               </div>
               <SchoolSearchInput
-                onChange={(id) => {
+                onChange={(id, schoolName) => {
                   setSchoolId(id)
+                  setSelectedSchoolName(schoolName)
                   setSchoolError(null)
                 }}
                 error={schoolError || undefined}
