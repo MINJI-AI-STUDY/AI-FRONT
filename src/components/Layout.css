@@ -261,7 +261,7 @@
   }
 
   .topbar-nav,
-  .floating-rail {
+  .floating-rail-brand {
     display: none;
   }
 
@@ -295,6 +295,19 @@
   .content {
     padding: 1.25rem 1.5rem;
   }
+
+  .floating-rail {
+    left: 0.75rem;
+    top: 4.5rem;
+    bottom: 0.75rem;
+    width: min(14rem, calc(100vw - 1.5rem));
+    padding: 0.875rem 0.75rem;
+  }
+
+  .rail-link-label,
+  .floating-footer-link span:last-child {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 640px) {
@@ -308,5 +321,9 @@
 
   .content {
     padding: 1rem;
+  }
+
+  .floating-rail {
+    display: none;
   }
 }

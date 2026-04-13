@@ -81,6 +81,28 @@
   margin-top: 0.75rem;
 }
 
+/* When right panel enters overlay mode, main workspace collapses to single-column PDF-first layout. */
+.teacher-workspace-layout--overlay {
+  grid-template-columns: 1fr;
+}
+
+.teacher-workspace-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 77;
+  border: 0;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.32);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.teacher-workspace-overlay-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* BREAKPOINT: COMPACT_VIEWPORT_MAX (1180px) — see src/constants/workspaceBreakpoints.ts */
 @media (max-width: 1180px) {
   .teacher-shell-actions {
@@ -90,6 +112,32 @@
   /* On compact viewports, right panel becomes overlay — remove max-width constraint */
   .teacher-channel-aux-panel {
     max-width: none;
+  }
+
+  .teacher-workspace-side-overlay {
+    width: min(24rem, calc(100vw - 1.5rem));
+    top: 4.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    max-height: calc(100vh - 5.5rem);
+  }
+
+  .teacher-workspace-layout--overlay {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .teacher-workspace-side-overlay {
+    width: calc(100vw - 1rem);
+    right: 0.5rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    max-height: calc(100vh - 1rem);
+  }
+
+  .teacher-workspace-overlay-backdrop {
+    background: rgba(15, 23, 42, 0.38);
   }
 }
 

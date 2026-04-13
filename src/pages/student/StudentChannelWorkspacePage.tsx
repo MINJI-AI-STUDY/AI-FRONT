@@ -429,7 +429,7 @@ export function StudentChannelWorkspacePage() {
                 {shellRightPanelMode === 'overlay' && (
                   <button
                     type="button"
-                    className="student-right-panel-backdrop is-visible"
+                    className="right-panel-backdrop student-right-panel-backdrop is-visible"
                     aria-label="학습 도구 패널 닫기"
                     onClick={() => toggleRightPanel(false)}
                     data-testid="right-panel-backdrop"

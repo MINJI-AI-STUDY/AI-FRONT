@@ -53,7 +53,7 @@ export function StudentWorkspacePage() {
   const [error, setError] = useState<string | null>(null)
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false)
   const [followUpContext, setFollowUpContext] = useState<StudentAiFollowUpContext | null>(null)
-  const { rightPanelOpen: rightSidebarOpen, toggleRightPanel, setRightPanelOpen } = useWorkspaceShell()
+  const { rightPanelOpen: rightSidebarOpen, rightPanelMode, toggleRightPanel, setRightPanelOpen } = useWorkspaceShell()
 
   useEffect(() => {
     const context = consumeStudentAiFollowUpContext()
@@ -99,6 +99,7 @@ export function StudentWorkspacePage() {
       const result = await submitAnswers(distributionCode, { answers: questionSet.questions.map((q) => ({ questionId: q.id, selectedOptionIndex: answers[q.id] })) }, token)
       sessionStorage.setItem('latest_submission_id', result.submissionId)
       sessionStorage.setItem('latest_material_id', questionSet.materialId)
+      sessionStorage.setItem('latest_distribution_code', distributionCode)
       navigate(`/student/submissions/${result.submissionId}`)
     } catch (err) {
       console.error('답안 제출 실패:', err)
@@ -150,7 +151,7 @@ export function StudentWorkspacePage() {
           </div>
         </div>
 
-        <div className={`workspace-layout student-workspace-layout ${rightSidebarOpen ? 'student-workspace-layout--with-sidebar' : 'student-workspace-layout--document-only'}`}>
+        <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
           <section className="workspace-main student-workspace-stage">
             <div className="workspace-main-header">
               <div className="workspace-main-title workspace-loading-copy">
@@ -222,9 +223,18 @@ export function StudentWorkspacePage() {
           </section>
 
           {rightSidebarOpen && (
-            <aside className="workspace-side student-side student-workspace-side">
-              <Card className="workspace-card">
-                <CardBody>
+            <>
+              {rightPanelMode === 'overlay' && (
+                <button
+                  type="button"
+                  className="right-panel-backdrop is-visible"
+                  aria-label="학습 도구 패널 닫기"
+                  onClick={() => toggleRightPanel(false)}
+                />
+              )}
+              <aside className={`workspace-side student-side student-workspace-side ${rightPanelMode === 'overlay' ? 'student-workspace-side--overlay' : ''}`}>
+                <Card className="workspace-card">
+                  <CardBody>
                   <div className="workspace-loading-sidebar">
                     <div className="workspace-loading-row">
                       <div className="workspace-loading-chip" style={{ width: '7rem' }} />
@@ -239,7 +249,8 @@ export function StudentWorkspacePage() {
                   </div>
                 </CardBody>
               </Card>
-            </aside>
+              </aside>
+            </>
           )}
         </div>
       </div>
@@ -273,8 +284,8 @@ export function StudentWorkspacePage() {
 
       {error && <div className="error-message">{error}</div>}
 
-      <div className={`workspace-layout student-workspace-layout ${rightSidebarOpen ? 'student-workspace-layout--with-sidebar' : 'student-workspace-layout--document-only'}`}>
-        <section className="workspace-main student-workspace-stage">
+    <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
+      <section className="workspace-main student-workspace-stage">
           <div className="workspace-main-header">
             <div className="workspace-main-title">
               <div className="workspace-main-title-icon">
@@ -389,7 +400,16 @@ export function StudentWorkspacePage() {
         </section>
 
         {rightSidebarOpen && (
-          <aside className="workspace-side student-side student-workspace-side">
+          <>
+            {rightPanelMode === 'overlay' && (
+              <button
+                type="button"
+                className="right-panel-backdrop is-visible"
+                aria-label="학습 도구 패널 닫기"
+                onClick={() => toggleRightPanel(false)}
+              />
+            )}
+            <aside className={`workspace-side student-side student-workspace-side ${rightPanelMode === 'overlay' ? 'student-workspace-side--overlay' : ''}`}>
           <Card className="workspace-card">
             <CardBody>
               <div className="workspace-panel-inline-header">
@@ -436,7 +456,8 @@ export function StudentWorkspacePage() {
               </div>
             </CardBody>
           </Card>
-          </aside>
+            </aside>
+          </>
         )}
       </div>
 

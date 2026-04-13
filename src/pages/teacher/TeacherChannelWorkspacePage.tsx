@@ -58,6 +58,7 @@ export function TeacherChannelWorkspacePage() {
   const {
     leftSidebarOpen,
     rightPanelOpen,
+    rightPanelMode,
     toggleLeftSidebar,
     toggleRightPanel,
     leftPanelMode,
@@ -340,7 +341,7 @@ export function TeacherChannelWorkspacePage() {
               </div>
             </div>
 
-            <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''}`}>
+            <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'teacher-workspace-layout--overlay' : ''}`}>
               <section className="workspace-main teacher-main-stage">
                 <div className="workspace-main-header">
                   <div className="workspace-main-title workspace-loading-copy">
@@ -377,7 +378,17 @@ export function TeacherChannelWorkspacePage() {
               </section>
 
               {rightPanelOpen && (
-                <aside className="workspace-side teacher-channel-aux-panel">
+                <>
+                  {rightPanelMode === 'overlay' && (
+                    <button
+                      type="button"
+                      className="right-panel-backdrop is-visible"
+                      aria-label="보조 패널 닫기"
+                      onClick={() => toggleRightPanel(false)}
+                      data-testid="right-panel-backdrop"
+                    />
+                  )}
+                <aside className={`workspace-side teacher-channel-aux-panel ${rightPanelMode === 'overlay' ? 'teacher-channel-aux-panel--overlay' : ''}`} data-testid="right-panel">
                   <div className="workspace-loading-sidebar">
                     {Array.from({ length: 3 }).map((_, index) => (
                       <div key={index} className="workspace-loading-row">
@@ -389,6 +400,7 @@ export function TeacherChannelWorkspacePage() {
                     ))}
                   </div>
                 </aside>
+                </>
               )}
             </div>
           </div>

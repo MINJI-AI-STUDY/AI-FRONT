@@ -26,7 +26,8 @@ export function TeacherWorkspacePage() {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false)
-  const { rightPanelOpen, toggleRightPanel } = useWorkspaceShell()
+  const { rightPanelOpen, canRightPanelInline, toggleRightPanel } = useWorkspaceShell()
+  const isRightPanelOverlay = rightPanelOpen && !canRightPanelInline
 
   useEffect(() => {
     if (!materialId || !token) return
@@ -84,7 +85,13 @@ export function TeacherWorkspacePage() {
           <p className="page-description">같은 자료를 보면서 문제를 생성·검토·배포합니다.</p>
         </div>
         <div className="workspace-actions teacher-shell-actions">
-          <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--right" onClick={() => toggleRightPanel(!rightPanelOpen)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="workspace-edge-handle workspace-edge-handle--right"
+            onClick={() => toggleRightPanel(!rightPanelOpen)}
+            data-testid="right-panel-toggle"
+          >
             <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
               {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
             </span>
@@ -96,8 +103,11 @@ export function TeacherWorkspacePage() {
 
       {error && <div className="error-message">{error}</div>}
 
-      <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''}`}>
-        <section className="workspace-main">
+      <div
+        className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''} ${isRightPanelOverlay ? 'teacher-workspace-layout--overlay' : ''}`}
+        data-testid="workspace-layout"
+      >
+        <section className="workspace-main teacher-main-stage" data-testid="pdf-viewer-area">
           <div className="workspace-main-header">
             <div className="workspace-main-title">
               <div className="workspace-main-title-icon">
@@ -117,8 +127,9 @@ export function TeacherWorkspacePage() {
               </button>
             </div>
           </div>
+          <MaterialDocumentViewer materialId={materialId} token={token} />
 
-          <Card className="workspace-card teacher-workspace-primary-card">
+          <Card className="workspace-card teacher-workspace-primary-card teacher-channel-primary-card">
             <CardBody>
               <div className="workspace-panel-inline-header">
                 <div>
@@ -147,12 +158,15 @@ export function TeacherWorkspacePage() {
               </p>
             </CardBody>
           </Card>
-
-          <MaterialDocumentViewer materialId={materialId} token={token} />
         </section>
 
         {rightPanelOpen && (
-          <aside className="workspace-side teacher-side">
+          <>
+            {isRightPanelOverlay && <button className="right-panel-backdrop teacher-workspace-overlay-backdrop is-visible" type="button" aria-label="보조 패널 닫기" onClick={() => toggleRightPanel(false)} />}
+            <aside
+              className={`workspace-side teacher-channel-aux-panel ${isRightPanelOverlay ? 'teacher-workspace-side-overlay' : ''}`}
+              data-testid="standalone-right-panel"
+            >
             <div className="workspace-panel-inline-header teacher-panel-header">
               <div>
                 <div className="workspace-main-eyebrow">보조 패널</div>
@@ -171,12 +185,29 @@ export function TeacherWorkspacePage() {
                     <span className="workspace-mini-chip">AI</span>
                   </div>
                   <div className="form-group">
-                    <label className="input-label">문항 수</label>
-                    <input className="number-input" type="number" min={1} max={10} value={questionCount} onChange={(e) => setQuestionCount(Number(e.target.value))} />
+                    <label className="input-label" htmlFor="question-count">
+                      문항 수
+                    </label>
+                    <input
+                      id="question-count"
+                      className="number-input"
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={questionCount}
+                      onChange={(e) => setQuestionCount(Number(e.target.value))}
+                    />
                   </div>
                   <div className="form-group">
-                    <label className="input-label">난이도</label>
-                    <select className="number-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}>
+                    <label className="input-label" htmlFor="question-difficulty">
+                      난이도
+                    </label>
+                    <select
+                      id="question-difficulty"
+                      className="number-input"
+                      value={difficulty}
+                      onChange={(e) => setDifficulty(e.target.value as 'EASY' | 'MEDIUM' | 'HARD')}
+                    >
                       <option value="EASY">쉬움</option>
                       <option value="MEDIUM">보통</option>
                       <option value="HARD">어려움</option>
@@ -208,6 +239,7 @@ export function TeacherWorkspacePage() {
             </Card>
             </div>
           </aside>
+          </>
         )}
       </div>
 
