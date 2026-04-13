@@ -45,7 +45,8 @@ export function Button({
 
   return (
     <button className={classes} disabled={disabled || loading} {...props}>
-      {loading ? <span className="btn-spinner" /> : children}
+      {loading && <span className="btn-spinner" />}
+      <span className={`btn-content ${loading ? 'is-loading' : ''}`}>{children}</span>
     </button>
   )
 }
