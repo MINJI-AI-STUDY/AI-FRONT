@@ -26,7 +26,9 @@ export function TeacherWorkspacePage() {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false)
-  const { rightPanelOpen, canRightPanelInline, toggleRightPanel } = useWorkspaceShell()
+  const { rightPanelOpen, canRightPanelInline, toggleRightPanel } = useWorkspaceShell({
+    stateScopeKey: `teacher-workspace-${materialId ?? 'unknown'}`,
+  })
   const isRightPanelOverlay = rightPanelOpen && !canRightPanelInline
 
   useEffect(() => {
@@ -52,6 +54,19 @@ export function TeacherWorkspacePage() {
     return JSON.stringify(questionSet, null, 2)
   }, [questionSet])
 
+  const rightPanelHandle = (
+    <button
+      type="button"
+      className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right workspace-edge-handle--floating"
+      onClick={() => toggleRightPanel(!rightPanelOpen)}
+      aria-label={rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
+      title={rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
+      data-testid="right-panel-toggle"
+    >
+      <span className="material-symbols-outlined">{rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}</span>
+    </button>
+  )
+
   const handleGenerate = async () => {
     if (!materialId || !token) return
     setGenerating(true)
@@ -69,7 +84,12 @@ export function TeacherWorkspacePage() {
   }
 
   if (loading) {
-    return <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
+    return (
+      <>
+        <div className="loading-container"><div className="loading-spinner" /><p>로딩 중...</p></div>
+        {rightPanelHandle}
+      </>
+    )
   }
 
   if (!material || !token || !materialId) {
@@ -85,21 +105,11 @@ export function TeacherWorkspacePage() {
           <p className="page-description">같은 자료를 보면서 문제를 생성·검토·배포합니다.</p>
         </div>
         <div className="workspace-actions teacher-shell-actions">
-          <Button
-            variant="outline"
-            size="sm"
-            className="workspace-edge-handle workspace-edge-handle--right"
-            onClick={() => toggleRightPanel(!rightPanelOpen)}
-            data-testid="right-panel-toggle"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
-              {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
-            </span>
-            {rightPanelOpen ? '보조 패널 닫기' : '보조 패널 열기'}
-          </Button>
           <Link to="/teacher"><Button variant="outline">교사 홈</Button></Link>
         </div>
       </div>
+
+      {rightPanelHandle}
 
       {error && <div className="error-message">{error}</div>}
 
@@ -162,19 +172,16 @@ export function TeacherWorkspacePage() {
 
         {rightPanelOpen && (
           <>
-            {isRightPanelOverlay && <button className="right-panel-backdrop teacher-workspace-overlay-backdrop is-visible" type="button" aria-label="보조 패널 닫기" onClick={() => toggleRightPanel(false)} />}
+            {isRightPanelOverlay && <div className="right-panel-backdrop teacher-workspace-overlay-backdrop is-visible" aria-hidden="true" data-testid="right-panel-backdrop" />}
             <aside
               className={`workspace-side teacher-channel-aux-panel ${isRightPanelOverlay ? 'teacher-workspace-side-overlay' : ''}`}
-              data-testid="standalone-right-panel"
+              data-testid="right-panel"
             >
             <div className="workspace-panel-inline-header teacher-panel-header">
               <div>
                 <div className="workspace-main-eyebrow">보조 패널</div>
                 <h3 className="workspace-card-title">문제 생성 · JSON 검토</h3>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => toggleRightPanel(false)}>
-                닫기
-              </Button>
             </div>
 
             <div className="teacher-panel-stack">
