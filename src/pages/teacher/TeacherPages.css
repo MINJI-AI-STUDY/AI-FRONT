@@ -31,8 +31,22 @@
   justify-content: flex-end;
 }
 
+/* Teacher channel workspace: PDF-first layout.
+   Right panel is contextual (narrower) so the PDF viewer stays dominant.
+   When the right panel is closed, the PDF expands to fill the space. */
 .teacher-workspace-page .workspace-layout {
-  grid-template-columns: minmax(0, 1fr) minmax(17rem, 19rem);
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 16rem);
+}
+
+/* PDF viewer area should be the largest visual zone */
+.teacher-main-stage {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+/* Right panel is contextual — narrower and scrollable */
+.teacher-channel-aux-panel {
+  max-width: 16rem;
 }
 
 .teacher-panel-header {
@@ -71,6 +85,11 @@
 @media (max-width: 1180px) {
   .teacher-shell-actions {
     width: 100%;
+  }
+
+  /* On compact viewports, right panel becomes overlay — remove max-width constraint */
+  .teacher-channel-aux-panel {
+    max-width: none;
   }
 }
 

@@ -42,7 +42,15 @@ export function StudentChannelWorkspacePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [askError, setAskError] = useState<string | null>(null)
-  const { leftSidebarOpen, rightPanelOpen: rightSidebarOpen, toggleLeftSidebar, toggleRightPanel, setRightPanelOpen } = useWorkspaceShell()
+  const {
+    leftSidebarOpen,
+    rightPanelOpen: rightSidebarOpen,
+    toggleLeftSidebar,
+    toggleRightPanel,
+    setRightPanelOpen,
+    leftPanelMode,
+    rightPanelMode: shellRightPanelMode,
+  } = useWorkspaceShell()
   const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>('ai')
   const [pendingAiFollowUp, setPendingAiFollowUp] = useState<PendingAiFollowUp | null>(null)
 
@@ -177,7 +185,7 @@ export function StudentChannelWorkspacePage() {
           <summary>근거 보기{msg.evidenceSnippets && msg.evidenceSnippets.length > 0 ? ` (${msg.evidenceSnippets.length})` : ''}</summary>
           <div className="ai-evidence-list">
             {msg.evidenceSnippets && msg.evidenceSnippets.length > 0 ? (
-              msg.evidenceSnippets.map((snippet, idx) => <div key={idx} className="ai-evidence-item">{snippet}</div>)
+              msg.evidenceSnippets.map((snippet) => <div key={snippet} className="ai-evidence-item">{snippet}</div>)
             ) : (
               <div className="ai-evidence-item ai-evidence-item--empty">추가 근거가 제공되지 않았습니다.</div>
             )}
@@ -224,28 +232,16 @@ export function StudentChannelWorkspacePage() {
 
   if (loading) {
     return (
-      <div className="workspace-page student-workspace-page channel-workspace-page" aria-busy="true">
-        <div className={`channel-shell student-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
-          {leftSidebarOpen && (
-            <aside className="channel-sidebar-panel is-open">
-              <div className="channel-sidebar-header">
-                <div className="workspace-loading-copy" style={{ minWidth: 0 }}>
-                  <div className="workspace-loading-chip" style={{ width: '4.75rem' }} />
-                  <div className="workspace-loading-line" style={{ width: '68%' }} />
-                  <div className="workspace-loading-line" style={{ width: '84%', height: '0.8rem' }} />
-                </div>
-                <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
-              </div>
-              <div className="channel-sidebar-list">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="workspace-loading-row" style={{ padding: '0.875rem 0.9375rem' }}>
-                    <div className="workspace-loading-line" style={{ width: index === 0 ? '58%' : '66%' }} />
-                    <div className="workspace-loading-line" style={{ width: '86%', height: '0.8rem' }} />
-                  </div>
-                ))}
-              </div>
-            </aside>
-          )}
+      <div className="workspace-page student-workspace-page channel-workspace-page" aria-busy="true" data-testid="student-channel-workspace">
+        <div className={`channel-shell student-channel-shell ${leftPanelMode === 'overlay' ? 'channel-shell--left-overlay' : ''} ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
+          <ChannelSidebar
+            channels={channels}
+            activeChannelId={channelId ?? ''}
+            basePath="student"
+            description="학교 채널 목록을 따라 이동하고 현재 학습 채널을 유지하세요."
+            isOpen={leftSidebarOpen}
+            onOpenChange={toggleLeftSidebar}
+          />
 
           <div className="channel-content-shell student-channel-content-shell">
             <div className="workspace-header">
@@ -260,7 +256,7 @@ export function StudentChannelWorkspacePage() {
               </div>
             </div>
 
-            <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''}`}>
+            <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${shellRightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
               <section className="workspace-main student-main-pdf">
                 <div className="workspace-main-header student-pdf-header">
                   <div className="workspace-main-title workspace-loading-copy">
@@ -348,18 +344,16 @@ export function StudentChannelWorkspacePage() {
   )
 
   return (
-    <div className="workspace-page student-workspace-page channel-workspace-page">
-      <div className={`channel-shell student-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
-        {leftSidebarOpen && (
-          <ChannelSidebar
-            channels={channels}
-            activeChannelId={channelId}
-            basePath="student"
-            description="학교 채널 목록을 따라 이동하고 현재 학습 채널을 유지하세요."
-            isOpen={leftSidebarOpen}
-            onOpenChange={toggleLeftSidebar}
-          />
-        )}
+    <div className="workspace-page student-workspace-page channel-workspace-page" data-testid="student-channel-workspace">
+      <div className={`channel-shell student-channel-shell ${leftPanelMode === 'overlay' ? 'channel-shell--left-overlay' : ''} ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
+        <ChannelSidebar
+          channels={channels}
+          activeChannelId={channelId}
+          basePath="student"
+          description="학교 채널 목록을 따라 이동하고 현재 학습 채널을 유지하세요."
+          isOpen={leftSidebarOpen}
+          onOpenChange={toggleLeftSidebar}
+        />
 
         <div className="channel-content-shell student-channel-content-shell">
           <div className="workspace-header">
@@ -375,6 +369,7 @@ export function StudentChannelWorkspacePage() {
                 onClick={() => toggleLeftSidebar(!leftSidebarOpen)}
                 aria-label={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
                 title={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
+                data-testid="left-drawer-toggle"
               >
                 <span className="material-symbols-outlined">{leftSidebarOpen ? 'left_panel_close' : 'left_panel_open'}</span>
               </button>
@@ -384,14 +379,15 @@ export function StudentChannelWorkspacePage() {
                 onClick={() => toggleRightPanel(!rightSidebarOpen)}
                 aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
                 title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
+                data-testid="right-panel-toggle"
               >
                 <span className="material-symbols-outlined">{rightSidebarOpen ? 'right_panel_close' : 'right_panel_open'}</span>
               </button>
             </div>
           </div>
 
-          <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''}`}>
-            <section className="workspace-main student-main-pdf">
+          <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${shellRightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
+            <section className="workspace-main student-main-pdf" data-testid="pdf-viewer-section">
               <div className="workspace-main-header student-pdf-header">
                 <div className="workspace-main-title">
                   <div>채널 학습 자료</div>
@@ -416,7 +412,7 @@ export function StudentChannelWorkspacePage() {
                         <div className="workspace-main-eyebrow">활성 과제</div>
                         <h3 className="workspace-card-title">{activeQuestionSet.title}</h3>
                       </div>
-                      <Link to={`/student/question-sets/${activeQuestionSet.distributionCode}/workspace`} className="student-workspace-cta-link">
+                      <Link to={`/student/question-sets/${activeQuestionSet.distributionCode}/workspace`} className="student-workspace-cta-link" data-testid="submit-solve-cta">
                         <Button size="sm">문제 풀이 열기</Button>
                       </Link>
                     </div>
@@ -429,7 +425,17 @@ export function StudentChannelWorkspacePage() {
             </section>
 
             {rightSidebarOpen && (
-              <aside className="workspace-side student-side student-channel-side">
+              <>
+                {shellRightPanelMode === 'overlay' && (
+                  <button
+                    type="button"
+                    className="student-right-panel-backdrop is-visible"
+                    aria-label="학습 도구 패널 닫기"
+                    onClick={() => toggleRightPanel(false)}
+                    data-testid="right-panel-backdrop"
+                  />
+                )}
+                    <aside className={`workspace-side student-side student-channel-side ${shellRightPanelMode === 'overlay' ? 'student-channel-side--overlay' : ''}`}>
                 <Card className="workspace-card workspace-ai-card">
                   <CardBody>
                     <div className="workspace-card-title-with-action workspace-mode-switch-header">
@@ -437,11 +443,12 @@ export function StudentChannelWorkspacePage() {
                         <div className="workspace-main-eyebrow">학습 도구</div>
                         <h3 className="workspace-card-title">현재 자료와 대화</h3>
                       </div>
-                      <div className="workspace-mode-switch" role="tablist" aria-label="우측 사이드바 모드 전환">
+                      <div className="workspace-mode-switch" role="tablist" aria-label="우측 사이드바 모드 전환" data-testid="mode-toggle">
                         <button
                           type="button"
                           className={`workspace-mode-tab ${rightPanelMode === 'ai' ? 'active' : ''}`}
                           onClick={() => setRightPanelMode('ai')}
+                          data-testid="mode-toggle-ai"
                         >
                           AI 도우미
                         </button>
@@ -449,15 +456,18 @@ export function StudentChannelWorkspacePage() {
                           type="button"
                           className={`workspace-mode-tab ${rightPanelMode === 'chat' ? 'active' : ''}`}
                           onClick={() => setRightPanelMode('chat')}
+                          data-testid="mode-toggle-chat"
                         >
                           채널 대화
                         </button>
-                      </div>
                     </div>
-
+                    </div>
                     <div className="workspace-ai-material-selector">
-                      <label className="input-label">현재 자료</label>
+                      <label htmlFor="student-material-select" className="input-label">
+                        현재 자료
+                      </label>
                       <select
+                        id="student-material-select"
                         className="number-input"
                         value={selectedMaterial?.materialId ?? ''}
                         onChange={(e) => {
@@ -492,7 +502,7 @@ export function StudentChannelWorkspacePage() {
                               <p className="student-follow-up-explanation">{pendingAiFollowUp.explanation}</p>
                               <p className="student-follow-up-helper">질문을 전송하면 선택한 오답과 기존 해설 문맥을 바탕으로 더 짧고 친절하게 설명해 드립니다.</p>
                             </div>
-                          )}
+            )}
                           {chatHistory.length === 0 ? (
                             <p className="workspace-empty">자료에 대해 궁금한 점을 질문하면 AI가 답변합니다.</p>
                           ) : (
@@ -509,7 +519,7 @@ export function StudentChannelWorkspacePage() {
                             onKeyDown={handleQuestionKeyDown}
                             placeholder="질문을 입력하세요 (Enter로 전송, Shift+Enter 줄바꿈)"
                           />
-                          <Button onClick={handleAsk} disabled={!selectedMaterial || !question.trim()} style={{ marginTop: '0.5rem', width: '100%' }}>
+                          <Button onClick={handleAsk} disabled={!selectedMaterial || !question.trim()} style={{ marginTop: '0.5rem', width: '100%' }} data-testid="ask-question-btn">
                             <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.5rem' }}>send</span>
                             질문하기
                           </Button>
@@ -544,7 +554,8 @@ export function StudentChannelWorkspacePage() {
                     )}
                   </CardBody>
                 </Card>
-              </aside>
+                </aside>
+              </>
             )}
           </div>
         </div>

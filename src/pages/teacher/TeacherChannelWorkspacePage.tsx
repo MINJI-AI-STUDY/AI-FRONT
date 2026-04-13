@@ -55,7 +55,13 @@ export function TeacherChannelWorkspacePage() {
   const [publishing, setPublishing] = useState(false)
   const [reviewDueAt, setReviewDueAt] = useState('')
   const [publishCode, setPublishCode] = useState<string | null>(null)
-  const { leftSidebarOpen, rightPanelOpen, toggleLeftSidebar, toggleRightPanel } = useWorkspaceShell()
+  const {
+    leftSidebarOpen,
+    rightPanelOpen,
+    toggleLeftSidebar,
+    toggleRightPanel,
+    leftPanelMode,
+  } = useWorkspaceShell()
 
   useEffect(() => {
     if (!token || !channelId) return
@@ -301,27 +307,25 @@ export function TeacherChannelWorkspacePage() {
   if (loading) {
     return (
       <div className="workspace-page teacher-workspace-page channel-workspace-page" aria-busy="true">
-        <div className={`channel-shell teacher-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
-          {leftSidebarOpen && (
-            <aside className="channel-sidebar-panel is-open">
-              <div className="channel-sidebar-header">
-                <div className="workspace-loading-copy" style={{ minWidth: 0 }}>
-                  <div className="workspace-loading-chip" style={{ width: '5rem' }} />
-                  <div className="workspace-loading-line" style={{ width: '70%' }} />
-                  <div className="workspace-loading-line" style={{ width: '88%', height: '0.8rem' }} />
+        <div className={`channel-shell teacher-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''} ${leftPanelMode === 'overlay' ? 'left-sidebar-overlay-mode' : ''}`}>
+          <aside className={`channel-sidebar-panel is-open ${leftPanelMode === 'overlay' ? 'channel-sidebar-panel-overlay' : ''}`}>
+            <div className="channel-sidebar-header">
+              <div className="workspace-loading-copy" style={{ minWidth: 0 }}>
+                <div className="workspace-loading-chip" style={{ width: '5rem' }} />
+                <div className="workspace-loading-line" style={{ width: '70%' }} />
+                <div className="workspace-loading-line" style={{ width: '88%', height: '0.8rem' }} />
+              </div>
+              <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
+            </div>
+            <div className="channel-sidebar-list">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="workspace-loading-row" style={{ padding: '0.875rem 0.9375rem' }}>
+                  <div className="workspace-loading-line" style={{ width: index === 0 ? '60%' : '72%' }} />
+                  <div className="workspace-loading-line" style={{ width: '84%', height: '0.8rem' }} />
                 </div>
-                <div className="workspace-loading-button" style={{ width: '2.75rem', height: '2.75rem' }} />
-              </div>
-              <div className="channel-sidebar-list">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="workspace-loading-row" style={{ padding: '0.875rem 0.9375rem' }}>
-                    <div className="workspace-loading-line" style={{ width: index === 0 ? '60%' : '72%' }} />
-                    <div className="workspace-loading-line" style={{ width: '84%', height: '0.8rem' }} />
-                  </div>
-                ))}
-              </div>
-            </aside>
-          )}
+              ))}
+            </div>
+          </aside>
 
           <div className="channel-content-shell teacher-channel-content-shell">
             <div className="workspace-header">
@@ -402,17 +406,15 @@ export function TeacherChannelWorkspacePage() {
 
   return (
     <div className="workspace-page teacher-workspace-page channel-workspace-page">
-      <div className={`channel-shell teacher-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''}`}>
-        {leftSidebarOpen && (
-          <ChannelSidebar
-            channels={channels}
-            activeChannelId={channelId}
-            basePath="teacher"
-            description="채널을 전환하고 현재 채널 운영 흐름은 오른쪽 패널에서 이어갑니다."
-            isOpen={leftSidebarOpen}
-            onOpenChange={toggleLeftSidebar}
-          />
-        )}
+      <div className={`channel-shell teacher-channel-shell ${!leftSidebarOpen ? 'left-sidebar-collapsed' : ''} ${leftPanelMode === 'overlay' ? 'left-sidebar-overlay-mode' : ''}`}>
+        <ChannelSidebar
+          channels={channels}
+          activeChannelId={channelId}
+          basePath="teacher"
+          description="채널을 전환하고 현재 채널 운영 흐름은 오른쪽 패널에서 이어갑니다."
+          isOpen={leftSidebarOpen}
+          onOpenChange={toggleLeftSidebar}
+        />
 
         <div className="channel-content-shell teacher-channel-content-shell">
           <div className="workspace-header">
@@ -422,13 +424,13 @@ export function TeacherChannelWorkspacePage() {
           <p className="page-description">현재 입장 학생: {studentNames || '없음'}</p>
         </div>
         <div className="workspace-actions teacher-shell-actions">
-              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--left" onClick={() => toggleLeftSidebar(!leftSidebarOpen)}>
+              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--left" onClick={() => toggleLeftSidebar(!leftSidebarOpen)} data-testid="left-sidebar-toggle">
                 <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
                   {leftSidebarOpen ? 'left_panel_close' : 'left_panel_open'}
                 </span>
                 {leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
               </Button>
-              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--right" onClick={() => toggleRightPanel(!rightPanelOpen)}>
+              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--right" onClick={() => toggleRightPanel(!rightPanelOpen)} data-testid="right-panel-toggle">
                 <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
                   {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
               </span>
@@ -437,8 +439,8 @@ export function TeacherChannelWorkspacePage() {
         </div>
       </div>
 
-          <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''}`}>
-            <section className="workspace-main teacher-main-stage">
+          <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''}`} data-testid="workspace-layout">
+            <section className="workspace-main teacher-main-stage" data-testid="pdf-viewer-area">
               <div className="workspace-main-header">
                 <div className="workspace-main-title">
                   <div>{selectedMaterial?.title ?? '채널 PDF 없음'}</div>
@@ -487,7 +489,7 @@ export function TeacherChannelWorkspacePage() {
             </section>
 
             {rightPanelOpen && (
-              <aside className="workspace-side teacher-channel-aux-panel">
+              <aside className="workspace-side teacher-channel-aux-panel" data-testid="right-panel">
                 <div className="workspace-panel-inline-header teacher-panel-header">
                   <div>
                     <div className="workspace-main-eyebrow">보조 패널</div>
