@@ -50,16 +50,94 @@ export function SignupApprovalPage() {
     }
   }
 
+  const selectedSchoolName = schools.find((school) => school.schoolId === selectedSchoolId)?.name ?? '학교를 선택하세요'
+
   return (
     <div className="operator-overview-page">
-      <div className="page-header"><h1 className="page-title">가입 승인</h1><p className="page-description">학교별 교직원/학생 가입 요청을 승인 또는 반려합니다.</p></div>
-      <Card className="summary-card"><CardBody>
-        <label>학교 선택<select value={selectedSchoolId} onChange={(e) => setSelectedSchoolId(e.target.value)} style={{ display: 'block', marginTop: '0.5rem', padding: '0.5rem', minWidth: '240px' }}>{schools.map((school) => <option key={school.schoolId} value={school.schoolId}>{school.name}</option>)}</select></label>
-      </CardBody></Card>
-      {notice ? <Card className="summary-card" style={{ marginTop: '1rem' }}><CardBody><p className="page-description">{notice}</p></CardBody></Card> : null}
-      <Card className="summary-card" style={{ marginTop: '1rem' }}><CardBody>
-        {requests.length === 0 ? <p className="page-description">대기 중인 가입 요청이 없습니다.</p> : <ul>{requests.map((item) => <li key={item.signupRequestId} style={{ marginBottom: '1rem' }}><div style={{ marginBottom: '0.5rem' }}>{item.requesterName} · {item.role}</div><input value={rejectionReasons[item.signupRequestId] ?? ''} onChange={(e) => setRejectionReasons((prev) => ({ ...prev, [item.signupRequestId]: e.target.value }))} placeholder="반려 사유(선택)" className="number-input" style={{ marginBottom: '0.5rem', width: '100%' }} /><div style={{ display: 'flex', gap: '0.5rem' }}><Button variant="outline" onClick={() => handleReview(item.signupRequestId, true)}>승인</Button> <Button variant="danger" onClick={() => handleReview(item.signupRequestId, false)}>반려</Button></div></li>)}</ul>}
-      </CardBody></Card>
+      <div className="page-header">
+        <h1 className="page-title">가입 승인</h1>
+        <p className="page-description">학교별 교직원·학생 가입 요청을 한 화면에서 검토하고 승인 또는 반려합니다.</p>
+      </div>
+
+      <div className="operator-approval-layout">
+        <Card className="summary-card operator-approval-filter-card">
+          <CardBody>
+            <div className="operator-card-eyebrow">승인 대상 학교</div>
+            <div className="operator-approval-filter-row">
+              <div>
+                <h2 className="operator-approval-title">{selectedSchoolName}</h2>
+                <p className="operator-approval-description">학교를 바꾸면 해당 학교의 대기 중 가입 요청만 바로 다시 불러옵니다.</p>
+              </div>
+              <label className="operator-approval-select-field">
+                <span>학교 선택</span>
+                <select value={selectedSchoolId} onChange={(e) => setSelectedSchoolId(e.target.value)}>
+                  {schools.map((school) => <option key={school.schoolId} value={school.schoolId}>{school.name}</option>)}
+                </select>
+              </label>
+            </div>
+          </CardBody>
+        </Card>
+
+        {notice ? (
+          <Card className="summary-card operator-approval-notice-card">
+            <CardBody>
+              <div className="operator-card-eyebrow">최근 처리 결과</div>
+              <p className="operator-approval-notice">{notice}</p>
+            </CardBody>
+          </Card>
+        ) : null}
+
+        <Card className="summary-card operator-approval-list-card">
+          <CardBody>
+            <div className="operator-approval-list-header">
+              <div>
+                <div className="operator-card-eyebrow">대기 중 요청</div>
+                <h2 className="operator-approval-title">가입 승인 큐</h2>
+              </div>
+              <div className="operator-approval-count">{requests.length}건</div>
+            </div>
+
+            {requests.length === 0 ? (
+              <div className="operator-approval-empty">
+                <p className="page-description">대기 중인 가입 요청이 없습니다.</p>
+              </div>
+            ) : (
+              <ul className="operator-approval-list">
+                {requests.map((item) => (
+                  <li key={item.signupRequestId} className="operator-approval-item">
+                    <div className="operator-approval-item-header">
+                      <div>
+                        <strong>{item.requesterName}</strong>
+                        <p className="operator-approval-item-meta">
+                          {item.role === 'TEACHER' ? '교직원' : '학생'}
+                          {item.studentCode ? ` · 학생 코드 ${item.studentCode}` : ''}
+                          {item.loginId ? ` · 요청 ID ${item.loginId}` : ''}
+                          {item.schoolEmail ? ` · ${item.schoolEmail}` : ''}
+                        </p>
+                      </div>
+                      <span className={`operator-approval-badge ${item.role.toLowerCase()}`}>
+                        {item.role === 'TEACHER' ? '교직원' : '학생'}
+                      </span>
+                    </div>
+
+                    <input
+                      value={rejectionReasons[item.signupRequestId] ?? ''}
+                      onChange={(e) => setRejectionReasons((prev) => ({ ...prev, [item.signupRequestId]: e.target.value }))}
+                      placeholder="반려 사유를 입력하면 반려 시 함께 저장됩니다."
+                      className="number-input operator-approval-reason"
+                    />
+
+                    <div className="operator-approval-actions">
+                      <Button variant="outline" onClick={() => handleReview(item.signupRequestId, true)}>승인</Button>
+                      <Button variant="danger" onClick={() => handleReview(item.signupRequestId, false)}>반려</Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardBody>
+        </Card>
+      </div>
     </div>
   )
 }

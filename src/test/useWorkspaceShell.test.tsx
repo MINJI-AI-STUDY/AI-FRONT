@@ -32,13 +32,13 @@ beforeEach(() => {
 })
 
 describe('useWorkspaceShell', () => {
-  it('데스크톱 폭에서 좌측 드로어 오버레이와 spread 기본값을 계산한다', () => {
+  it('데스크톱 폭에서 좌측 패널 인라인과 spread 기본값을 계산한다', () => {
     setViewport(1366)
     const { result } = renderHook(() => useWorkspaceShell())
 
     expect(result.current.viewportMode).toBe('desktop')
     expect(result.current.isCompactViewport).toBe(false)
-    expect(result.current.leftPanelMode).toBe('overlay')
+    expect(result.current.leftPanelMode).toBe('inline')
     expect(result.current.rightPanelMode).toBe('inline')
     expect(result.current.canRightPanelInline).toBe(true)
     expect(result.current.defaultPageDisplayMode).toBe('spread')
@@ -46,7 +46,7 @@ describe('useWorkspaceShell', () => {
     expect(result.current.rightPanelOpen).toBe(false)
   })
 
-  it('컴팩트 폭에서 오버레이 모드와 single 기본값으로 폴백한다', () => {
+  it('모바일 폭에서 양쪽 패널이 오버레이와 single 기본값으로 폴백한다', () => {
     setViewport(560)
     const { result } = renderHook(() => useWorkspaceShell())
 
@@ -57,6 +57,16 @@ describe('useWorkspaceShell', () => {
     expect(result.current.canRightPanelInline).toBe(false)
     expect(result.current.defaultPageDisplayMode).toBe('single')
     expect(result.current.leftSidebarOpen).toBe(false)
+  })
+
+  it('태블릿 폭에서 좌측 패널은 인라인, 우측 패널은 폭에 따라 오버레이가 된다', () => {
+    setViewport(900)
+    const { result } = renderHook(() => useWorkspaceShell({ initialLeftOpen: true }))
+
+    expect(result.current.viewportMode).toBe('tablet')
+    expect(result.current.leftPanelMode).toBe('inline')
+    expect(result.current.rightPanelMode).toBe('overlay')
+    expect(result.current.leftSidebarOpen).toBe(true)
   })
 
   it('컴팩트 뷰포트에서 오버레이는 상호 배타적으로 열린다', () => {

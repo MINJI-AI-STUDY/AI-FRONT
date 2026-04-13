@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { COMPACT_VIEWPORT_MAX } from '../constants/workspaceBreakpoints'
+import type { PanelMode } from '../hooks/useWorkspaceShell'
 
 interface ChannelSummary {
   channelId: string
@@ -18,6 +18,7 @@ interface ChannelSidebarProps {
   footer?: ReactNode
   isOpen?: boolean
   onOpenChange?: (isOpen: boolean) => void
+  panelMode?: PanelMode
 }
 
 export function ChannelSidebar({
@@ -30,11 +31,11 @@ export function ChannelSidebar({
   footer,
   isOpen,
   onOpenChange,
+  panelMode = 'inline',
 }: ChannelSidebarProps) {
-  const initialCompactViewport = typeof window !== 'undefined' && window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`).matches
-  const [uncontrolledDrawerOpen, setUncontrolledDrawerOpen] = useState(() => !initialCompactViewport)
-  const [isCompactViewport, setIsCompactViewport] = useState(initialCompactViewport)
+  const [uncontrolledDrawerOpen, setUncontrolledDrawerOpen] = useState(() => panelMode !== 'overlay')
   const isDrawerOpen = isOpen ?? uncontrolledDrawerOpen
+  const isOverlayPanel = panelMode === 'overlay'
 
   const handleToggleDrawer = () => {
     const nextOpen = !isDrawerOpen
@@ -48,33 +49,19 @@ export function ChannelSidebar({
   }
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`)
-
-    const handleChange = () => {
-      const compactViewport = mediaQuery.matches
-      setIsCompactViewport(compactViewport)
-
-      if (isOpen === undefined) {
-        setUncontrolledDrawerOpen(!compactViewport)
-      }
+    if (isOpen === undefined) {
+      setUncontrolledDrawerOpen(panelMode !== 'overlay')
     }
-
-    handleChange()
-    mediaQuery.addEventListener('change', handleChange)
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange)
-    }
-  }, [isOpen])
+  }, [isOpen, panelMode])
 
   return (
     <>
       <aside
-        className={`channel-sidebar-panel ${isCompactViewport ? 'channel-sidebar-panel-overlay' : ''} ${isDrawerOpen ? 'is-open' : 'is-closed'} ${className}`.trim()}
+        className={`channel-sidebar-panel ${isOverlayPanel ? 'channel-sidebar-panel-overlay' : 'channel-sidebar-panel-inline'} ${isDrawerOpen ? 'is-open' : 'is-closed'} ${className}`.trim()}
         aria-label="채널 탐색"
         data-testid="left-sidebar-panel"
       >
-        {isCompactViewport && isDrawerOpen && <div className={`channel-sidebar-backdrop ${isCompactViewport && isDrawerOpen ? 'is-visible' : ''}`} aria-hidden="true" />}
+        {isOverlayPanel && isDrawerOpen && <div className="channel-sidebar-backdrop is-visible" aria-hidden="true" />}
 
         <div className={`channel-sidebar-surface ${isDrawerOpen ? 'is-open' : 'is-closed'}`}>
           <div className="channel-sidebar-header">
