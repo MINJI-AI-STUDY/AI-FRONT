@@ -40,7 +40,7 @@ export interface WorkspaceShellActions {
 }
 
 export interface UseWorkspaceShellOptions {
-  /** Initial left sidebar open state (default: !isCompactViewport). */
+  /** Initial left sidebar open state (default: false). */
   initialLeftOpen?: boolean
   /** Initial right panel open state (default: false — always closed). */
   initialRightOpen?: boolean
@@ -147,21 +147,15 @@ export function useWorkspaceShell(
   const viewportMode = getViewportMode(viewportWidth)
   const canRightPanelInline = getCanRightPanelInline(viewportWidth)
   const rightPanelMode: PanelMode = canRightPanelInline ? 'inline' : 'overlay'
-  const leftPanelMode: PanelMode = isCompactViewport ? 'overlay' : 'inline'
+  const leftPanelMode: PanelMode = 'overlay'
   const defaultPageDisplayMode = getDefaultPageDisplayMode(viewportWidth)
 
   // --- Panel open state ------------------------------------------------
 
   const [leftSidebarOpen, setLeftSidebarOpen] = useState<boolean>(
-    () => initialLeftOpen ?? !getIsCompact(typeof window !== 'undefined' ? window.innerWidth : 1920),
+    () => initialLeftOpen ?? false,
   )
   const [rightPanelOpen, setRightPanelOpen] = useState<boolean>(initialRightOpen)
-
-  // Sync left sidebar with compact viewport changes (uncontrolled mode)
-  useEffect(() => {
-    if (initialLeftOpen !== undefined) return // controlled by caller
-    setLeftSidebarOpen(!isCompactViewport)
-  }, [isCompactViewport, initialLeftOpen])
 
   // --- Overlay exclusivity ---------------------------------------------
 

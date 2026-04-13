@@ -451,7 +451,7 @@ export function TeacherChannelWorkspacePage() {
         </div>
       </div>
 
-          <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''}`} data-testid="workspace-layout">
+          <div className={`workspace-layout teacher-workspace-layout ${!rightPanelOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'teacher-workspace-layout--overlay' : ''}`} data-testid="workspace-layout">
             <section className="workspace-main teacher-main-stage" data-testid="pdf-viewer-area">
               <div className="workspace-main-header">
                 <div className="workspace-main-title">
@@ -501,7 +501,17 @@ export function TeacherChannelWorkspacePage() {
             </section>
 
             {rightPanelOpen && (
-              <aside className="workspace-side teacher-channel-aux-panel" data-testid="right-panel">
+              <>
+                {rightPanelMode === 'overlay' && (
+                  <button
+                    type="button"
+                    className="right-panel-backdrop is-visible"
+                    aria-label="보조 패널 닫기"
+                    onClick={() => toggleRightPanel(false)}
+                    data-testid="right-panel-backdrop"
+                  />
+                )}
+                <aside className={`workspace-side teacher-channel-aux-panel ${rightPanelMode === 'overlay' ? 'teacher-channel-aux-panel--overlay' : ''}`} data-testid="right-panel">
                 <div className="workspace-panel-inline-header teacher-panel-header">
                   <div>
                     <div className="workspace-main-eyebrow">보조 패널</div>
@@ -630,7 +640,8 @@ export function TeacherChannelWorkspacePage() {
                     )}
                   </section>
                 </div>
-              </aside>
+                </aside>
+              </>
             )}
           </div>
         </div>

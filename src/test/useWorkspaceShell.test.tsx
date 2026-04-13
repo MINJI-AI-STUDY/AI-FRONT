@@ -32,17 +32,17 @@ beforeEach(() => {
 })
 
 describe('useWorkspaceShell', () => {
-  it('데스크톱 폭에서 인라인 레이아웃과 spread 기본값을 계산한다', () => {
+  it('데스크톱 폭에서 좌측 드로어 오버레이와 spread 기본값을 계산한다', () => {
     setViewport(1366)
     const { result } = renderHook(() => useWorkspaceShell())
 
     expect(result.current.viewportMode).toBe('desktop')
     expect(result.current.isCompactViewport).toBe(false)
-    expect(result.current.leftPanelMode).toBe('inline')
+    expect(result.current.leftPanelMode).toBe('overlay')
     expect(result.current.rightPanelMode).toBe('inline')
     expect(result.current.canRightPanelInline).toBe(true)
     expect(result.current.defaultPageDisplayMode).toBe('spread')
-    expect(result.current.leftSidebarOpen).toBe(true)
+    expect(result.current.leftSidebarOpen).toBe(false)
     expect(result.current.rightPanelOpen).toBe(false)
   })
 
