@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, MaterialDocumentViewer, Modal } from '../../components'
+import { COMPACT_VIEWPORT_MAX } from '../../constants/workspaceBreakpoints'
 import { askQuestion, getQuestionSet, submitAnswers } from '../../api/student'
 import type { QaResponse, StudentQuestionSetResponse } from '../../api/student'
 import '../WorkspacePages.css'
@@ -24,7 +25,7 @@ interface StudentAiFollowUpContext {
 }
 
 function isCompactViewport() {
-  return typeof window !== 'undefined' && window.matchMedia('(max-width: 1180px)').matches
+  return typeof window !== 'undefined' && window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`).matches
 }
 
 function consumeStudentAiFollowUpContext() {
@@ -61,7 +62,7 @@ export function StudentWorkspacePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const mediaQuery = window.matchMedia('(max-width: 1180px)')
+    const mediaQuery = window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`)
     const handleChange = () => {
       setRightSidebarOpen(!mediaQuery.matches)
     }

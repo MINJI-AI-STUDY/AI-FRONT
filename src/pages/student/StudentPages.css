@@ -1,5 +1,9 @@
 /**
  * 학생 페이지 공통 스타일 - 학습 워크스페이스 느낌
+ *
+ * Breakpoint values (1180px, 768px, 767px) are canonical constants defined in
+ * src/constants/workspaceBreakpoints.ts (COMPACT_VIEWPORT_MAX, TABLET_MIN, MOBILE_MAX).
+ * When changing breakpoints, update BOTH the TS constants AND these media queries.
  */
 
 .page-header {
@@ -1177,6 +1181,7 @@
   }
 }
 
+/* BREAKPOINT: TABLET_MIN..COMPACT_VIEWPORT_MAX (768px..1180px) — see src/constants/workspaceBreakpoints.ts */
 @media (min-width: 768px) and (max-width: 1180px) {
   .student-workspace-side,
   .student-channel-side,

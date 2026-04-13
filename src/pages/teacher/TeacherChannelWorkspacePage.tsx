@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, ChannelSidebar, Input, MaterialDocumentViewer, Modal } from '../../components'
+import { COMPACT_VIEWPORT_MAX } from '../../constants/workspaceBreakpoints'
 import {
   createChannel,
   generateQuestionsInChannel,
@@ -56,7 +57,7 @@ export function TeacherChannelWorkspacePage() {
   const [publishCode, setPublishCode] = useState<string | null>(null)
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') return true
-    return !window.matchMedia('(max-width: 1180px)').matches
+    return !window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`).matches
   })
   const [rightPanelOpen, setRightPanelOpen] = useState(false)
 
@@ -108,7 +109,7 @@ export function TeacherChannelWorkspacePage() {
   }, [channelId, token])
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 1180px)')
+    const mediaQuery = window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`)
 
     const syncSidebarState = () => {
       setLeftSidebarOpen(!mediaQuery.matches)

@@ -1,6 +1,11 @@
 /**
  * 공통 워크스페이스 레이아웃
  * teacher / student channel workspace, PDF 중심 레이아웃, 우측 보조 패널에 사용됩니다.
+ *
+ * Breakpoint values (1180px, 768px, 767px) are canonical constants defined in
+ * src/constants/workspaceBreakpoints.ts (COMPACT_VIEWPORT_MAX, TABLET_MIN, MOBILE_MAX).
+ * CSS custom properties are injected at runtime by useWorkspaceShell hook.
+ * When changing breakpoints, update BOTH the TS constants AND these media queries.
  */
 
 .workspace-page {
@@ -854,6 +859,7 @@
   font-size: 0.875rem;
 }
 
+/* BREAKPOINT: COMPACT_VIEWPORT_MAX (1180px) — see src/constants/workspaceBreakpoints.ts */
 @media (max-width: 1180px) {
   .workspace-header {
     flex-direction: column;
@@ -885,6 +891,7 @@
   }
 }
 
+/* BREAKPOINT: TABLET_MIN..COMPACT_VIEWPORT_MAX (768px..1180px) — see src/constants/workspaceBreakpoints.ts */
 @media (min-width: 768px) and (max-width: 1180px) {
   .workspace-page .workspace-header {
     padding-inline: 3.5rem;

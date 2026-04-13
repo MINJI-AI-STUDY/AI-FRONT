@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, ChannelSidebar, MaterialDocumentViewer } from '../../components'
+import { COMPACT_VIEWPORT_MAX } from '../../constants/workspaceBreakpoints'
 import { askQuestion, getActiveQuestionSetByChannel, getStudentChannels, getStudentChannelWorkspace, sendChannelMessage, type ChannelMessageResponse, type ChannelParticipantResponse, type ChannelResponse, type ChannelWorkspaceResponse, type StudentActiveQuestionSetResponse, type StudentMaterialSummaryResponse } from '../../api/student'
 import { enterChannel, heartbeatChannel, leaveChannel, subscribeChannelEvents } from '../../api/realtime'
 import type { ChannelEventResponse } from '../../api/realtime_types'
@@ -29,7 +30,7 @@ interface PendingAiFollowUp {
 }
 
 function isCompactViewport() {
-  return typeof window !== 'undefined' && window.matchMedia('(max-width: 1180px)').matches
+  return typeof window !== 'undefined' && window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`).matches
 }
 
 export function StudentChannelWorkspacePage() {
@@ -99,7 +100,7 @@ export function StudentChannelWorkspacePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const mediaQuery = window.matchMedia('(max-width: 1180px)')
+    const mediaQuery = window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`)
     const handleChange = () => {
       setLeftSidebarOpen(!mediaQuery.matches)
     }

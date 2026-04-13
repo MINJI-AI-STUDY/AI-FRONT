@@ -15,6 +15,20 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pageDisplayMode, setPageDisplayMode] = useState<'single' | 'spread'>('spread')
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const leftPage = pageDisplayMode === 'spread' ? currentPage : currentPage
+  const rightPage = pageDisplayMode === 'spread' ? currentPage + 1 : null
+
+  const buildViewerUrl = (page: number) => `${documentUrl}#toolbar=0&navpanes=0&scrollbar=0&page=${page}&view=FitH`
+
+  const handlePrevious = () => {
+    setCurrentPage((current) => Math.max(1, current - (pageDisplayMode === 'spread' ? 2 : 1)))
+  }
+
+  const handleNext = () => {
+    setCurrentPage((current) => current + (pageDisplayMode === 'spread' ? 2 : 1))
+  }
 
   useEffect(() => {
     let objectUrl: string | null = null
@@ -67,6 +81,17 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
           <span className="document-viewer-helper">브라우저 PDF 뷰어 한계로 실제 페이지 전환/두쪽보기 강제 제어는 어렵지만, 문서가 화면의 중심이 되도록 우선 배치합니다.</span>
         </div>
         <div className="document-viewer-toolbar-actions">
+          <div className="document-viewer-page-controls">
+            <button type="button" className="document-viewer-nav-button" onClick={handlePrevious} disabled={currentPage <= 1}>
+              이전 페이지
+            </button>
+            <span className="document-viewer-page-indicator">
+              {pageDisplayMode === 'spread' ? `${leftPage}-${rightPage}` : `${leftPage}`} 페이지
+            </span>
+            <button type="button" className="document-viewer-nav-button" onClick={handleNext}>
+              다음 페이지
+            </button>
+          </div>
           <div className="document-viewer-mode-group" role="group" aria-label="PDF 보기 방식 안내">
             <button type="button" className={`document-viewer-mode-chip ${pageDisplayMode === 'spread' ? 'active' : ''}`} onClick={() => setPageDisplayMode('spread')}>
               두쪽보기 우선
@@ -80,13 +105,23 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
           </a>
         </div>
       </div>
-      <div className="document-viewer-frame-shell">
-        <iframe
-          className="workspace-document-frame"
-          src={`${documentUrl}#toolbar=0&navpanes=0&scrollbar=0&page=1&view=FitH`}
-          title="학습 자료 PDF"
-          loading="lazy"
-        />
+      <div className={`document-viewer-frame-shell ${pageDisplayMode === 'spread' ? 'is-spread' : 'is-single'}`}>
+        <div className={`document-viewer-spread ${pageDisplayMode === 'spread' ? 'is-spread' : 'is-single'}`}>
+          <iframe
+            className="workspace-document-frame"
+            src={buildViewerUrl(leftPage)}
+            title={`학습 자료 PDF ${leftPage}페이지`}
+            loading="lazy"
+          />
+          {rightPage && (
+            <iframe
+              className="workspace-document-frame workspace-document-frame--secondary"
+              src={buildViewerUrl(rightPage)}
+              title={`학습 자료 PDF ${rightPage}페이지`}
+              loading="lazy"
+            />
+          )}
+        </div>
       </div>
     </div>
   )

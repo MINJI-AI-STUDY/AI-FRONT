@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { COMPACT_VIEWPORT_MAX } from '../constants/workspaceBreakpoints'
 
 interface ChannelSummary {
   channelId: string
@@ -30,7 +31,7 @@ export function ChannelSidebar({
   isOpen,
   onOpenChange,
 }: ChannelSidebarProps) {
-  const initialCompactViewport = typeof window !== 'undefined' && window.matchMedia('(max-width: 1180px)').matches
+  const initialCompactViewport = typeof window !== 'undefined' && window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`).matches
   const [uncontrolledDrawerOpen, setUncontrolledDrawerOpen] = useState(() => !initialCompactViewport)
   const [isCompactViewport, setIsCompactViewport] = useState(initialCompactViewport)
   const isDrawerOpen = isOpen ?? uncontrolledDrawerOpen
@@ -45,7 +46,7 @@ export function ChannelSidebar({
   }
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 1180px)')
+    const mediaQuery = window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`)
 
     const handleChange = () => {
       const compactViewport = mediaQuery.matches
