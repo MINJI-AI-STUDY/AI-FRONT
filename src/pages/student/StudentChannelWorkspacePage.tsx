@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, ChannelSidebar, MaterialDocumentViewer } from '../../components'
-import { COMPACT_VIEWPORT_MAX } from '../../constants/workspaceBreakpoints'
+import { useWorkspaceShell } from '../../hooks/useWorkspaceShell'
 import { askQuestion, getActiveQuestionSetByChannel, getStudentChannels, getStudentChannelWorkspace, sendChannelMessage, type ChannelMessageResponse, type ChannelParticipantResponse, type ChannelResponse, type ChannelWorkspaceResponse, type StudentActiveQuestionSetResponse, type StudentMaterialSummaryResponse } from '../../api/student'
 import { enterChannel, heartbeatChannel, leaveChannel, subscribeChannelEvents } from '../../api/realtime'
 import type { ChannelEventResponse } from '../../api/realtime_types'
@@ -29,10 +29,6 @@ interface PendingAiFollowUp {
   prompt: string
 }
 
-function isCompactViewport() {
-  return typeof window !== 'undefined' && window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`).matches
-}
-
 export function StudentChannelWorkspacePage() {
   const { channelId } = useParams<{ channelId: string }>()
   const { token } = useAuth()
@@ -46,8 +42,7 @@ export function StudentChannelWorkspacePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [askError, setAskError] = useState<string | null>(null)
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(() => !isCompactViewport())
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(false)
+  const { leftSidebarOpen, rightPanelOpen: rightSidebarOpen, toggleLeftSidebar, toggleRightPanel, setRightPanelOpen } = useWorkspaceShell()
   const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>('ai')
   const [pendingAiFollowUp, setPendingAiFollowUp] = useState<PendingAiFollowUp | null>(null)
 
@@ -97,18 +92,6 @@ export function StudentChannelWorkspacePage() {
     }
   }, [channelId, token])
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const mediaQuery = window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`)
-    const handleChange = () => {
-      setLeftSidebarOpen(!mediaQuery.matches)
-    }
-
-    handleChange()
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
 
   const handleSendMessage = async () => {
     if (!channelId || !token || !message.trim()) return
@@ -231,13 +214,13 @@ export function StudentChannelWorkspacePage() {
       setPendingAiFollowUp(parsed)
       setRightPanelMode('ai')
       setQuestion(parsed.prompt)
-      setRightSidebarOpen(true)
+      setRightPanelOpen(true)
     } catch (err) {
       console.error('오답 AI 해설 문맥을 불러오지 못했습니다:', err)
     } finally {
       sessionStorage.removeItem('student_ai_followup_context')
     }
-  }, [])
+  }, [setRightPanelOpen])
 
   if (loading) {
     return (
@@ -374,7 +357,7 @@ export function StudentChannelWorkspacePage() {
             basePath="student"
             description="학교 채널 목록을 따라 이동하고 현재 학습 채널을 유지하세요."
             isOpen={leftSidebarOpen}
-            onOpenChange={setLeftSidebarOpen}
+            onOpenChange={toggleLeftSidebar}
           />
         )}
 
@@ -389,7 +372,7 @@ export function StudentChannelWorkspacePage() {
               <button
                 type="button"
                 className="workspace-tool-button workspace-edge-handle workspace-edge-handle--left"
-                onClick={() => setLeftSidebarOpen((current) => !current)}
+                onClick={() => toggleLeftSidebar(!leftSidebarOpen)}
                 aria-label={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
                 title={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
               >
@@ -398,7 +381,7 @@ export function StudentChannelWorkspacePage() {
               <button
                 type="button"
                 className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right"
-                onClick={() => setRightSidebarOpen((current) => !current)}
+                onClick={() => toggleRightPanel(!rightSidebarOpen)}
                 aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
                 title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
               >

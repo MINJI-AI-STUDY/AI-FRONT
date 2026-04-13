@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, MaterialDocumentViewer, Modal } from '../../components'
+import { useWorkspaceShell } from '../../hooks/useWorkspaceShell'
 import { generateQuestions, getMaterial } from '../../api/teacher'
 import type { GenerateQuestionsRequest, MaterialSummaryResponse, QuestionSetResponse } from '../../api/teacher'
 import '../WorkspacePages.css'
@@ -25,7 +26,7 @@ export function TeacherWorkspacePage() {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isJsonModalOpen, setIsJsonModalOpen] = useState(false)
-  const [rightPanelOpen, setRightPanelOpen] = useState(false)
+  const { rightPanelOpen, toggleRightPanel } = useWorkspaceShell()
 
   useEffect(() => {
     if (!materialId || !token) return
@@ -83,7 +84,7 @@ export function TeacherWorkspacePage() {
           <p className="page-description">같은 자료를 보면서 문제를 생성·검토·배포합니다.</p>
         </div>
         <div className="workspace-actions teacher-shell-actions">
-          <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--right" onClick={() => setRightPanelOpen((current) => !current)}>
+          <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--right" onClick={() => toggleRightPanel(!rightPanelOpen)}>
             <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
               {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
             </span>
@@ -157,7 +158,7 @@ export function TeacherWorkspacePage() {
                 <div className="workspace-main-eyebrow">보조 패널</div>
                 <h3 className="workspace-card-title">문제 생성 · JSON 검토</h3>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => setRightPanelOpen(false)}>
+              <Button variant="ghost" size="sm" onClick={() => toggleRightPanel(false)}>
                 닫기
               </Button>
             </div>

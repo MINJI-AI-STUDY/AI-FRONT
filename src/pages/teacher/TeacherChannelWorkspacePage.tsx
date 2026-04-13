@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, ChannelSidebar, Input, MaterialDocumentViewer, Modal } from '../../components'
-import { COMPACT_VIEWPORT_MAX } from '../../constants/workspaceBreakpoints'
+import { useWorkspaceShell } from '../../hooks/useWorkspaceShell'
 import {
   createChannel,
   generateQuestionsInChannel,
@@ -55,11 +55,7 @@ export function TeacherChannelWorkspacePage() {
   const [publishing, setPublishing] = useState(false)
   const [reviewDueAt, setReviewDueAt] = useState('')
   const [publishCode, setPublishCode] = useState<string | null>(null)
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(() => {
-    if (typeof window === 'undefined') return true
-    return !window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`).matches
-  })
-  const [rightPanelOpen, setRightPanelOpen] = useState(false)
+  const { leftSidebarOpen, rightPanelOpen, toggleLeftSidebar, toggleRightPanel } = useWorkspaceShell()
 
   useEffect(() => {
     if (!token || !channelId) return
@@ -108,20 +104,6 @@ export function TeacherChannelWorkspacePage() {
     }
   }, [channelId, token])
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`)
-
-    const syncSidebarState = () => {
-      setLeftSidebarOpen(!mediaQuery.matches)
-    }
-
-    syncSidebarState()
-    mediaQuery.addEventListener('change', syncSidebarState)
-
-    return () => {
-      mediaQuery.removeEventListener('change', syncSidebarState)
-    }
-  }, [])
 
   const selectedMaterial = useMemo(
     () => workspace?.materials.find((item) => item.materialId === selectedMaterialId) ?? workspace?.materials[0] ?? null,
@@ -428,7 +410,7 @@ export function TeacherChannelWorkspacePage() {
             basePath="teacher"
             description="채널을 전환하고 현재 채널 운영 흐름은 오른쪽 패널에서 이어갑니다."
             isOpen={leftSidebarOpen}
-            onOpenChange={setLeftSidebarOpen}
+            onOpenChange={toggleLeftSidebar}
           />
         )}
 
@@ -440,13 +422,13 @@ export function TeacherChannelWorkspacePage() {
           <p className="page-description">현재 입장 학생: {studentNames || '없음'}</p>
         </div>
         <div className="workspace-actions teacher-shell-actions">
-              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--left" onClick={() => setLeftSidebarOpen((current) => !current)}>
+              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--left" onClick={() => toggleLeftSidebar(!leftSidebarOpen)}>
                 <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
                   {leftSidebarOpen ? 'left_panel_close' : 'left_panel_open'}
                 </span>
                 {leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
               </Button>
-              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--right" onClick={() => setRightPanelOpen((current) => !current)}>
+              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--right" onClick={() => toggleRightPanel(!rightPanelOpen)}>
                 <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
                   {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
               </span>
@@ -511,7 +493,7 @@ export function TeacherChannelWorkspacePage() {
                     <div className="workspace-main-eyebrow">보조 패널</div>
                     <h3 className="workspace-card-title">채널 도구와 흐름</h3>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => setRightPanelOpen(false)}>
+                  <Button variant="ghost" size="sm" onClick={() => toggleRightPanel(false)}>
                     닫기
                   </Button>
                 </div>

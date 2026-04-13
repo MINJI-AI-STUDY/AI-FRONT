@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, MaterialDocumentViewer, Modal } from '../../components'
-import { COMPACT_VIEWPORT_MAX } from '../../constants/workspaceBreakpoints'
+import { useWorkspaceShell } from '../../hooks/useWorkspaceShell'
 import { askQuestion, getQuestionSet, submitAnswers } from '../../api/student'
 import type { QaResponse, StudentQuestionSetResponse } from '../../api/student'
 import '../WorkspacePages.css'
@@ -22,10 +22,6 @@ interface StudentAiFollowUpContext {
   selectedOptionLabel: string
   conceptTags: string[]
   prompt: string
-}
-
-function isCompactViewport() {
-  return typeof window !== 'undefined' && window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`).matches
 }
 
 function consumeStudentAiFollowUpContext() {
@@ -57,20 +53,7 @@ export function StudentWorkspacePage() {
   const [error, setError] = useState<string | null>(null)
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false)
   const [followUpContext, setFollowUpContext] = useState<StudentAiFollowUpContext | null>(null)
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(() => !isCompactViewport())
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const mediaQuery = window.matchMedia(`(max-width: ${COMPACT_VIEWPORT_MAX}px)`)
-    const handleChange = () => {
-      setRightSidebarOpen(!mediaQuery.matches)
-    }
-
-    handleChange()
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
+  const { rightPanelOpen: rightSidebarOpen, toggleRightPanel, setRightPanelOpen } = useWorkspaceShell()
 
   useEffect(() => {
     const context = consumeStudentAiFollowUpContext()
@@ -78,8 +61,8 @@ export function StudentWorkspacePage() {
 
     setFollowUpContext(context)
     setQuestion(context.prompt)
-    setRightSidebarOpen(true)
-  }, [])
+    setRightPanelOpen(true)
+  }, [setRightPanelOpen])
 
   useEffect(() => {
     if (!distributionCode || !token) return
@@ -279,7 +262,7 @@ export function StudentWorkspacePage() {
           <button
             type="button"
             className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right"
-            onClick={() => setRightSidebarOpen((current) => !current)}
+            onClick={() => toggleRightPanel(!rightSidebarOpen)}
             aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
             title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
           >
