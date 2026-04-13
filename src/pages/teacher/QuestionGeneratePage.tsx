@@ -106,6 +106,13 @@ export function QuestionGeneratePage() {
           {error && <div className="error-message">{error}</div>}
 
           <form onSubmit={handleSubmit} className="generate-form">
+            {loading && (
+              <div className="teacher-generate-loading-card">
+                <div className="workspace-main-eyebrow">생성 중</div>
+                <strong>AI가 문제를 구성하고 있습니다</strong>
+                <p>자료 내용을 바탕으로 문항과 해설을 정리한 뒤, 자동으로 검토 화면으로 이동합니다.</p>
+              </div>
+            )}
             <div className="form-group">
               <label className="input-label">문항 수</label>
               <input type="number" min={1} max={10} value={questionCount} onChange={(e) => setQuestionCount(Number(e.target.value))} className="number-input" />
@@ -130,7 +137,7 @@ export function QuestionGeneratePage() {
             </div>
 
             <div className="form-actions">
-              <Button type="button" variant="outline" onClick={() => navigate(-1)}>취소</Button>
+              <Button type="button" variant="outline" onClick={() => navigate(-1)} disabled={loading}>취소</Button>
               <Button type="submit" loading={loading}>문제 생성</Button>
             </div>
           </form>

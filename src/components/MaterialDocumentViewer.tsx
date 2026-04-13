@@ -14,6 +14,7 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
   const [documentUrl, setDocumentUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [pageDisplayMode, setPageDisplayMode] = useState<'single' | 'spread'>('spread')
 
   useEffect(() => {
     let objectUrl: string | null = null
@@ -62,12 +63,22 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
     <div className="document-viewer-shell workspace-document-stage">
       <div className="document-viewer-toolbar">
         <div className="document-viewer-toolbar-title">
-          <strong>PDF 미리보기</strong>
-          <span className="document-viewer-helper">브라우저 PDF 뷰어는 제한이 있습니다.</span>
+          <strong>학습 문서</strong>
+          <span className="document-viewer-helper">브라우저 PDF 뷰어 한계로 실제 페이지 전환/두쪽보기 강제 제어는 어렵지만, 문서가 화면의 중심이 되도록 우선 배치합니다.</span>
         </div>
-        <a className="document-viewer-link" href={documentUrl} target="_blank" rel="noreferrer">
-          새 탭에서 열기
-        </a>
+        <div className="document-viewer-toolbar-actions">
+          <div className="document-viewer-mode-group" role="group" aria-label="PDF 보기 방식 안내">
+            <button type="button" className={`document-viewer-mode-chip ${pageDisplayMode === 'spread' ? 'active' : ''}`} onClick={() => setPageDisplayMode('spread')}>
+              두쪽보기 우선
+            </button>
+            <button type="button" className={`document-viewer-mode-chip ${pageDisplayMode === 'single' ? 'active' : ''}`} onClick={() => setPageDisplayMode('single')}>
+              한쪽보기
+            </button>
+          </div>
+          <a className="document-viewer-link" href={documentUrl} target="_blank" rel="noreferrer">
+            새 탭에서 열기
+          </a>
+        </div>
       </div>
       <div className="document-viewer-frame-shell">
         <iframe

@@ -387,7 +387,7 @@ export function StudentChannelWorkspacePage() {
             <div className="workspace-actions">
               <button
                 type="button"
-                className="workspace-tool-button"
+                className="workspace-tool-button workspace-edge-handle workspace-edge-handle--left"
                 onClick={() => setLeftSidebarOpen((current) => !current)}
                 aria-label={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
                 title={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
@@ -396,7 +396,7 @@ export function StudentChannelWorkspacePage() {
               </button>
               <button
                 type="button"
-                className="workspace-tool-button"
+                className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right"
                 onClick={() => setRightSidebarOpen((current) => !current)}
                 aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
                 title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
@@ -414,6 +414,14 @@ export function StudentChannelWorkspacePage() {
                   <p className="student-pdf-subtitle">현재 채널에서 함께 보는 PDF를 중심으로 학습하고, 대화와 AI 도움은 우측 사이드바에서 이어갑니다.</p>
                 </div>
                 <div className="student-pdf-meta-chip">{selectedMaterialLabel}</div>
+              </div>
+
+              <div className="student-document-stage">
+                {selectedMaterial ? (
+                  <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} />
+                ) : (
+                  <div className="workspace-document-placeholder">이 채널에 연결된 PDF 자료가 아직 없습니다.</div>
+                )}
               </div>
 
               {activeQuestionSet && (
@@ -434,14 +442,6 @@ export function StudentChannelWorkspacePage() {
                   </CardBody>
                 </Card>
               )}
-
-              <div className="student-document-stage">
-                {selectedMaterial ? (
-                  <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} />
-                ) : (
-                  <div className="workspace-document-placeholder">이 채널에 연결된 PDF 자료가 아직 없습니다.</div>
-                )}
-              </div>
             </section>
 
             {rightSidebarOpen && (

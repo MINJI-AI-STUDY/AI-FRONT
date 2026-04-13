@@ -255,19 +255,7 @@ export function QAPage() {
                   <p className="student-follow-up-helper">질문 칸에 자동으로 들어가며, 필요하면 수정해서 다시 물어볼 수 있습니다.</p>
                 </div>
               )}
-              <form onSubmit={handleSubmit} className="qa-form">
-                <div className="form-group">
-                  <label className="input-label">질문</label>
-                  <textarea className="textarea" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="자료에 대해 궁금한 점을 질문하세요 (Enter로 전송, 최대 500자)" rows={4} maxLength={500} />
-                  <span className="char-count">{question.length} / 500</span>
-                </div>
-
-                {error && <div className="error-message">{error}</div>}
-
-                <div className="form-actions">
-                  <Button type="submit" loading={loading}>질문하기</Button>
-                </div>
-              </form>
+              <p className="workspace-side-description">질문 입력과 전송은 중앙 메인 영역에서 진행하고, 이 패널은 follow-up 맥락과 최근 응답 이력을 보조적으로 보여줍니다.</p>
             </CardBody>
           </Card>
 

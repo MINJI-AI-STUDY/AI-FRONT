@@ -1121,6 +1121,27 @@
   margin-top: 1rem;
 }
 
+.student-quiz-progress-card {
+  padding: 1rem 1.125rem;
+  border: 1px solid #dbeafe;
+  border-radius: 0.875rem;
+  background: #f8fbff;
+  margin-bottom: 1rem;
+}
+
+.student-quiz-progress-card strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #0f172a;
+}
+
+.student-quiz-progress-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
 .student-qa-primary-card .qa-form {
   margin-top: 1rem;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, ChannelSidebar, Input, MaterialDocumentViewer, Modal } from '../../components'
 import {
@@ -439,13 +439,13 @@ export function TeacherChannelWorkspacePage() {
           <p className="page-description">현재 입장 학생: {studentNames || '없음'}</p>
         </div>
         <div className="workspace-actions teacher-shell-actions">
-              <Button variant="outline" size="sm" onClick={() => setLeftSidebarOpen((current) => !current)}>
+              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--left" onClick={() => setLeftSidebarOpen((current) => !current)}>
                 <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
                   {leftSidebarOpen ? 'left_panel_close' : 'left_panel_open'}
                 </span>
                 {leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setRightPanelOpen((current) => !current)}>
+              <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--right" onClick={() => setRightPanelOpen((current) => !current)}>
                 <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
                   {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
               </span>
@@ -465,6 +465,12 @@ export function TeacherChannelWorkspacePage() {
                 </div>
               </div>
 
+              {selectedMaterial ? (
+                <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} />
+              ) : (
+                <div className="workspace-document-placeholder"><p>이 채널에 연결된 PDF가 없습니다.</p></div>
+              )}
+
               <Card className="workspace-card teacher-channel-primary-card">
                 <CardBody>
                   <div className="workspace-panel-inline-header">
@@ -472,7 +478,11 @@ export function TeacherChannelWorkspacePage() {
                       <div className="workspace-main-eyebrow">채널 문서 흐름</div>
                       <h3 className="workspace-card-title">{selectedMaterial?.title ?? 'PDF를 업로드해 채널 흐름을 시작하세요'}</h3>
                     </div>
-                    {latestReviewRequiredQuestionSet ? (
+                    {latestPublishedQuestionSet ? (
+                      <Link to={`/teacher/question-sets/${latestPublishedQuestionSet.questionSetId}/dashboard`}>
+                        <Button size="sm">학생 결과 보기</Button>
+                      </Link>
+                    ) : latestReviewRequiredQuestionSet ? (
                       <Button size="sm" onClick={() => openReviewModal(latestReviewRequiredQuestionSet.questionSetId)}>검토 열기</Button>
                     ) : selectedMaterial ? (
                       <Button size="sm" onClick={() => setGenerateModalOpen(true)}>문제 생성</Button>
@@ -481,7 +491,9 @@ export function TeacherChannelWorkspacePage() {
                     )}
                   </div>
                   <p className="workspace-side-description">
-                    {latestReviewRequiredQuestionSet
+                    {latestPublishedQuestionSet
+                      ? '최근 배포 세트의 학생 결과를 확인하거나, 문서를 기준으로 다음 문제 흐름을 이어갈 수 있습니다.'
+                      : latestReviewRequiredQuestionSet
                       ? '최신 생성 세트의 검토/배포 상태를 먼저 확인한 뒤 문서와 함께 마무리하세요.'
                       : selectedMaterial
                         ? `선택한 자료 #${selectedMaterial.docNo} 기준으로 문제 생성과 리뷰 흐름을 바로 이어갈 수 있습니다.`
@@ -489,12 +501,6 @@ export function TeacherChannelWorkspacePage() {
                   </p>
                 </CardBody>
               </Card>
-
-              {selectedMaterial ? (
-                <MaterialDocumentViewer materialId={selectedMaterial.materialId} token={token} />
-              ) : (
-                <div className="workspace-document-placeholder"><p>이 채널에 연결된 PDF가 없습니다.</p></div>
-              )}
             </section>
 
             {rightPanelOpen && (
@@ -615,7 +621,12 @@ export function TeacherChannelWorkspacePage() {
                             배포 코드 <strong>{latestPublishedQuestionSet.distributionCode}</strong> · 학생은 이 채널 PDF와 연결된 문제 세트로 입장할 수 있습니다.
                           </p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => openReviewModal(latestPublishedQuestionSet.questionSetId)}>배포 세트 보기</Button>
+                        <div className="workspace-sidebar-actions">
+                          <Button variant="outline" size="sm" onClick={() => openReviewModal(latestPublishedQuestionSet.questionSetId)}>배포 세트 보기</Button>
+                          <Link to={`/teacher/question-sets/${latestPublishedQuestionSet.questionSetId}/dashboard`}>
+                            <Button size="sm">학생 결과 보기</Button>
+                          </Link>
+                        </div>
                       </div>
                     ) : (
                       <div className="student-channel-task-empty">이 PDF에서 아직 배포된 문제 세트가 없습니다.</div>
@@ -700,6 +711,13 @@ export function TeacherChannelWorkspacePage() {
           <div className="workspace-side-description">
             현재 채널 <strong>{workspace.channel.name}</strong> / 자료 <strong>{selectedMaterial?.title ?? '없음'}</strong> 기준으로 생성합니다.
           </div>
+          {generating && (
+            <div className="teacher-generate-loading-card">
+              <div className="workspace-main-eyebrow">생성 중</div>
+              <strong>AI가 문제를 만드는 중입니다</strong>
+              <p>문항과 해설을 준비하고 있습니다. 완료되면 바로 검토 화면으로 이동합니다.</p>
+            </div>
+          )}
           <div className="form-group">
             <label className="input-label">문항 수</label>
             <input
@@ -721,7 +739,7 @@ export function TeacherChannelWorkspacePage() {
           </div>
         </div>
         <div className="modal-footer">
-          <Button variant="outline" onClick={() => setGenerateModalOpen(false)}>취소</Button>
+          <Button variant="outline" onClick={() => setGenerateModalOpen(false)} disabled={generating}>취소</Button>
           <Button onClick={handleGenerateInChannel} loading={generating} disabled={!selectedMaterial}>생성 후 검토</Button>
         </div>
       </Modal>
