@@ -50,7 +50,19 @@ export function StudentChannelWorkspacePage() {
     setRightPanelOpen,
     leftPanelMode,
     rightPanelMode: shellRightPanelMode,
-  } = useWorkspaceShell()
+  } = useWorkspaceShell({ stateScopeKey: `student-channel-${channelId ?? 'unknown'}` })
+  const rightPanelHandle = (
+    <button
+      type="button"
+      className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right workspace-edge-handle--floating"
+      onClick={() => toggleRightPanel(!rightSidebarOpen)}
+      aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
+      title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
+      data-testid="right-panel-toggle"
+    >
+      <span className="material-symbols-outlined">{rightSidebarOpen ? 'right_panel_close' : 'right_panel_open'}</span>
+    </button>
+  )
   const [rightPanelMode, setRightPanelMode] = useState<RightPanelMode>('ai')
   const [pendingAiFollowUp, setPendingAiFollowUp] = useState<PendingAiFollowUp | null>(null)
 
@@ -250,11 +262,13 @@ export function StudentChannelWorkspacePage() {
                 <div className="workspace-loading-line" style={{ width: '18rem', maxWidth: '72%' }} />
                 <div className="workspace-loading-line" style={{ width: '23rem', maxWidth: '92%', height: '0.8rem' }} />
               </div>
-              <div className="workspace-actions">
-                <div className="workspace-loading-button" style={{ width: '8rem', height: '2.75rem' }} />
-                <div className="workspace-loading-button" style={{ width: '8rem', height: '2.75rem' }} />
-              </div>
+            <div className="workspace-actions">
+              <div className="workspace-loading-button" style={{ width: '8rem', height: '2.75rem' }} />
+              <div className="workspace-loading-button" style={{ width: '8rem', height: '2.75rem' }} />
             </div>
+          </div>
+
+          {rightPanelHandle}
 
             <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${shellRightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
               <section className="workspace-main student-main-pdf">
@@ -363,28 +377,10 @@ export function StudentChannelWorkspacePage() {
               <p className="page-description">현재 입장 학생: {participantNames || '없음'}</p>
             </div>
             <div className="workspace-actions">
-              <button
-                type="button"
-                className="workspace-tool-button workspace-edge-handle workspace-edge-handle--left"
-                onClick={() => toggleLeftSidebar(!leftSidebarOpen)}
-                aria-label={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
-                title={leftSidebarOpen ? '채널 목록 닫기' : '채널 목록 열기'}
-                data-testid="left-drawer-toggle"
-              >
-                <span className="material-symbols-outlined">{leftSidebarOpen ? 'left_panel_close' : 'left_panel_open'}</span>
-              </button>
-              <button
-                type="button"
-                className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right"
-                onClick={() => toggleRightPanel(!rightSidebarOpen)}
-                aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
-                title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
-                data-testid="right-panel-toggle"
-              >
-                <span className="material-symbols-outlined">{rightSidebarOpen ? 'right_panel_close' : 'right_panel_open'}</span>
-              </button>
             </div>
           </div>
+
+          {rightPanelHandle}
 
           <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${shellRightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
             <section className="workspace-main student-main-pdf" data-testid="pdf-viewer-section">

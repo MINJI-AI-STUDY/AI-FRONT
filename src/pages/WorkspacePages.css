@@ -64,8 +64,58 @@
 }
 
 .workspace-edge-handle {
+  position: fixed;
+  top: 50%;
+  z-index: 1105;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: auto;
+  height: auto;
+  min-width: 3rem;
+  min-height: 4.5rem;
+  padding: 0.75rem 0.625rem;
+  border: 1px solid #dbe3ef;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #334155;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
   white-space: nowrap;
   word-break: keep-all;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease, color 150ms ease, background 150ms ease;
+}
+
+.workspace-edge-handle:hover {
+  background: #f8fafc;
+  border-color: #bfd0e6;
+  color: #1d4ed8;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.18);
+}
+
+.workspace-edge-handle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18), 0 14px 28px rgba(15, 23, 42, 0.14);
+}
+
+.workspace-edge-handle--left {
+  left: 0.75rem;
+  transform: translateY(-50%);
+}
+
+.workspace-edge-handle--right {
+  right: 0.75rem;
+  transform: translateY(-50%);
+}
+
+.workspace-edge-handle--floating {
+  z-index: 1105;
+  pointer-events: auto;
+}
+
+.workspace-edge-handle .material-symbols-outlined {
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .channel-shell {
@@ -777,6 +827,16 @@
   color: #64748b;
   font-size: 0.75rem;
   line-height: 1.4;
+}
+.document-viewer-mode-disabled-reason {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  padding: 0.25rem 0.5rem;
+  background: #f3f4f6;
+  border-radius: 0.375rem;
 }
 
 .document-viewer-frame-shell {
@@ -1871,7 +1931,7 @@ border-radius: 1.125rem;
 }
 
 /* Right panel overlay backdrop */
-.student-right-panel-backdrop {
+.student-three-column .student-right-panel-backdrop {
   position: fixed;
   inset: 0;
   z-index: 65;
@@ -1883,7 +1943,7 @@ border-radius: 1.125rem;
   transition: opacity 180ms ease;
 }
 
-.student-right-panel-backdrop.is-visible {
+.student-three-column .student-right-panel-backdrop:where(.is-visible) {
   opacity: 1;
   pointer-events: auto;
 }
