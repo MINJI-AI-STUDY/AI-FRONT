@@ -1,5 +1,9 @@
 /**
  * 교사 페이지 공통 스타일 - 컨트롤 스튜디오 느낌
+ *
+ * Breakpoint values (1180px, 768px, 767px) are canonical constants defined in
+ * src/constants/workspaceBreakpoints.ts (COMPACT_VIEWPORT_MAX, TABLET_MIN, MOBILE_MAX).
+ * When changing breakpoints, update BOTH the TS constants AND these media queries.
  */
 
 .page-header {
@@ -27,8 +31,22 @@
   justify-content: flex-end;
 }
 
+/* Teacher channel workspace: PDF-first layout.
+   Right panel is contextual (narrower) so the PDF viewer stays dominant.
+   When the right panel is closed, the PDF expands to fill the space. */
 .teacher-workspace-page .workspace-layout {
-  grid-template-columns: minmax(0, 1fr) minmax(17rem, 19rem);
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 16rem);
+}
+
+/* PDF viewer area should be the largest visual zone */
+.teacher-main-stage {
+  min-width: 0;
+  flex: 1 1 0;
+}
+
+/* Right panel is contextual — narrower and scrollable */
+.teacher-channel-aux-panel {
+  max-width: 16rem;
 }
 
 .teacher-panel-header {
@@ -63,9 +81,63 @@
   margin-top: 0.75rem;
 }
 
+/* When right panel enters overlay mode, main workspace collapses to single-column PDF-first layout. */
+.teacher-workspace-layout--overlay {
+  grid-template-columns: 1fr;
+}
+
+.teacher-workspace-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 77;
+  border: 0;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.32);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.teacher-workspace-overlay-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* BREAKPOINT: COMPACT_VIEWPORT_MAX (1180px) — see src/constants/workspaceBreakpoints.ts */
 @media (max-width: 1180px) {
   .teacher-shell-actions {
     width: 100%;
+  }
+
+  /* On compact viewports, right panel becomes overlay — remove max-width constraint */
+  .teacher-channel-aux-panel {
+    max-width: none;
+  }
+
+  .teacher-workspace-side-overlay {
+    width: min(24rem, calc(100vw - 1.5rem));
+    top: 4.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    max-height: calc(100vh - 5.5rem);
+  }
+
+  .teacher-workspace-layout--overlay {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .teacher-workspace-side-overlay {
+    width: calc(100vw - 1rem);
+    right: 0.5rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    max-height: calc(100vh - 1rem);
+  }
+
+  .teacher-workspace-overlay-backdrop {
+    background: rgba(15, 23, 42, 0.38);
   }
 }
 

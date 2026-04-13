@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, MaterialDocumentViewer, Modal } from '../../components'
+import { useWorkspaceShell } from '../../hooks/useWorkspaceShell'
 import { askQuestion, getQuestionSet, submitAnswers } from '../../api/student'
 import type { QaResponse, StudentQuestionSetResponse } from '../../api/student'
 import '../WorkspacePages.css'
@@ -21,10 +22,6 @@ interface StudentAiFollowUpContext {
   selectedOptionLabel: string
   conceptTags: string[]
   prompt: string
-}
-
-function isCompactViewport() {
-  return typeof window !== 'undefined' && window.matchMedia('(max-width: 1180px)').matches
 }
 
 function consumeStudentAiFollowUpContext() {
@@ -56,20 +53,7 @@ export function StudentWorkspacePage() {
   const [error, setError] = useState<string | null>(null)
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false)
   const [followUpContext, setFollowUpContext] = useState<StudentAiFollowUpContext | null>(null)
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(() => !isCompactViewport())
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const mediaQuery = window.matchMedia('(max-width: 1180px)')
-    const handleChange = () => {
-      setRightSidebarOpen(!mediaQuery.matches)
-    }
-
-    handleChange()
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
+  const { rightPanelOpen: rightSidebarOpen, rightPanelMode, toggleRightPanel, setRightPanelOpen } = useWorkspaceShell()
 
   useEffect(() => {
     const context = consumeStudentAiFollowUpContext()
@@ -77,8 +61,8 @@ export function StudentWorkspacePage() {
 
     setFollowUpContext(context)
     setQuestion(context.prompt)
-    setRightSidebarOpen(true)
-  }, [])
+    setRightPanelOpen(true)
+  }, [setRightPanelOpen])
 
   useEffect(() => {
     if (!distributionCode || !token) return
@@ -115,6 +99,7 @@ export function StudentWorkspacePage() {
       const result = await submitAnswers(distributionCode, { answers: questionSet.questions.map((q) => ({ questionId: q.id, selectedOptionIndex: answers[q.id] })) }, token)
       sessionStorage.setItem('latest_submission_id', result.submissionId)
       sessionStorage.setItem('latest_material_id', questionSet.materialId)
+      sessionStorage.setItem('latest_distribution_code', distributionCode)
       navigate(`/student/submissions/${result.submissionId}`)
     } catch (err) {
       console.error('답안 제출 실패:', err)
@@ -166,7 +151,7 @@ export function StudentWorkspacePage() {
           </div>
         </div>
 
-        <div className={`workspace-layout student-workspace-layout ${rightSidebarOpen ? 'student-workspace-layout--with-sidebar' : 'student-workspace-layout--document-only'}`}>
+        <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
           <section className="workspace-main student-workspace-stage">
             <div className="workspace-main-header">
               <div className="workspace-main-title workspace-loading-copy">
@@ -238,9 +223,18 @@ export function StudentWorkspacePage() {
           </section>
 
           {rightSidebarOpen && (
-            <aside className="workspace-side student-side student-workspace-side">
-              <Card className="workspace-card">
-                <CardBody>
+            <>
+              {rightPanelMode === 'overlay' && (
+                <button
+                  type="button"
+                  className="right-panel-backdrop is-visible"
+                  aria-label="학습 도구 패널 닫기"
+                  onClick={() => toggleRightPanel(false)}
+                />
+              )}
+              <aside className={`workspace-side student-side student-workspace-side ${rightPanelMode === 'overlay' ? 'student-workspace-side--overlay' : ''}`}>
+                <Card className="workspace-card">
+                  <CardBody>
                   <div className="workspace-loading-sidebar">
                     <div className="workspace-loading-row">
                       <div className="workspace-loading-chip" style={{ width: '7rem' }} />
@@ -255,7 +249,8 @@ export function StudentWorkspacePage() {
                   </div>
                 </CardBody>
               </Card>
-            </aside>
+              </aside>
+            </>
           )}
         </div>
       </div>
@@ -278,9 +273,10 @@ export function StudentWorkspacePage() {
           <button
             type="button"
             className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right"
-            onClick={() => setRightSidebarOpen((current) => !current)}
+            onClick={() => toggleRightPanel(!rightSidebarOpen)}
             aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
             title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
+            data-testid="right-panel-toggle"
           >
             <span className="material-symbols-outlined">{rightSidebarOpen ? 'right_panel_close' : 'right_panel_open'}</span>
           </button>
@@ -289,8 +285,8 @@ export function StudentWorkspacePage() {
 
       {error && <div className="error-message">{error}</div>}
 
-      <div className={`workspace-layout student-workspace-layout ${rightSidebarOpen ? 'student-workspace-layout--with-sidebar' : 'student-workspace-layout--document-only'}`}>
-        <section className="workspace-main student-workspace-stage">
+    <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
+      <section className="workspace-main student-workspace-stage">
           <div className="workspace-main-header">
             <div className="workspace-main-title">
               <div className="workspace-main-title-icon">
@@ -332,7 +328,7 @@ export function StudentWorkspacePage() {
                       <p className="workspace-question-title">문제 {index + 1}. {item.stem}</p>
                       <div className="workspace-options-grid">
                         {item.options.map((option, optionIndex) => (
-                          <button key={optionIndex} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
+                          <button key={`${item.id}-${option}`} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
                             <span>{String.fromCharCode(65 + optionIndex)}</span>
                             <span>{option}</span>
                           </button>
@@ -341,7 +337,7 @@ export function StudentWorkspacePage() {
                     </div>
                   ))}
                 </div>
-                <Button loading={submitting} onClick={handleSubmit}>정답 제출하기</Button>
+                <Button loading={submitting} onClick={handleSubmit} data-testid="student-submit-cta">정답 제출하기</Button>
               </CardBody>
             </Card>
 
@@ -374,9 +370,9 @@ export function StudentWorkspacePage() {
                       <div className="workspace-chat-bubble assistant">{qaResponse.answer}</div>
                       {qaResponse.evidenceSnippets.length > 0 && (
                         <div className="workspace-evidence-list">
-                          {qaResponse.evidenceSnippets.map((snippet, index) => (
-                            <div key={index} className="workspace-evidence-item">{snippet}</div>
-                          ))}
+                        {qaResponse.evidenceSnippets.map((snippet) => (
+                          <div key={`evidence-${snippet}`} className="workspace-evidence-item">{snippet}</div>
+                        ))}
                         </div>
                       )}
                     </>
@@ -405,7 +401,16 @@ export function StudentWorkspacePage() {
         </section>
 
         {rightSidebarOpen && (
-          <aside className="workspace-side student-side student-workspace-side">
+          <>
+            {rightPanelMode === 'overlay' && (
+              <button
+                type="button"
+                className="right-panel-backdrop is-visible"
+                aria-label="학습 도구 패널 닫기"
+                onClick={() => toggleRightPanel(false)}
+              />
+            )}
+            <aside className={`workspace-side student-side student-workspace-side ${rightPanelMode === 'overlay' ? 'student-workspace-side--overlay' : ''}`}>
           <Card className="workspace-card">
             <CardBody>
               <div className="workspace-panel-inline-header">
@@ -452,7 +457,8 @@ export function StudentWorkspacePage() {
               </div>
             </CardBody>
           </Card>
-          </aside>
+            </aside>
+          </>
         )}
       </div>
 
@@ -469,8 +475,8 @@ export function StudentWorkspacePage() {
                 <div className="workspace-question-number">문제 {index + 1}</div>
                 <p className="workspace-question-title">{item.stem}</p>
                 <div className="workspace-options-grid">
-                  {item.options.map((option, optionIndex) => (
-                    <button key={optionIndex} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
+                        {item.options.map((option, optionIndex) => (
+                          <button key={`${item.id}-${option}`} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
                       <span>{String.fromCharCode(65 + optionIndex)}</span>
                       <span>{option}</span>
                     </button>

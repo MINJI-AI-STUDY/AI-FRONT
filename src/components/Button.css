@@ -154,7 +154,37 @@
 }
 
 .btn-group-vertical {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 0.5rem;
+display: inline-flex;
+flex-direction: column;
+gap: 0.5rem;
+}
+
+/* 반응형 - 태블릿/모바일에서 한국어 텍스트 줄바꿈 허용 */
+@media (max-width: 1180px) {
+  .btn {
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  
+  .btn-sm {
+    min-height: 2.75rem;
+  }
+  
+  .btn-md {
+    min-height: 2.75rem;
+  }
+  
+  .btn-lg {
+    min-height: 3rem;
+  }
+}
+
+/* 모바일 - 최소 터치 타겟 44px */
+@media (max-width: 767px) {
+  .btn-sm,
+  .btn-md,
+  .btn-lg {
+    min-height: 2.75rem;
+  }
 }

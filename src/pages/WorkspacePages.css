@@ -1,6 +1,11 @@
 /**
  * 공통 워크스페이스 레이아웃
  * teacher / student channel workspace, PDF 중심 레이아웃, 우측 보조 패널에 사용됩니다.
+ *
+ * Breakpoint values (1180px, 768px, 767px) are canonical constants defined in
+ * src/constants/workspaceBreakpoints.ts (COMPACT_VIEWPORT_MAX, TABLET_MIN, MOBILE_MAX).
+ * CSS custom properties are injected at runtime by useWorkspaceShell hook.
+ * When changing breakpoints, update BOTH the TS constants AND these media queries.
  */
 
 .workspace-page {
@@ -60,6 +65,7 @@
 
 .workspace-edge-handle {
   white-space: nowrap;
+  word-break: keep-all;
 }
 
 .channel-shell {
@@ -685,6 +691,76 @@
   border-color: #93c5fd;
 }
 
+.document-viewer-page-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.document-viewer-nav-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+  white-space: nowrap;
+}
+
+.document-viewer-nav-button:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1d4ed8;
+}
+
+.document-viewer-nav-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.document-viewer-page-indicator {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+  min-width: 5.5rem;
+  justify-content: center;
+}
+
+.document-viewer-mode-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  color: #9ca3af;
+}
+
+.document-viewer-spread {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.document-viewer-spread.is-spread .workspace-document-frame {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.document-viewer-spread.is-single .workspace-document-frame {
+  width: 100%;
+}
+
 .document-viewer-toolbar-title {
   display: flex;
   flex-direction: column;
@@ -854,6 +930,7 @@
   font-size: 0.875rem;
 }
 
+/* BREAKPOINT: COMPACT_VIEWPORT_MAX (1180px) — see src/constants/workspaceBreakpoints.ts */
 @media (max-width: 1180px) {
   .workspace-header {
     flex-direction: column;
@@ -883,8 +960,14 @@
     width: 100%;
     align-self: stretch;
   }
+
+  /* Student channel: right panel overlay forces single-column on compact */
+  .student-three-column.right-panel-overlay {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
+/* BREAKPOINT: TABLET_MIN..COMPACT_VIEWPORT_MAX (768px..1180px) — see src/constants/workspaceBreakpoints.ts */
 @media (min-width: 768px) and (max-width: 1180px) {
   .workspace-page .workspace-header {
     padding-inline: 3.5rem;
@@ -1014,6 +1097,36 @@
   .document-viewer-toolbar-actions {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .document-viewer-page-controls {
+    flex: 1 1 auto;
+    justify-content: center;
+    order: 1;
+  }
+
+  .document-viewer-mode-group {
+    flex-wrap: nowrap;
+    order: 2;
+  }
+
+  .document-viewer-mode-chip {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.75rem;
+    min-height: 2.25rem;
+  }
+
+  .document-viewer-nav-button {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+    min-height: 2.125rem;
+  }
+
+  .document-viewer-page-indicator {
+    font-size: 0.75rem;
+    min-width: 4.5rem;
   }
 
   .document-viewer-link {
@@ -1041,15 +1154,95 @@
     height: 3rem;
   }
 
-  .workspace-main-title > div,
-  .page-title,
-  .page-description,
-  .workspace-card-title,
-  .student-channel-description,
-  .channel-sidebar-description {
+.workspace-main-title > div,
+.page-title,
+.page-description,
+.workspace-card-title,
+.student-channel-description,
+.channel-sidebar-description {
+word-break: keep-all;
+overflow-wrap: anywhere;
+  }
+
+  /* 태블릿에서 한국어 텍스트 줄바꿈 허용 */
+  .workspace-edge-handle {
+    white-space: normal;
     word-break: keep-all;
     overflow-wrap: anywhere;
+}
+
+  /* 워크스페이스 모드 탭 - 한국어 레이블 처리 */
+  .workspace-mode-tab {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
+
+  /* 문서 뷰어 모드 칩 - 줄바꿈 허용 */
+  .document-viewer-mode-chip {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  /* 문서 뷰어 모드 그룹 - 줄바꿈 허용 */
+  .document-viewer-mode-group {
+    flex-wrap: wrap;
+  }
+
+  /* 워크스페이스 액션 버튼 그룹 - 줄바꿈 및 터치 타겟 */
+  .workspace-actions {
+    gap: 0.5rem;
+  }
+
+  .workspace-actions .btn {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    min-height: 2.75rem;
+  }
+
+  /* 사이드바 액션 - 줄바꿈 처리 */
+  .workspace-sidebar-actions {
+    gap: 0.5rem;
+  }
+
+  .workspace-sidebar-actions .btn {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    min-height: 2.75rem;
+  }
+
+  /* 툴 버튼 - 최소 터치 타겟 유지 */
+  .workspace-tool-button {
+    min-width: 3rem;
+    min-height: 3rem;
+  }
+
+  /* 패널 인라인 헤더 - 태블릿에서 스태킹 */
+  .workspace-panel-inline-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  /* 플로팅 레일 라벨 - 태블릿에서 항상 보이게 (터치 대응) */
+  .floating-rail .rail-label {
+    opacity: 1;
+    position: static;
+    transform: none;
+    margin-top: 0.25rem;
+    font-size: 0.6875rem;
+  }
+
+  /* Student channel: right panel overlay on tablet */
+.student-channel-side--overlay,
+.student-workspace-side--overlay {
+    top: 4.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: min(26rem, calc(100vw - 1.5rem));
+    max-height: calc(100vh - 5.5rem);
+}
 }
 
 @media (max-width: 767px) {
@@ -1114,6 +1307,20 @@
     min-height: clamp(28rem, 70vh, 38rem);
   }
 
+  .workspace-page .teacher-workspace-side-overlay,
+  .workspace-page .student-workspace-side--overlay,
+  .workspace-page .teacher-channel-aux-panel--overlay,
+  .workspace-page .student-channel-side--overlay {
+    top: auto;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: auto;
+    max-height: min(78vh, calc(100vh - 5rem));
+    border-radius: 1.25rem 1.25rem 0.875rem 0.875rem;
+    box-shadow: 0 24px 52px rgba(15, 23, 42, 0.22);
+  }
+
   .workspace-actions {
     width: 100%;
     justify-content: flex-end;
@@ -1142,6 +1349,38 @@
     align-items: stretch;
   }
 
+  .document-viewer-toolbar-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .document-viewer-page-controls {
+    justify-content: center;
+  }
+
+  .document-viewer-mode-group {
+    flex-wrap: nowrap;
+    justify-content: center;
+  }
+
+  .document-viewer-mode-chip {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+    min-height: 2rem;
+  }
+
+  .document-viewer-nav-button {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    min-height: 2rem;
+  }
+
+  .document-viewer-page-indicator {
+    font-size: 0.7rem;
+    min-width: 4rem;
+  }
+
   .document-viewer-link {
     width: 100%;
     justify-content: center;
@@ -1158,10 +1397,102 @@
     min-height: clamp(18rem, 54vh, 30rem);
   }
 
-  .document-viewer-frame-shell {
-    padding: 0.25rem;
-    border-radius: 1.125rem;
+.document-viewer-frame-shell {
+padding: 0.25rem;
+border-radius: 1.125rem;
   }
+
+  /* 모바일에서 한국어 텍스트 줄바꿈 및 최소 터치 타겟 보장 */
+  .workspace-actions .btn,
+  .workspace-sidebar-actions .btn {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    min-height: 2.75rem;
+}
+
+  .workspace-mode-tab {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    min-height: 2.5rem;
+  }
+
+  .document-viewer-mode-chip {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    min-height: 2.25rem;
+  }
+
+  .workspace-tool-button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  /* 모바일에서 플로팅 레일 라벨 항상 표시 */
+  .floating-rail .rail-label {
+    opacity: 1;
+    position: static;
+    transform: none;
+    margin-top: 0.25rem;
+    font-size: 0.625rem;
+  }
+
+  /* Student channel: right panel overlay on mobile */
+.student-channel-side--overlay,
+.student-workspace-side--overlay {
+    top: 4.25rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: calc(100vw - 1rem);
+    max-height: calc(100vh - 4.75rem);
+}
+}
+/* When left sidebar grid column is collapsed, hide the sidebar panel on desktop.
+   On compact viewports the sidebar is overlay-positioned and should remain in the DOM
+   for CSS transitions (handled by .channel-sidebar-panel-overlay rules). */
+.channel-shell.left-sidebar-collapsed > .channel-sidebar-panel:not(.channel-sidebar-panel-overlay) {
+  display: none;
+}
+
+/* Right panel overlay backdrop for compact viewports */
+.workspace-page .right-panel-backdrop,
+.workspace-page .student-right-panel-backdrop,
+.workspace-page .teacher-workspace-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 77;
+  border: 0;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.32);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.workspace-page .right-panel-backdrop.is-visible,
+.workspace-page .student-right-panel-backdrop.is-visible,
+.workspace-page .teacher-workspace-overlay-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.workspace-page .teacher-workspace-side-overlay,
+.workspace-page .student-workspace-side--overlay,
+.workspace-page .teacher-channel-aux-panel--overlay,
+.workspace-page .student-channel-side--overlay {
+  position: fixed;
+  top: 4.75rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  width: min(24rem, calc(100vw - 1.5rem));
+  max-width: none;
+  max-height: calc(100vh - 5.5rem);
+  z-index: 78;
+  overflow: auto;
+  border-radius: 1.25rem;
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.18);
 }
 
 
@@ -1423,6 +1754,7 @@
   padding: 0.25rem;
   border-radius: 9999px;
   background: #f3f4f6;
+  flex-wrap: wrap;
 }
 
 .workspace-mode-tab {
@@ -1435,6 +1767,9 @@
   border-radius: 9999px;
   cursor: pointer;
   transition: all 150ms ease;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .workspace-mode-tab.active {
@@ -1523,6 +1858,48 @@
 
 .student-three-column.sidebar-collapsed {
   grid-template-columns: minmax(0, 1fr);
+}
+
+/* Student channel workspace shell — PDF-first layout */
+.channel-shell--left-overlay {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* When right panel is overlay mode, force single-column so PDF fills space */
+.student-three-column.right-panel-overlay {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Right panel overlay backdrop */
+.student-right-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  border: 0;
+  padding: 0;
+  background: rgba(15, 23, 42, 0.32);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.student-right-panel-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Right panel overlay mode — floats on top of content */
+.student-channel-side--overlay {
+  position: fixed;
+  top: 4.75rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  width: min(26rem, calc(100vw - 1.5rem));
+  max-height: calc(100vh - 5.5rem);
+  z-index: 70;
+  overflow: auto;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+  border-radius: 1.25rem;
 }
 
 /* Responsive adjustments */
