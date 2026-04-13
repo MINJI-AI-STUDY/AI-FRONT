@@ -110,7 +110,7 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
   }
 
   return (
-    <div className="document-viewer-shell workspace-document-stage">
+    <div className="document-viewer-shell workspace-document-stage" data-testid="pdf-shell">
       <div className="document-viewer-toolbar">
         <div className="document-viewer-toolbar-title">
           <strong>학습 문서</strong>
@@ -128,11 +128,22 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
               다음 페이지
             </button>
           </div>
-          <div className="document-viewer-mode-group" role="group" aria-label="PDF 보기 방식">
-            <button type="button" className={`document-viewer-mode-chip ${pageDisplayMode === 'spread' ? 'active' : ''}`} onClick={() => handleSetPageDisplayMode('spread')} disabled={defaultPageDisplayMode === 'single'}>
+        <div className="document-viewer-mode-group" data-testid="pdf-page-mode-toggle">
+            <button
+              type="button"
+              className={`document-viewer-mode-chip ${pageDisplayMode === 'spread' ? 'active' : ''}`}
+              onClick={() => handleSetPageDisplayMode('spread')}
+              disabled={defaultPageDisplayMode === 'single'}
+              data-testid="pdf-page-mode-toggle-spread"
+            >
               두쪽보기 우선
             </button>
-            <button type="button" className={`document-viewer-mode-chip ${pageDisplayMode === 'single' ? 'active' : ''}`} onClick={() => handleSetPageDisplayMode('single')}>
+            <button
+              type="button"
+              className={`document-viewer-mode-chip ${pageDisplayMode === 'single' ? 'active' : ''}`}
+              onClick={() => handleSetPageDisplayMode('single')}
+              data-testid="pdf-page-mode-toggle-single"
+            >
               한쪽보기
             </button>
           </div>

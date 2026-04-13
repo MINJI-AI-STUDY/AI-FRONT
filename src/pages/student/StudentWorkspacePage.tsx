@@ -276,6 +276,7 @@ export function StudentWorkspacePage() {
             onClick={() => toggleRightPanel(!rightSidebarOpen)}
             aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
             title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
+            data-testid="right-panel-toggle"
           >
             <span className="material-symbols-outlined">{rightSidebarOpen ? 'right_panel_close' : 'right_panel_open'}</span>
           </button>
@@ -327,7 +328,7 @@ export function StudentWorkspacePage() {
                       <p className="workspace-question-title">문제 {index + 1}. {item.stem}</p>
                       <div className="workspace-options-grid">
                         {item.options.map((option, optionIndex) => (
-                          <button key={optionIndex} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
+                          <button key={`${item.id}-${option}`} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
                             <span>{String.fromCharCode(65 + optionIndex)}</span>
                             <span>{option}</span>
                           </button>
@@ -336,7 +337,7 @@ export function StudentWorkspacePage() {
                     </div>
                   ))}
                 </div>
-                <Button loading={submitting} onClick={handleSubmit}>정답 제출하기</Button>
+                <Button loading={submitting} onClick={handleSubmit} data-testid="student-submit-cta">정답 제출하기</Button>
               </CardBody>
             </Card>
 
@@ -369,9 +370,9 @@ export function StudentWorkspacePage() {
                       <div className="workspace-chat-bubble assistant">{qaResponse.answer}</div>
                       {qaResponse.evidenceSnippets.length > 0 && (
                         <div className="workspace-evidence-list">
-                          {qaResponse.evidenceSnippets.map((snippet, index) => (
-                            <div key={index} className="workspace-evidence-item">{snippet}</div>
-                          ))}
+                        {qaResponse.evidenceSnippets.map((snippet) => (
+                          <div key={`evidence-${snippet}`} className="workspace-evidence-item">{snippet}</div>
+                        ))}
                         </div>
                       )}
                     </>
@@ -474,8 +475,8 @@ export function StudentWorkspacePage() {
                 <div className="workspace-question-number">문제 {index + 1}</div>
                 <p className="workspace-question-title">{item.stem}</p>
                 <div className="workspace-options-grid">
-                  {item.options.map((option, optionIndex) => (
-                    <button key={optionIndex} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
+                        {item.options.map((option, optionIndex) => (
+                          <button key={`${item.id}-${option}`} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
                       <span>{String.fromCharCode(65 + optionIndex)}</span>
                       <span>{option}</span>
                     </button>
