@@ -455,7 +455,40 @@
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
+  flex-wrap: wrap;
   margin-top: 1rem;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.exclude-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.question-options-edit,
+.publish-actions,
+.publish-actions .btn,
+.form-actions {
+  flex-wrap: wrap;
+}
+
+.question-card .workspace-option,
+.question-card .input,
+.question-card .textarea,
+.question-card .number-input {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* 에러 메시지 */
