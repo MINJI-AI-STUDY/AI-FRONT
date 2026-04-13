@@ -8,7 +8,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../auth'
 import { Button, Card, CardBody, MaterialDocumentViewer, Modal } from '../../components'
 import { useWorkspaceShell } from '../../hooks/useWorkspaceShell'
-import { askQuestion, getQuestionSet, submitAnswers } from '../../api/student'
+import { askQuestion, getQuestionSet, getSubmissionResult, submitAnswers } from '../../api/student'
 import type { StudentQuestionSetResponse } from '../../api/student'
 import '../WorkspacePages.css'
 
@@ -29,6 +29,12 @@ interface StudentAiFollowUpContext {
   selectedOptionLabel: string
   conceptTags: string[]
   prompt: string
+}
+
+interface StudentSubmissionSnapshot {
+  correctCount: number
+  totalCount: number
+  score: number
 }
 
 function consumeStudentAiFollowUpContext() {
@@ -60,6 +66,7 @@ export function StudentWorkspacePage() {
   const [error, setError] = useState<string | null>(null)
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false)
   const [followUpContext, setFollowUpContext] = useState<StudentAiFollowUpContext | null>(null)
+  const [latestSubmissionSnapshot, setLatestSubmissionSnapshot] = useState<StudentSubmissionSnapshot | null>(null)
   const { rightPanelOpen: rightSidebarOpen, rightPanelMode, toggleRightPanel, setRightPanelOpen } = useWorkspaceShell({
     stateScopeKey: `student-workspace-${distributionCode ?? 'unknown'}`,
   })
@@ -104,6 +111,35 @@ export function StudentWorkspacePage() {
     fetchQuestionSet()
   }, [distributionCode, token])
 
+  useEffect(() => {
+    if (!distributionCode || !token) return
+
+    const latestSubmissionId = sessionStorage.getItem('latest_submission_id')
+    const latestDistributionCode = sessionStorage.getItem('latest_distribution_code')
+
+    if (!latestSubmissionId || latestDistributionCode !== distributionCode) {
+      setLatestSubmissionSnapshot(null)
+      return
+    }
+
+    const fetchLatestSubmissionSnapshot = async () => {
+      try {
+        const result = await getSubmissionResult(latestSubmissionId, token)
+        const correctCount = result.questionResults.filter((item) => item.correct).length
+        setLatestSubmissionSnapshot({
+          correctCount,
+          totalCount: result.questionResults.length,
+          score: result.score,
+        })
+      } catch (err) {
+        console.error('최근 제출 결과 조회 실패:', err)
+        setLatestSubmissionSnapshot(null)
+      }
+    }
+
+    fetchLatestSubmissionSnapshot()
+  }, [distributionCode, token])
+
   const handleSelectAnswer = (questionId: string, answerIndex: number) => {
     setAnswers((prev) => ({ ...prev, [questionId]: answerIndex }))
   }
@@ -119,6 +155,12 @@ export function StudentWorkspacePage() {
     setError(null)
     try {
       const result = await submitAnswers(distributionCode, { answers: questionSet.questions.map((q) => ({ questionId: q.id, selectedOptionIndex: answers[q.id] })) }, token)
+      const correctCount = result.questionResults.filter((item) => item.correct).length
+      setLatestSubmissionSnapshot({
+        correctCount,
+        totalCount: result.questionResults.length,
+        score: result.score,
+      })
       sessionStorage.setItem('latest_submission_id', result.submissionId)
       sessionStorage.setItem('latest_material_id', questionSet.materialId)
       sessionStorage.setItem('latest_distribution_code', distributionCode)
@@ -359,6 +401,19 @@ export function StudentWorkspacePage() {
                   <strong>{Math.floor(qaMessages.length / 2)}</strong>
                 </div>
               </div>
+              {latestSubmissionSnapshot ? (
+                <div className="student-latest-score-card">
+                  <span className="student-latest-score-label">최근 제출 기준</span>
+                  <strong>
+                    정답 {latestSubmissionSnapshot.correctCount}개 / {latestSubmissionSnapshot.totalCount}문항
+                  </strong>
+                  <p>최근 점수는 {latestSubmissionSnapshot.score}점입니다. 다시 풀어도 최신 결과가 이 자리에 반영됩니다.</p>
+                </div>
+              ) : (
+                <p className="workspace-side-description student-score-hint">
+                  정답 개수와 오답 개수는 제출 직후 결과 화면에서 바로 확인할 수 있습니다.
+                </p>
+              )}
               <div className="workspace-sidebar-actions">
                 <Button variant="outline" onClick={() => setIsQuizModalOpen(true)}>문제 풀기 열기</Button>
                 <Button loading={submitting} onClick={handleSubmit}>정답 제출하기</Button>
@@ -385,7 +440,7 @@ export function StudentWorkspacePage() {
                 <h3 className="workspace-card-title">자료 기반 AI 질문</h3>
                 <span className="workspace-mini-chip">LIVE</span>
               </div>
-              <p className="workspace-side-description">오른쪽 토글 패널 안에서 바로 질문하고, 답변과 근거까지 이 자리에서 확인합니다.</p>
+              <p className="workspace-side-description">오른쪽 토글 패널 안에서 바로 질문하고, 답변을 먼저 확인한 뒤 필요할 때만 근거 요약을 펼쳐볼 수 있습니다.</p>
               <div className="workspace-chat-area student-sidebar-chat-log">
                 {qaMessages.length === 0 ? (
                   <p className="workspace-empty">자료에 대해 궁금한 점을 질문하면 AI가 바로 답변합니다.</p>
@@ -394,11 +449,14 @@ export function StudentWorkspacePage() {
                     <div key={item.id} className={`workspace-chat-bubble ${item.role}`}>
                       {item.content}
                       {item.role === 'assistant' && item.evidenceSnippets && item.evidenceSnippets.length > 0 && (
-                        <div className="workspace-evidence-list">
-                          {item.evidenceSnippets.map((snippet) => (
-                            <div key={`${item.id}-${snippet}`} className="workspace-evidence-item">{snippet}</div>
-                          ))}
-                        </div>
+                        <details className="student-evidence-details">
+                          <summary>근거 요약 펼쳐보기 ({item.evidenceSnippets.length})</summary>
+                          <div className="workspace-evidence-list">
+                            {item.evidenceSnippets.map((snippet) => (
+                              <div key={`${item.id}-${snippet}`} className="workspace-evidence-item">{snippet}</div>
+                            ))}
+                          </div>
+                        </details>
                       )}
                     </div>
                   ))

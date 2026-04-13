@@ -469,13 +469,26 @@
 .page-actions {
   display: flex;
   justify-content: flex-end;
+  align-items: stretch;
+  gap: 0.75rem;
   margin-top: 1rem;
+  flex-wrap: wrap;
 }
 
 .page-actions--stacked {
   flex-direction: column;
   align-items: stretch;
   gap: 0.5rem;
+}
+
+.page-actions > * {
+  display: flex;
+  align-items: stretch;
+}
+
+.page-actions > a > .btn,
+.page-actions > button.btn {
+  width: 100%;
 }
 
 .modal-status-state {

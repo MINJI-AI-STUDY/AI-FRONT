@@ -68,16 +68,16 @@ function QaResponseCard({ response }: { response: QaResponse }) {
         <p className="response-answer">{response.answer}</p>
 
         {state === 'grounded' && response.evidenceSnippets.length > 0 && (
-          <div className="evidence-section">
-            <h4 className="evidence-title">근거</h4>
-            <div className="evidence-list">
+          <details className="ai-evidence-details">
+            <summary>근거 요약 펼쳐보기 ({response.evidenceSnippets.length})</summary>
+            <div className="ai-evidence-list">
               {response.evidenceSnippets.map((snippet, index) => (
-                <div key={index} className="evidence-item">
-                  <p className="evidence-content">{snippet}</p>
+                <div key={index} className="ai-evidence-item">
+                  <p className="ai-answer-details-body">{snippet}</p>
                 </div>
               ))}
             </div>
-          </div>
+          </details>
         )}
 
         {state !== 'grounded' && (

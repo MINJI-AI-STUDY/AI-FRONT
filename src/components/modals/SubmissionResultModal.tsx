@@ -30,6 +30,8 @@ export function SubmissionResultModal({ submissionId, token, isOpen, onClose }: 
     : latestMaterialId
       ? `/student/materials/${latestMaterialId}/qa`
       : '/student'
+  const correctCount = result?.questionResults.filter((item) => item.correct).length ?? 0
+  const wrongCount = result ? result.questionResults.length - correctCount : 0
 
   const storeWrongAnswerContext = (questionNumber: number, explanation: string, selectedOptionLabel: string, conceptTags: string[]) => {
     sessionStorage.setItem(
@@ -100,6 +102,10 @@ export function SubmissionResultModal({ submissionId, token, isOpen, onClose }: 
               <div className="score-display">
                 <div className="score-value">{result.score} / {result.questionResults.length}</div>
                 <div className="score-label">점수</div>
+              </div>
+              <div className="score-stats">
+                <div className="stat-item"><span className="stat-value correct">{correctCount}</span><span className="stat-label">정답</span></div>
+                <div className="stat-item"><span className="stat-value wrong">{wrongCount}</span><span className="stat-label">오답</span></div>
               </div>
             </CardBody>
           </Card>
