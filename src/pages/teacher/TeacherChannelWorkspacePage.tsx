@@ -8,6 +8,7 @@ import {
   generateQuestionsInChannel,
   getQuestionSetById,
   getQuestionSetsByChannel,
+  getTeacherDashboard,
   publishQuestionSet,
   getTeacherChannelWorkspace,
   getTeacherChannels,
@@ -19,6 +20,7 @@ import {
   type ChannelResponse,
   type ChannelWorkspaceResponse,
   type QuestionSetResponse,
+  type TeacherDashboardResponse,
   type UpdateQuestionRequest,
 } from '../../api/teacher'
 import { enterChannel, heartbeatChannel, leaveChannel, subscribeChannelEvents } from '../../api/realtime'
@@ -55,6 +57,8 @@ export function TeacherChannelWorkspacePage() {
   const [publishing, setPublishing] = useState(false)
   const [reviewDueAt, setReviewDueAt] = useState('')
   const [publishCode, setPublishCode] = useState<string | null>(null)
+  const [latestPublishedDashboard, setLatestPublishedDashboard] = useState<TeacherDashboardResponse | null>(null)
+  const [latestPublishedDashboardLoading, setLatestPublishedDashboardLoading] = useState(false)
   const {
     leftSidebarOpen,
     rightPanelOpen,
@@ -145,6 +149,54 @@ export function TeacherChannelWorkspacePage() {
   const latestReviewRequiredQuestionSet = questionSets.find((item) => item.status === 'REVIEW_REQUIRED') ?? null
   const latestPublishedQuestionSet = questionSets.find((item) => item.status === 'PUBLISHED') ?? null
   const recentTeacherMessages = [...(workspace?.recentMessages ?? [])].slice(-5).reverse()
+  const latestPublishedDashboardSummary = useMemo(() => {
+    if (!latestPublishedDashboard) return null
+
+    const participantCount = latestPublishedDashboard.studentScores.length
+    const averageScore = participantCount > 0
+      ? latestPublishedDashboard.studentScores.reduce((sum, item) => sum + item.score, 0) / participantCount
+      : 0
+    const topStudent = [...latestPublishedDashboard.studentScores].sort((a, b) => b.score - a.score)[0] ?? null
+    const riskQuestion = [...latestPublishedDashboard.questionAccuracy].sort((a, b) => a.accuracyRate - b.accuracyRate)[0] ?? null
+    const strongestQuestion = [...latestPublishedDashboard.questionAccuracy].sort((a, b) => b.accuracyRate - a.accuracyRate)[0] ?? null
+
+    return {
+      participantCount,
+      averageScore,
+      topStudent,
+      riskQuestion,
+      strongestQuestion,
+      weakConcepts: latestPublishedDashboard.weakConceptTags.slice(0, 3),
+    }
+  }, [latestPublishedDashboard])
+  const getLatestDashboardQuestionNumber = (questionId?: string | null) => {
+    if (!latestPublishedDashboard || !questionId) return null
+    const index = latestPublishedDashboard.questionAccuracy.findIndex((item) => item.questionId === questionId)
+    return index >= 0 ? index + 1 : null
+  }
+
+  useEffect(() => {
+    if (!token || !latestPublishedQuestionSet) {
+      setLatestPublishedDashboard(null)
+      setLatestPublishedDashboardLoading(false)
+      return
+    }
+
+    const loadLatestPublishedDashboard = async () => {
+      try {
+        setLatestPublishedDashboardLoading(true)
+        const data = await getTeacherDashboard(latestPublishedQuestionSet.questionSetId, token)
+        setLatestPublishedDashboard(data)
+      } catch (err) {
+        console.error('최근 배포 세트 대시보드 조회 실패:', err)
+        setLatestPublishedDashboard(null)
+      } finally {
+        setLatestPublishedDashboardLoading(false)
+      }
+    }
+
+    loadLatestPublishedDashboard()
+  }, [latestPublishedQuestionSet, token])
 
   const rightPanelHandle = (
     <button
@@ -501,6 +553,26 @@ export function TeacherChannelWorkspacePage() {
                         ? `선택한 자료 #${selectedMaterial.docNo} 기준으로 문제 생성과 리뷰 흐름을 바로 이어갈 수 있습니다.`
                         : '먼저 PDF를 채널에 올리면 학생과 함께 보는 문서 중심 흐름을 시작할 수 있습니다.'}
                   </p>
+                  {latestPublishedQuestionSet && latestPublishedDashboardSummary && (
+                    <div className="teacher-dashboard-inline-strip">
+                      <div className="teacher-dashboard-inline-item">
+                        <span>제출 학생</span>
+                        <strong>{latestPublishedDashboardSummary.participantCount}명</strong>
+                      </div>
+                      <div className="teacher-dashboard-inline-item">
+                        <span>평균 점수</span>
+                        <strong>{latestPublishedDashboardSummary.averageScore.toFixed(1)}점</strong>
+                      </div>
+                      <div className="teacher-dashboard-inline-item">
+                        <span>위험 문항</span>
+                        <strong>
+                          {latestPublishedDashboardSummary.riskQuestion
+                            ? `${getLatestDashboardQuestionNumber(latestPublishedDashboardSummary.riskQuestion.questionId) ?? '-'}번 · ${latestPublishedDashboardSummary.riskQuestion.accuracyRate.toFixed(0)}%`
+                            : '없음'}
+                        </strong>
+                      </div>
+                    </div>
+                  )}
                 </CardBody>
               </Card>
             </section>
@@ -517,6 +589,72 @@ export function TeacherChannelWorkspacePage() {
                 </div>
 
                 <div className="teacher-panel-stack teacher-assist-panel" data-testid="teacher-assist-panel">
+                  <section className="channel-sidebar-section teacher-channel-settings teacher-panel-summary teacher-dashboard-preview-card">
+                    <div>
+                      <div className="workspace-main-eyebrow">최근 배포 세트</div>
+                      <strong>학생 풀이 현황 요약</strong>
+                    </div>
+                    {latestPublishedDashboardLoading ? (
+                      <p className="workspace-side-description">대시보드 요약을 불러오는 중입니다.</p>
+                    ) : latestPublishedQuestionSet && latestPublishedDashboardSummary ? (
+                      <>
+                        <div className="teacher-live-metrics">
+                          <div className="teacher-live-metric">
+                            <span>참여 학생</span>
+                            <strong>{latestPublishedDashboardSummary.participantCount}명</strong>
+                          </div>
+                          <div className="teacher-live-metric">
+                            <span>평균 점수</span>
+                            <strong>{latestPublishedDashboardSummary.averageScore.toFixed(1)}점</strong>
+                          </div>
+                          <div className="teacher-live-metric">
+                            <span>최고 점수</span>
+                            <strong>{latestPublishedDashboardSummary.topStudent ? `${latestPublishedDashboardSummary.topStudent.score}점` : '-'}</strong>
+                          </div>
+                          <div className="teacher-live-metric teacher-live-metric--risk">
+                            <span>위험 문항</span>
+                            <strong>
+                              {latestPublishedDashboardSummary.riskQuestion
+                                ? `${getLatestDashboardQuestionNumber(latestPublishedDashboardSummary.riskQuestion.questionId) ?? '-'}번`
+                                : '-'}
+                            </strong>
+                          </div>
+                        </div>
+                        <div className="teacher-live-insights">
+                          <div className="teacher-live-insight">
+                            <span className="teacher-live-insight-label">상위 학생</span>
+                            <strong>{latestPublishedDashboardSummary.topStudent?.studentId ?? '제출 없음'}</strong>
+                          </div>
+                          <div className="teacher-live-insight">
+                            <span className="teacher-live-insight-label">가장 쉬운 문항</span>
+                            <strong>
+                              {latestPublishedDashboardSummary.strongestQuestion
+                                ? `${getLatestDashboardQuestionNumber(latestPublishedDashboardSummary.strongestQuestion.questionId) ?? '-'}번 · ${latestPublishedDashboardSummary.strongestQuestion.accuracyRate.toFixed(0)}%`
+                                : '데이터 없음'}
+                            </strong>
+                          </div>
+                          <div className="teacher-live-insight">
+                            <span className="teacher-live-insight-label">취약 개념</span>
+                            <strong>
+                              {latestPublishedDashboardSummary.weakConcepts.length > 0
+                                ? latestPublishedDashboardSummary.weakConcepts.map((item) => `${item.tag}(${item.count})`).join(', ')
+                                : '아직 없음'}
+                            </strong>
+                          </div>
+                        </div>
+                        <div className="workspace-sidebar-actions">
+                          <Link to={`/teacher/question-sets/${latestPublishedQuestionSet.questionSetId}/dashboard`}>
+                            <Button size="sm">전체 대시보드 보기</Button>
+                          </Link>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="student-channel-task-empty">
+                        최근 배포 세트가 없거나 아직 학생 제출이 없습니다. 배포 후 학생이 제출하면 여기에 요약이 나타납니다.
+                      </div>
+                    )}
+                  </section>
+
                   <section className="channel-sidebar-section teacher-channel-settings teacher-panel-summary">
                     <div>
                       <div className="workspace-main-eyebrow">현재 작업 순서</div>
