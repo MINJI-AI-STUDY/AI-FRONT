@@ -247,8 +247,31 @@
     flex: 1;
   }
 
-  .modal-close-button {
-    width: 2.75rem;
-    height: 2.75rem;
+.modal-close-button {
+width: 2.75rem;
+height: 2.75rem;
+}
+}
+
+/* BREAKPOINT: TABLET (768px-1180px) - 한국어 버튼 레이블 줄바꿈 및 최소 터치 타겟 */
+@media (min-width: 768px) and (max-width: 1180px) {
+  .modal-footer {
+    gap: 0.5rem;
+  }
+  
+  .modal-footer .btn {
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    min-height: 2.75rem;
+    flex: 1 1 auto;
+    min-width: 6rem;
+  }
+}
+
+/* BREAKPOINT: MOBILE (max-width: 767px) - 버튼 최소 터치 타겟 보장 */
+@media (max-width: 767px) {
+  .modal-footer .btn {
+    min-height: 2.75rem;
   }
 }

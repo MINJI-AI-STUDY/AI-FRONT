@@ -1,9 +1,14 @@
 /**
  * 자료 PDF 뷰어 컴포넌트
  * 인증 토큰으로 PDF를 받아 화면에 렌더링합니다.
+ *
+ * 뷰포트 너비에 따라 한쪽/두쪽 보기 모드를 자동 전환합니다.
+ * 사용자가 수동으로 모드를 선택한 경우 뷰포트가 허용하는 한 그 선택을 존중합니다.
  */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useWorkspaceShell } from '../hooks/useWorkspaceShell'
+import type { PageDisplayMode } from '../hooks/useWorkspaceShell'
 
 interface MaterialDocumentViewerProps {
   materialId: string
@@ -14,7 +19,38 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
   const [documentUrl, setDocumentUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [pageDisplayMode, setPageDisplayMode] = useState<'single' | 'spread'>('spread')
+
+  const { defaultPageDisplayMode } = useWorkspaceShell()
+
+  // Track whether the user has explicitly chosen a mode (vs viewport-driven default).
+  const [userSelectedMode, setUserSelectedMode] = useState<PageDisplayMode | null>(null)
+  // Track whether viewport is currently forcing single-page due to width constraint.
+  const viewportForcesSingleRef = useRef(false)
+
+  // Resolve effective display mode:
+  // 1. If viewport forces single (width < READABLE_PDF_MIN_WIDTH) → always single
+  // 2. If user manually selected a mode → respect it (as long as viewport allows)
+  // 3. Otherwise → use viewport-aware default from useWorkspaceShell
+  const pageDisplayMode: PageDisplayMode =
+    defaultPageDisplayMode === 'single' ? 'single' : (userSelectedMode ?? defaultPageDisplayMode)
+
+  // When viewport forces single-page, clear any user selection for 'spread'
+  // so that when viewport recovers we can return to spread automatically.
+  useEffect(() => {
+    if (defaultPageDisplayMode === 'single') {
+      viewportForcesSingleRef.current = true
+      setUserSelectedMode(null)
+    } else if (viewportForcesSingleRef.current) {
+      // Viewport recovered — clear user selection so we auto-return to spread
+      viewportForcesSingleRef.current = false
+      setUserSelectedMode(null)
+    }
+  }, [defaultPageDisplayMode])
+
+  const handleSetPageDisplayMode = useCallback((mode: PageDisplayMode) => {
+    setUserSelectedMode(mode)
+  }, [])
+
   const [currentPage, setCurrentPage] = useState(1)
 
   const leftPage = pageDisplayMode === 'spread' ? currentPage : currentPage
@@ -92,11 +128,11 @@ export function MaterialDocumentViewer({ materialId, token }: MaterialDocumentVi
               다음 페이지
             </button>
           </div>
-          <div className="document-viewer-mode-group" role="group" aria-label="PDF 보기 방식 안내">
-            <button type="button" className={`document-viewer-mode-chip ${pageDisplayMode === 'spread' ? 'active' : ''}`} onClick={() => setPageDisplayMode('spread')}>
+          <div className="document-viewer-mode-group" role="group" aria-label="PDF 보기 방식">
+            <button type="button" className={`document-viewer-mode-chip ${pageDisplayMode === 'spread' ? 'active' : ''}`} onClick={() => handleSetPageDisplayMode('spread')} disabled={defaultPageDisplayMode === 'single'}>
               두쪽보기 우선
             </button>
-            <button type="button" className={`document-viewer-mode-chip ${pageDisplayMode === 'single' ? 'active' : ''}`} onClick={() => setPageDisplayMode('single')}>
+            <button type="button" className={`document-viewer-mode-chip ${pageDisplayMode === 'single' ? 'active' : ''}`} onClick={() => handleSetPageDisplayMode('single')}>
               한쪽보기
             </button>
           </div>

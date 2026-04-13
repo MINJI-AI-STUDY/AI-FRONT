@@ -1197,8 +1197,46 @@
     box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
   }
 
-  .student-document-stage .document-viewer-shell {
-    min-height: clamp(24rem, 56vh, 38rem);
+.student-document-stage .document-viewer-shell {
+min-height: clamp(24rem, 56vh, 38rem);
+  }
+
+  /* 태블릿에서 워크스페이스 모드 스위치 - 한국어 레이블 처리 */
+  .workspace-mode-switch {
+    flex-wrap: wrap;
+    max-width: 100%;
+}
+
+  .workspace-mode-switch-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .workspace-mode-tab {
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    min-height: 2.5rem;
+  }
+}
+
+/* BREAKPOINT: MOBILE (max-width: 767px) - 모바일 모드 스위치 */
+@media (max-width: 767px) {
+  .workspace-mode-switch {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .workspace-mode-tab {
+    flex: 1 1 auto;
+    min-height: 2.5rem;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    text-align: center;
   }
 }
 
