@@ -83,7 +83,7 @@ export function TeacherWorkspacePage() {
           <p className="page-description">같은 자료를 보면서 문제를 생성·검토·배포합니다.</p>
         </div>
         <div className="workspace-actions teacher-shell-actions">
-          <Button variant="outline" size="sm" onClick={() => setRightPanelOpen((current) => !current)}>
+          <Button variant="outline" size="sm" className="workspace-edge-handle workspace-edge-handle--right" onClick={() => setRightPanelOpen((current) => !current)}>
             <span className="material-symbols-outlined" style={{ fontSize: '1rem', marginRight: '0.35rem' }}>
               {rightPanelOpen ? 'right_panel_close' : 'right_panel_open'}
             </span>
@@ -125,9 +125,14 @@ export function TeacherWorkspacePage() {
                   <h3 className="workspace-card-title">{questionSet ? '생성된 문제를 검토하고 배포하세요' : '이 자료에서 바로 문제를 생성하세요'}</h3>
                 </div>
                 {questionSet ? (
-                  <Button variant="primary" onClick={() => navigate(`/teacher/question-sets/${questionSet.questionSetId}/review`, { state: { questionSet } })}>
-                    검토 화면 열기
-                  </Button>
+                  <div className="workspace-sidebar-actions">
+                    <Button variant="primary" onClick={() => navigate(`/teacher/question-sets/${questionSet.questionSetId}/review`, { state: { questionSet } })}>
+                      검토 화면 열기
+                    </Button>
+                    <Link to={`/teacher/question-sets/${questionSet.questionSetId}/dashboard`}>
+                      <Button variant="outline">학생 결과 보기</Button>
+                    </Link>
+                  </div>
                 ) : (
                   <Button variant="primary" onClick={handleGenerate} loading={generating}>
                     AI 문제 생성
@@ -190,9 +195,16 @@ export function TeacherWorkspacePage() {
                       </Button>
                     )}
                   </div>
-                  {generatedJson ? <pre className="workspace-json-view">{generatedJson}</pre> : <p className="workspace-empty">문제를 생성하면 구조화된 결과가 여기에 표시됩니다.</p>}
-                </CardBody>
-              </Card>
+                {generatedJson ? <pre className="workspace-json-view">{generatedJson}</pre> : <p className="workspace-empty">문제를 생성하면 구조화된 결과가 여기에 표시됩니다.</p>}
+                {questionSet && (
+                  <div className="workspace-sidebar-actions" style={{ marginTop: '1rem' }}>
+                    <Link to={`/teacher/question-sets/${questionSet.questionSetId}/dashboard`}>
+                      <Button variant="outline">학생 결과 보기</Button>
+                    </Link>
+                  </div>
+                )}
+              </CardBody>
+            </Card>
             </div>
           </aside>
         )}
