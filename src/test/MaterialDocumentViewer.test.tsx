@@ -2,14 +2,6 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MaterialDocumentViewer } from '../components/MaterialDocumentViewer'
 
-let mockedDefaultPageDisplayMode: 'single' | 'spread' = 'spread'
-
-vi.mock('../hooks/useWorkspaceShell', () => ({
-  useWorkspaceShell: () => ({
-    defaultPageDisplayMode: mockedDefaultPageDisplayMode,
-  }),
-}))
-
 describe('MaterialDocumentViewer', () => {
   afterEach(() => {
     vi.restoreAllMocks()
@@ -17,8 +9,6 @@ describe('MaterialDocumentViewer', () => {
   })
 
   beforeEach(() => {
-    mockedDefaultPageDisplayMode = 'spread'
-
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -31,36 +21,28 @@ describe('MaterialDocumentViewer', () => {
     vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
   })
 
-  it('좁은 뷰포트(single 기본값)에서는 spread 선택이 비활성화되고 단일 프레임만 렌더링된다', async () => {
-    mockedDefaultPageDisplayMode = 'single'
+  it('문서 뷰어는 단일 페이지 네비게이션만 제공한다', async () => {
     const { container } = render(<MaterialDocumentViewer materialId="m-1" token="t-1" />)
 
-    const spreadButton = await screen.findByRole('button', { name: '두쪽보기 우선' })
-    const singleButton = screen.getByRole('button', { name: '한쪽보기' })
-
-    expect(spreadButton).toBeDisabled()
-    expect(singleButton).toHaveClass('active')
+    await screen.findByRole('button', { name: '이전 페이지' })
+    expect(screen.queryByText('두쪽보기 우선')).not.toBeInTheDocument()
+    expect(screen.queryByText('한쪽보기')).not.toBeInTheDocument()
     expect(screen.getByText('1 페이지')).toBeInTheDocument()
     expect(container.querySelectorAll('iframe')).toHaveLength(1)
   })
 
-  it('single 강제 구간을 지나면 사용자 선택을 초기화하고 spread 기본값으로 복귀한다', async () => {
+  it('페이지 이동 버튼은 한 페이지씩 이동한다', async () => {
     const { rerender } = render(<MaterialDocumentViewer materialId="m-2" token="t-2" />)
+    await screen.findByText('1 페이지')
 
-    await screen.findByRole('button', { name: '두쪽보기 우선' })
-    fireEvent.click(screen.getByRole('button', { name: '한쪽보기' }))
-    expect(screen.getByText('1 페이지')).toBeInTheDocument()
-
-    mockedDefaultPageDisplayMode = 'single'
-    rerender(<MaterialDocumentViewer materialId="m-2" token="t-2" />)
-    expect(screen.getByRole('button', { name: '두쪽보기 우선' })).toBeDisabled()
-
-    mockedDefaultPageDisplayMode = 'spread'
-    rerender(<MaterialDocumentViewer materialId="m-2" token="t-2" />)
-
+    fireEvent.click(screen.getByRole('button', { name: '다음 페이지' }))
     await waitFor(() => {
-      expect(screen.getByText('1-2 페이지')).toBeInTheDocument()
+      expect(screen.getByText('2 페이지')).toBeInTheDocument()
     })
-    expect(screen.getByRole('button', { name: '두쪽보기 우선' })).toHaveClass('active')
+
+    rerender(<MaterialDocumentViewer materialId="m-2" token="t-2" />)
+    await waitFor(() => {
+      expect(screen.getByText('1 페이지')).toBeInTheDocument()
+    })
   })
 })

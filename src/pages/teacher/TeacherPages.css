@@ -112,6 +112,10 @@
   line-height: 1.6;
 }
 
+.teacher-dashboard-summary-grid {
+  margin-top: 0.25rem;
+}
+
 .table-container {
   overflow-x: auto;
 }
@@ -165,6 +169,41 @@
   border-radius: 0.875rem;
   border: 1px solid #e5e7eb;
   background: #fff;
+}
+
+.teacher-risk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.teacher-risk-card {
+  padding: 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid #fecaca;
+  background: linear-gradient(180deg, #fff8f8 0%, #fff 100%);
+}
+
+.teacher-risk-card-label {
+  display: inline-flex;
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #b91c1c;
+}
+
+.teacher-risk-card strong {
+  display: block;
+  color: #111827;
+  font-size: 1.25rem;
+}
+
+.teacher-risk-card p {
+  margin: 0.4rem 0 0;
+  color: #6b7280;
+  font-size: 0.8125rem;
+  line-height: 1.5;
 }
 
 .accuracy-header {
@@ -269,6 +308,10 @@
   margin-bottom: 0;
 }
 
+.teacher-dashboard-preview-card {
+  background: linear-gradient(180deg, #fcfdff 0%, #f8fbff 100%);
+}
+
 .teacher-panel-quick-actions {
   margin-top: 0.25rem;
 }
@@ -297,6 +340,156 @@
 .teacher-workspace-primary-card .workspace-side-description,
 .teacher-channel-primary-card .workspace-side-description {
   margin-top: 0.75rem;
+}
+
+.teacher-dashboard-inline-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.teacher-dashboard-inline-item {
+  padding: 0.875rem 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+}
+
+.teacher-dashboard-inline-item span {
+  display: block;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.teacher-dashboard-inline-item strong {
+  display: block;
+  margin-top: 0.4rem;
+  color: #111827;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.teacher-live-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.875rem;
+}
+
+.teacher-live-metric {
+  padding: 0.875rem 0.9rem;
+  border-radius: 0.875rem;
+  border: 1px solid #dbeafe;
+  background: #ffffff;
+}
+
+.teacher-live-metric--risk {
+  border-color: #fecaca;
+  background: #fff7f7;
+}
+
+.teacher-live-metric span,
+.teacher-live-insight-label {
+  display: block;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.teacher-live-metric strong {
+  display: block;
+  margin-top: 0.4rem;
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.teacher-live-insights {
+  display: grid;
+  gap: 0.625rem;
+  margin-top: 0.875rem;
+}
+
+.teacher-live-insight {
+  padding: 0.875rem 0.9rem;
+  border-radius: 0.875rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+.teacher-live-insight strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: #111827;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.teacher-student-ranking {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.teacher-student-row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 0.875rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  border-radius: 0.875rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.teacher-student-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.teacher-student-copy {
+  min-width: 0;
+}
+
+.teacher-student-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.teacher-student-header strong {
+  color: #171717;
+  font-size: 0.95rem;
+}
+
+.teacher-student-header span {
+  color: #475569;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.teacher-student-progress {
+  height: 0.625rem;
+  border-radius: 9999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.teacher-student-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2563eb 0%, #38bdf8 100%);
 }
 
 /* When right panel enters overlay mode, main workspace collapses to single-column PDF-first layout. */
@@ -343,6 +536,12 @@
   .teacher-workspace-layout--overlay {
     grid-template-columns: 1fr;
   }
+
+  .teacher-dashboard-inline-strip,
+  .teacher-live-metrics,
+  .teacher-risk-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 767px) {
@@ -356,6 +555,21 @@
 
   .teacher-workspace-overlay-backdrop {
     background: rgba(15, 23, 42, 0.38);
+  }
+
+  .teacher-dashboard-inline-strip,
+  .teacher-live-metrics,
+  .teacher-risk-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .teacher-student-row {
+    grid-template-columns: 1fr;
+  }
+
+  .teacher-student-rank {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 }
 

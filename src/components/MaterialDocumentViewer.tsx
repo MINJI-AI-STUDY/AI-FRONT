@@ -2,13 +2,10 @@
  * 자료 PDF 뷰어 컴포넌트
  * 인증 토큰으로 PDF를 받아 화면에 렌더링합니다.
  *
- * 뷰포트 너비에 따라 한쪽/두쪽 보기 모드를 자동 전환합니다.
- * 사용자가 수동으로 모드를 선택한 경우 뷰포트가 허용하는 한 그 선택을 존중합니다.
+ * 브라우저 기본 PDF 뷰어 한계를 고려해 단일 페이지 네비게이션만 제공합니다.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useWorkspaceShell } from "../hooks/useWorkspaceShell";
-import type { PageDisplayMode } from "../hooks/useWorkspaceShell";
+import { useCallback, useEffect, useState } from "react";
 
 interface MaterialDocumentViewerProps {
   materialId: string;
@@ -17,49 +14,18 @@ interface MaterialDocumentViewerProps {
 
 type NavigationAction = "next" | "previous";
 
-function getPageStep(mode: PageDisplayMode): number {
-  return mode === "spread" ? 2 : 1;
-}
-
-function canSelectSpreadMode(defaultMode: PageDisplayMode): boolean {
-  return defaultMode === "spread";
-}
-
-function resolvePageDisplayMode(params: {
-  defaultMode: PageDisplayMode;
-  userMode: PageDisplayMode | null;
-}): {
-  canSpread: boolean;
-  mode: PageDisplayMode;
-  reason: string;
-} {
-  if (!canSelectSpreadMode(params.defaultMode)) {
-    return {
-      canSpread: false,
-      mode: "single",
-      reason: "뷰포트가 좁아 두쪽보기가 불가하므로 단일 페이지 모드로 강제 적용됩니다.",
-    };
+function canNavigateForward(
+  currentPage: number,
+  totalPages: number | null
+): boolean {
+  if (totalPages == null) {
+    return true;
   }
 
-  if (params.userMode == null) {
-    return {
-      canSpread: true,
-      mode: "spread",
-      reason: "뷰포트 기본값 기준으로 두쪽보기가 유지됩니다.",
-    };
-  }
-
-  return {
-    canSpread: true,
-    mode: params.userMode,
-    reason:
-      params.userMode === "spread"
-        ? "사용자가 두쪽보기를 선택했습니다."
-        : "사용자가 한쪽보기를 선택했습니다.",
-  };
+  return currentPage + 1 <= totalPages;
 }
 
-function getSpreadRightPage(
+function getNextPage(
   currentPage: number,
   totalPages: number | null
 ): number {
@@ -70,57 +36,24 @@ function getSpreadRightPage(
   return Math.min(currentPage + 1, totalPages);
 }
 
-function canNavigateForward(
-  currentPage: number,
-  mode: PageDisplayMode,
-  totalPages: number | null
-): boolean {
-  if (totalPages == null) {
-    return true;
-  }
-
-  return currentPage + getPageStep(mode) <= totalPages;
+function getPreviousPage(currentPage: number): number {
+  return Math.max(1, currentPage - 1);
 }
 
-function getNextPage(
-  currentPage: number,
-  mode: PageDisplayMode,
-  totalPages: number | null
-): number {
-  if (totalPages == null) {
-    return currentPage + getPageStep(mode);
-  }
-
-  return Math.min(currentPage + getPageStep(mode), totalPages);
-}
-
-function getPreviousPage(currentPage: number, mode: PageDisplayMode): number {
-  return Math.max(1, currentPage - getPageStep(mode));
-}
-
-function getPageRangeLabel(
-  leftPage: number,
-  rightPage: number | null,
-  mode: PageDisplayMode
-): string {
-  if (mode === "single" || rightPage == null || rightPage === leftPage) {
-    return `${leftPage} 페이지`;
-  }
-
-  return `${leftPage}-${rightPage} 페이지`;
+function getPageLabel(page: number): string {
+  return `${page} 페이지`;
 }
 
 function getPageTransitionAction(
   page: number,
   action: NavigationAction,
-  mode: PageDisplayMode,
   totalPages: number | null
 ): number {
   if (action === "previous") {
-    return getPreviousPage(page, mode);
+    return getPreviousPage(page);
   }
 
-  return getNextPage(page, mode, totalPages);
+  return getNextPage(page, totalPages);
 }
 
 /** Decompress a single FlateDecode stream using the browser DecompressionStream API.
@@ -252,79 +185,20 @@ export function MaterialDocumentViewer({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState<number | null>(null);
   const [navigating, setNavigating] = useState(false);
-
-  const { defaultPageDisplayMode } = useWorkspaceShell();
-
-  // Track whether the user has explicitly chosen a mode (vs viewport-driven default).
-  const [userSelectedMode, setUserSelectedMode] = useState<PageDisplayMode | null>(null);
-  const previousDefaultPageDisplayMode = useRef<PageDisplayMode>(defaultPageDisplayMode);
-
-  const pageMode = useMemo(
-    () =>
-      resolvePageDisplayMode({
-        defaultMode: defaultPageDisplayMode,
-        userMode: userSelectedMode,
-      }),
-    [defaultPageDisplayMode, userSelectedMode]
-  );
-
-  const hasEnoughPagesForSpread = totalPages == null || totalPages > 1;
-  const canSpread = pageMode.canSpread && hasEnoughPagesForSpread;
-  const pageDisplayMode: PageDisplayMode = canSpread ? pageMode.mode : "single";
-  const dualDisabledReason = !pageMode.canSpread
-    ? "뷰포트가 좁아 두쪽보기를 사용할 수 없습니다"
-    : !hasEnoughPagesForSpread
-      ? "페이지가 1장이라 두쪽보기를 사용할 수 없습니다"
-      : null;
-  const pageModeReason =
-    !hasEnoughPagesForSpread && pageMode.canSpread
-      ? "페이지가 1장이라 한쪽보기로 고정됩니다."
-      : pageMode.reason;
-
-  // Reset user choice when viewport forced single mode started or ended.
-  // This keeps "manual single" choices honest as viewport-first fallback.
-  useEffect(() => {
-    const changedFrom = previousDefaultPageDisplayMode.current;
-    const changedTo = defaultPageDisplayMode;
-
-    if (
-      (changedTo === "single" && changedFrom === "spread") ||
-      (changedTo === "spread" && changedFrom === "single")
-    ) {
-      setUserSelectedMode(null);
-    }
-
-    previousDefaultPageDisplayMode.current = changedTo;
-  }, [defaultPageDisplayMode]);
-
-  const handleSetPageDisplayMode = useCallback(
-    (mode: PageDisplayMode) => {
-      if (!canSpread && mode === "spread") {
-        return;
-      }
-
-      setUserSelectedMode(mode);
-    },
-    [canSpread]
-  );
-
-  const canGoToNextPage = canNavigateForward(currentPage, pageDisplayMode, totalPages);
-  const leftPage = currentPage;
-  const rightPage =
-    pageDisplayMode === "spread" ? getSpreadRightPage(currentPage, totalPages) : null;
+  const canGoToNextPage = canNavigateForward(currentPage, totalPages);
   const pageStatusLabel =
     totalPages == null
       ? "총 페이지 수 미확인: 마지막 페이지 도달 여부는 정확히 보장되지 않습니다."
       : `총 ${totalPages}페이지`;
-  const pageIndicator = getPageRangeLabel(leftPage, rightPage, pageDisplayMode);
+  const pageIndicator = getPageLabel(currentPage);
 
   const handlePageChange = useCallback(
     (action: NavigationAction) => {
       setNavigating(true);
       setCurrentPage((current) => {
-        const nextPage = getPageTransitionAction(current, action, pageDisplayMode, totalPages);
+        const nextPage = getPageTransitionAction(current, action, totalPages);
 
-        if (action === "next" && !canNavigateForward(current, pageDisplayMode, totalPages)) {
+        if (action === "next" && !canNavigateForward(current, totalPages)) {
           return current;
         }
 
@@ -333,7 +207,7 @@ export function MaterialDocumentViewer({
       // Reset navigating flag after render commits the page change.
       requestAnimationFrame(() => setNavigating(false));
     },
-    [pageDisplayMode, totalPages]
+    [totalPages]
   );
 
   const handlePrevious = useCallback(() => {
@@ -365,7 +239,6 @@ export function MaterialDocumentViewer({
       setCurrentPage(1);
       setTotalPages(null);
       setNavigating(false);
-      setUserSelectedMode(null);
       try {
         setLoading(true);
         setError(null);
@@ -421,11 +294,7 @@ export function MaterialDocumentViewer({
         <div className="document-viewer-toolbar-title">
           <strong>학습 문서</strong>
           <span className="document-viewer-helper">
-            브라우저 PDF 뷰어 한계로 강제 양면 제어는 제공하지 않고, 상태 규칙 기반으로 페이지
-            이동을 제어합니다.
-          </span>
-          <span className="document-viewer-helper" data-testid="viewer-mode-indicator">
-            {pageModeReason}
+            브라우저 PDF 뷰어 한계로 단일 페이지 기준의 정직한 네비게이션만 제공합니다.
           </span>
           <span className="document-viewer-helper">{pageStatusLabel}</span>
         </div>
@@ -454,48 +323,17 @@ export function MaterialDocumentViewer({
               다음 페이지
             </button>
           </div>
-          <div className="document-viewer-mode-group" data-testid="pdf-page-mode-toggle">
-            {dualDisabledReason && (
-              <span
-                className="document-viewer-mode-disabled-reason"
-                data-testid="viewer-dual-disabled-reason"
-              >
-                {dualDisabledReason}
-              </span>
-            )}
-            <button
-              type="button"
-              className={`document-viewer-mode-chip ${pageDisplayMode === "spread" ? "active" : ""}`}
-              onClick={() => handleSetPageDisplayMode("spread")}
-              disabled={!canSpread}
-              data-testid="viewer-dual-toggle"
-            >
-              두쪽보기 우선
-            </button>
-            <button
-              type="button"
-              className={`document-viewer-mode-chip ${pageDisplayMode === "single" ? "active" : ""}`}
-              onClick={() => handleSetPageDisplayMode("single")}
-              data-testid="pdf-page-mode-toggle-single"
-            >
-              한쪽보기
-            </button>
-          </div>
           <a className="document-viewer-link" href={documentUrl} target="_blank" rel="noreferrer">
             새 탭에서 열기
           </a>
         </div>
       </div>
-      <div
-        className={`document-viewer-frame-shell ${pageDisplayMode === "spread" ? "is-spread" : "is-single"}`}
-      >
-        <div
-          className={`document-viewer-spread ${pageDisplayMode === "spread" ? "is-spread" : "is-single"}`}
-        >
+      <div className="document-viewer-frame-shell is-single">
+        <div className="document-viewer-spread is-single">
           <iframe
             className="workspace-document-frame"
-            src={buildViewerUrl(leftPage)}
-            title={`학습 자료 PDF ${leftPage}페이지`}
+            src={buildViewerUrl(currentPage)}
+            title={`학습 자료 PDF ${currentPage}페이지`}
             loading="lazy"
           />
         </div>
