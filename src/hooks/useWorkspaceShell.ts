@@ -87,6 +87,10 @@ function getCanRightPanelInline(width: number): boolean {
   return width > COMPACT_VIEWPORT_MAX || width >= READABLE_PDF_MIN_WIDTH + 320
 }
 
+function getLeftPanelMode(width: number): PanelMode {
+  return width <= 767 ? 'overlay' : 'inline'
+}
+
 function getDefaultPageDisplayMode(width: number): PageDisplayMode {
   if (width < READABLE_PDF_MIN_WIDTH) return 'single'
   return DEFAULT_PAGE_DISPLAY_MODE
@@ -163,7 +167,7 @@ export function useWorkspaceShell(
   const viewportMode = getViewportMode(viewportWidth)
   const canRightPanelInline = getCanRightPanelInline(viewportWidth)
   const rightPanelMode: PanelMode = canRightPanelInline ? 'inline' : 'overlay'
-  const leftPanelMode: PanelMode = 'overlay'
+  const leftPanelMode = getLeftPanelMode(viewportWidth)
   const defaultPageDisplayMode = getDefaultPageDisplayMode(viewportWidth)
 
   // --- Panel open state ------------------------------------------------
@@ -223,7 +227,7 @@ export function useWorkspaceShell(
     (nextOpen: boolean) => {
       setLeftSidebarOpen(nextOpen)
       if (nextOpen && isCompactViewport) {
-        // Opening left overlay → close right overlay
+        // Opening left panel on compact viewports keeps focus on the nav lane.
         setRightPanelOpen(false)
       }
     },
@@ -233,12 +237,12 @@ export function useWorkspaceShell(
   const toggleRightPanel = useCallback(
     (nextOpen: boolean) => {
       setRightPanelOpen(nextOpen)
-      if (nextOpen && isCompactViewport) {
+      if (nextOpen && rightPanelMode === 'overlay') {
         // Opening right overlay → close left overlay
         setLeftSidebarOpen(false)
       }
     },
-    [isCompactViewport, setLeftSidebarOpen, setRightPanelOpen],
+    [rightPanelMode, setLeftSidebarOpen, setRightPanelOpen],
   )
 
   // --- Return ----------------------------------------------------------

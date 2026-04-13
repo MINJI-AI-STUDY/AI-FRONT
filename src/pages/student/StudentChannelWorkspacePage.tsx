@@ -253,6 +253,7 @@ export function StudentChannelWorkspacePage() {
             description="학교 채널 목록을 따라 이동하고 현재 학습 채널을 유지하세요."
             isOpen={leftSidebarOpen}
             onOpenChange={toggleLeftSidebar}
+            panelMode={leftPanelMode}
           />
 
           <div className="channel-content-shell student-channel-content-shell">
@@ -367,6 +368,7 @@ export function StudentChannelWorkspacePage() {
           description="학교 채널 목록을 따라 이동하고 현재 학습 채널을 유지하세요."
           isOpen={leftSidebarOpen}
           onOpenChange={toggleLeftSidebar}
+          panelMode={leftPanelMode}
         />
 
         <div className="channel-content-shell student-channel-content-shell">

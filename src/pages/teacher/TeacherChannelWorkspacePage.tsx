@@ -494,6 +494,7 @@ export function TeacherChannelWorkspacePage() {
           description="채널을 전환하고 현재 채널 운영 흐름은 오른쪽 패널에서 이어갑니다."
           isOpen={leftSidebarOpen}
           onOpenChange={toggleLeftSidebar}
+          panelMode={leftPanelMode}
         />
 
         <div className="channel-content-shell teacher-channel-content-shell">
