@@ -277,7 +277,7 @@ export function StudentWorkspacePage() {
           <Link to="/student"><Button variant="outline">학생 홈</Button></Link>
           <button
             type="button"
-            className="workspace-tool-button"
+            className="workspace-tool-button workspace-edge-handle workspace-edge-handle--right"
             onClick={() => setRightSidebarOpen((current) => !current)}
             aria-label={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
             title={rightSidebarOpen ? '학습 도구 닫기' : '학습 도구 열기'}
@@ -310,6 +310,10 @@ export function StudentWorkspacePage() {
               </button>
             </div>
           </div>
+          <div className="student-document-stage student-document-stage--primary">
+            <MaterialDocumentViewer materialId={questionSet.materialId} token={token} />
+          </div>
+
           <div className="workspace-main-stack">
             <Card className="workspace-card student-workspace-quiz-card">
               <CardBody>
@@ -398,9 +402,6 @@ export function StudentWorkspacePage() {
             </Card>
           </div>
 
-          <div className="student-document-stage">
-            <MaterialDocumentViewer materialId={questionSet.materialId} token={token} />
-          </div>
         </section>
 
         {rightSidebarOpen && (
@@ -408,28 +409,21 @@ export function StudentWorkspacePage() {
           <Card className="workspace-card">
             <CardBody>
               <div className="workspace-panel-inline-header">
-                <h3 className="workspace-card-title">빠른 문제 풀이</h3>
+                <h3 className="workspace-card-title">풀이 요약</h3>
                 <span className="workspace-mini-chip">QUIZ</span>
                 <Button variant="ghost" size="sm" onClick={() => setIsQuizModalOpen(true)}>
-                  집중 모드
+                  중앙 확대
                 </Button>
               </div>
-              <div className="workspace-questions-list">
-                {questionSet.questions.map((item, index) => (
-                  <div key={item.id} className="workspace-question-item">
-                    <p className="workspace-question-title">문제 {index + 1}. {item.stem}</p>
-                    <div className="workspace-options-grid">
-                      {item.options.map((option, optionIndex) => (
-                        <button key={optionIndex} type="button" className={`workspace-option ${answers[item.id] === optionIndex ? 'selected' : ''}`} onClick={() => handleSelectAnswer(item.id, optionIndex)}>
-                          <span>{String.fromCharCode(65 + optionIndex)}</span>
-                          <span>{option}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+              <p className="workspace-side-description">문제 선택과 제출은 중앙 영역에서 진행하고, 이 패널에서는 현재 진행 상태와 빠른 행동만 확인합니다.</p>
+              <div className="student-quiz-progress-card">
+                <strong>{Object.keys(answers).length} / {questionSet.questions.length} 문항 응답</strong>
+                <p>응답 수를 확인한 뒤 중앙 문제 영역에서 계속 풀이하거나, 집중 모드로 크게 볼 수 있습니다.</p>
               </div>
-              <Button loading={submitting} onClick={handleSubmit}>정답 제출하기</Button>
+              <div className="workspace-sidebar-actions">
+                <Button variant="outline" onClick={() => setIsQuizModalOpen(true)}>집중 모드 열기</Button>
+                <Button loading={submitting} onClick={handleSubmit}>정답 제출하기</Button>
+              </div>
             </CardBody>
           </Card>
 
@@ -452,26 +446,9 @@ export function StudentWorkspacePage() {
                 <h3 className="workspace-card-title">자료 기반 AI 질문</h3>
                 <span className="workspace-mini-chip">LIVE</span>
               </div>
-              <div className="workspace-chat-area">
-                {qaResponse ? (
-                  <>
-                    <div className="workspace-chat-bubble user">{question}</div>
-                    <div className="workspace-chat-bubble assistant">{qaResponse.answer}</div>
-                    {qaResponse.evidenceSnippets.length > 0 && (
-                      <div className="workspace-evidence-list">
-                        {qaResponse.evidenceSnippets.map((snippet, index) => (
-                          <div key={index} className="workspace-evidence-item">{snippet}</div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <p className="workspace-empty">질문을 입력하면 답변과 근거가 여기에 표시됩니다.</p>
-                )}
-              </div>
-              <div className="workspace-chat-form">
-                <textarea className="textarea" rows={3} maxLength={500} value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="자료를 보면서 궁금한 점을 입력하세요" />
-                <Button loading={asking} onClick={handleAsk}>질문하기</Button>
+              <p className="workspace-side-description">질문 입력과 답변 확인은 중앙 영역에서 진행하고, 이 패널은 follow-up 요약과 빠른 이동만 제공합니다.</p>
+              <div className="workspace-sidebar-actions">
+                <Button variant="outline" onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}>질문 영역으로 이동</Button>
               </div>
             </CardBody>
           </Card>
