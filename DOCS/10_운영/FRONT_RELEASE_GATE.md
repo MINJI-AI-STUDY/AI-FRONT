@@ -37,6 +37,8 @@
 - student 풀이/결과/QA 화면
 - operator 대시보드 화면
 - operator 가입 승인 화면과 반려 사유 입력 흐름
+- teacher 홈 → 미리보기 → 문서 상세 → 워크스페이스 흐름
+- viewer last-page disable / dual-toggle fallback / 좌우 중간 핸들 동작
 
 ### 4.5 API 연동 게이트
 - 백엔드 API 실패 시 fallback UX가 있어야 한다.
@@ -67,6 +69,11 @@
 - 핵심 화면 검증 결과
 - 권한 라우트 검증 결과
 - known issue
+- 로컬/배포 evidence는 분리 기록한다.
+- 로컬 evidence 예시: `.sisyphus/evidence/local/task-12-viewer-last-page-disable.png`
+- 배포 evidence 예시: `.sisyphus/evidence/deploy/task-12-teacher-dashboard-flow.png`
+- 로컬 기록은 `SPRING_PROFILES_ACTIVE=local` + FE `vite`(5173) + mock teacher 계정 기준으로 적는다.
+- 배포 기록은 실제 배포 URL과 배포용 백엔드 URL만 적고 localhost 값을 섞지 않는다.
 
 ## 9. 실제 운영 입력 항목
 - Vercel frontend URL:
