@@ -24,7 +24,7 @@ interface StudentAiFollowUpContext {
 }
 
 function isCompactViewport() {
-  return typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 1180px)').matches
 }
 
 function consumeStudentAiFollowUpContext() {
@@ -61,7 +61,7 @@ export function StudentWorkspacePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const mediaQuery = window.matchMedia('(max-width: 767px)')
+    const mediaQuery = window.matchMedia('(max-width: 1180px)')
     const handleChange = () => {
       setRightSidebarOpen(!mediaQuery.matches)
     }
