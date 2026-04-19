@@ -20,6 +20,7 @@ interface QaChatMessage {
   id: string
   role: 'user' | 'assistant'
   content: string
+  aiState?: AiResponseState
   evidenceSnippets?: string[]
 }
 
@@ -35,6 +36,70 @@ interface StudentSubmissionSnapshot {
   correctCount: number
   totalCount: number
   score: number
+}
+
+type AiResponseState = 'grounded' | 'insufficientEvidence' | 'fallback'
+
+function classifyAiResponse(message: QaChatMessage): AiResponseState {
+  const normalized = message.content.toLowerCase()
+  if (normalized.includes('[판단]') || normalized.includes('근거가 아직 부족')) return 'insufficientEvidence'
+  if (message.evidenceSnippets && message.evidenceSnippets.length > 0) return 'grounded'
+  return 'fallback'
+}
+
+function getShortAiAnswer(content: string) {
+  const cleaned = content
+    .replace(/\[답변\]/g, '')
+    .replace(/\[근거 요약\][\s\S]*$/g, '')
+    .replace(/\[판단\][\s\S]*$/g, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+
+  if (cleaned.length <= 140) return cleaned
+  return `${cleaned.slice(0, 137).trimEnd()}...`
+}
+
+function renderAssistantMessage(item: QaChatMessage) {
+  const aiState = item.aiState ?? classifyAiResponse(item)
+  const shortAnswer = getShortAiAnswer(item.content)
+  const showFullAnswer = shortAnswer !== item.content.trim()
+  const guidance = aiState === 'insufficientEvidence'
+    ? '자료 범위 안에서 확인 가능한 근거가 부족해 보수적으로 답변했습니다.'
+    : aiState === 'fallback'
+      ? '답변은 제공되었지만 근거 스니펫이 충분하지 않을 수 있습니다.'
+      : null
+
+  return (
+    <div key={item.id} className={`workspace-chat-bubble ${item.role}`}>
+      <div className="ai-response-header">
+        <div className="ai-response-eyebrow">AI</div>
+        <span className={`ai-state-badge ai-state-badge--${aiState}`}>
+          {aiState === 'grounded' ? '근거 기반' : aiState === 'insufficientEvidence' ? '근거 부족' : '보조 답변'}
+        </span>
+      </div>
+      <div className="ai-response-summary">
+        <div className="ai-response-summary-label">핵심 답변</div>
+        <p>{shortAnswer}</p>
+      </div>
+      {showFullAnswer && (
+        <details className="ai-answer-details">
+          <summary>전체 답변 보기</summary>
+          <div className="ai-answer-details-body">{item.content}</div>
+        </details>
+      )}
+      {guidance && <div className="ai-state-guidance">{guidance}</div>}
+      <details className="ai-evidence-details">
+        <summary>근거 보기{item.evidenceSnippets && item.evidenceSnippets.length > 0 ? ` (${item.evidenceSnippets.length})` : ''}</summary>
+        <div className="ai-evidence-list">
+          {item.evidenceSnippets && item.evidenceSnippets.length > 0 ? (
+            item.evidenceSnippets.map((snippet) => <div key={`${item.id}-${snippet}`} className="ai-evidence-item">{snippet}</div>)
+          ) : (
+            <div className="ai-evidence-item ai-evidence-item--empty">추가 근거가 제공되지 않았습니다.</div>
+          )}
+        </div>
+      </details>
+    </div>
+  )
 }
 
 function consumeStudentAiFollowUpContext() {
@@ -192,14 +257,15 @@ export function StudentWorkspacePage() {
         },
       ])
       const result = await askQuestion(questionSet.materialId, { question: trimmedQuestion }, token)
+      const aiMessage: QaChatMessage = {
+        id: `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: result.answer,
+        evidenceSnippets: result.evidenceSnippets,
+      }
       setQaMessages((prev) => [
         ...prev,
-        {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: result.answer,
-          evidenceSnippets: result.evidenceSnippets,
-        },
+        { ...aiMessage, aiState: classifyAiResponse(aiMessage) },
       ])
       setQuestion('')
       setFollowUpContext(null)
@@ -234,8 +300,8 @@ export function StudentWorkspacePage() {
             </div>
           </div>
 
-          <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
-            <section className="workspace-main student-workspace-stage">
+        <div className={`workspace-layout channel-layout student-three-column ${!rightSidebarOpen ? 'sidebar-collapsed' : ''} ${rightPanelMode === 'overlay' ? 'right-panel-overlay' : ''}`}>
+      <section className="workspace-main student-workspace-stage">
               <div className="workspace-main-header">
                 <div className="workspace-main-title workspace-loading-copy">
                   <div className="workspace-loading-line" style={{ width: '10rem' }} />
@@ -364,6 +430,37 @@ export function StudentWorkspacePage() {
             <MaterialDocumentViewer materialId={questionSet.materialId} token={token} />
           </div>
 
+          <Card className="workspace-card student-workspace-quiz-card">
+            <CardBody>
+              <div className="workspace-panel-inline-header">
+                <div>
+                  <div className="workspace-main-eyebrow">문제 풀이</div>
+                  <h3 className="workspace-card-title">문제와 제출 액션을 바로 이어가기</h3>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setIsQuizModalOpen(true)}>
+                  문제 풀기 열기
+                </Button>
+              </div>
+              <p className="workspace-side-description">
+                현재 문서를 보면서 바로 풀 수 있도록 핵심 액션을 메인 흐름에도 노출합니다.
+              </p>
+              <div className="student-progress-metrics">
+                <div className="student-progress-metric">
+                  <span>응답 완료</span>
+                  <strong>{Object.keys(answers).length} / {questionSet.questions.length}</strong>
+                </div>
+                <div className="student-progress-metric">
+                  <span>남은 문항</span>
+                  <strong>{questionSet.questions.length - Object.keys(answers).length}</strong>
+                </div>
+              </div>
+              <div className="workspace-sidebar-actions">
+                <Button variant="outline" onClick={() => setIsQuizModalOpen(true)}>문제 풀기 열기</Button>
+                <Button loading={submitting} onClick={handleSubmit}>정답 제출하기</Button>
+              </div>
+            </CardBody>
+          </Card>
+
         </section>
 
         {rightSidebarOpen && (
@@ -446,19 +543,9 @@ export function StudentWorkspacePage() {
                   <p className="workspace-empty">자료에 대해 궁금한 점을 질문하면 AI가 바로 답변합니다.</p>
                 ) : (
                   qaMessages.map((item) => (
-                    <div key={item.id} className={`workspace-chat-bubble ${item.role}`}>
-                      {item.content}
-                      {item.role === 'assistant' && item.evidenceSnippets && item.evidenceSnippets.length > 0 && (
-                        <details className="student-evidence-details">
-                          <summary>근거 요약 펼쳐보기 ({item.evidenceSnippets.length})</summary>
-                          <div className="workspace-evidence-list">
-                            {item.evidenceSnippets.map((snippet) => (
-                              <div key={`${item.id}-${snippet}`} className="workspace-evidence-item">{snippet}</div>
-                            ))}
-                          </div>
-                        </details>
-                      )}
-                    </div>
+                    item.role === 'assistant'
+                      ? renderAssistantMessage(item)
+                      : <div key={item.id} className={`workspace-chat-bubble ${item.role}`}>{item.content}</div>
                   ))
                 )}
               </div>
