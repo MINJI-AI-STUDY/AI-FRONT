@@ -177,7 +177,7 @@ export function StudentHomePage() {
                   <div className="action-meta">채널</div>
                   <h3 className="action-title"># {channel.name}</h3>
                   <p className="action-description">{channel.description || '채널 설명 없음'}</p>
-                  <Link to={`/student/channels/${channel.channelId}`}>
+                  <Link to={`/student/channels/${channel.channelId}/workspace`}>
                     <Button variant="outline">채널 입장</Button>
                   </Link>
                 </CardBody>

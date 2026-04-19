@@ -227,7 +227,7 @@ export function TeacherHomePage() {
                     <div className="action-meta">채널</div>
                     <h3 className="action-title"># {channel.name}</h3>
                     <p className="action-description">{channel.description || '채널 설명 없음'}</p>
-                    <Link to={`/teacher/channels/${channel.channelId}`}>
+                    <Link to={`/teacher/channels/${channel.channelId}/workspace`}>
                       <Button variant="outline">채널 열기</Button>
                     </Link>
                   </CardBody>

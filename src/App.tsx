@@ -69,6 +69,14 @@ function App() {
             }
           />
           <Route
+            path="/teacher/channels/:channelId/workspace"
+            element={
+              <ProtectedRoute roles={['TEACHER']}>
+                <TeacherChannelWorkspacePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/teacher/materials/:materialId/workspace"
             element={
               <ProtectedRoute roles={['TEACHER']}>
@@ -112,6 +120,7 @@ function App() {
           <Route path="/student" element={<ProtectedRoute roles={['STUDENT']}><StudentHomePage /></ProtectedRoute>} />
           <Route path="/student/join" element={<ProtectedRoute roles={['STUDENT']}><JoinPage /></ProtectedRoute>} />
           <Route path="/student/channels/:channelId" element={<ProtectedRoute roles={['STUDENT']}><StudentChannelWorkspacePage /></ProtectedRoute>} />
+          <Route path="/student/channels/:channelId/workspace" element={<ProtectedRoute roles={['STUDENT']}><StudentChannelWorkspacePage /></ProtectedRoute>} />
           <Route path="/student/question-sets/:distributionCode/workspace" element={<ProtectedRoute roles={['STUDENT']}><StudentWorkspacePage /></ProtectedRoute>} />
           <Route path="/student/question-sets/:distributionCode" element={<ProtectedRoute roles={['STUDENT']}><QuestionSetPage /></ProtectedRoute>} />
           <Route path="/student/submissions/:submissionId" element={<ProtectedRoute roles={['STUDENT']}><SubmissionResultPage /></ProtectedRoute>} />
