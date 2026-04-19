@@ -10,9 +10,9 @@ interface SubmissionResultModalProps {
   onClose: () => void
 }
 
-function getSelectedOptionLabel(selectedOptionIndex: number | null | undefined) {
+function getSelectedOptionLabel(selectedOptionIndex: number | null | undefined, options?: string[]) {
   return typeof selectedOptionIndex === 'number' && Number.isInteger(selectedOptionIndex) && selectedOptionIndex >= 0
-    ? String.fromCharCode(65 + selectedOptionIndex)
+    ? `${String.fromCharCode(65 + selectedOptionIndex)}${options?.[selectedOptionIndex] ? ` · ${options[selectedOptionIndex]}` : ''}`
     : '알 수 없음'
 }
 
@@ -100,7 +100,7 @@ export function SubmissionResultModal({ submissionId, token, isOpen, onClose }: 
           <Card className="score-card">
             <CardBody>
               <div className="score-display">
-                <div className="score-value">{result.score} / {result.questionResults.length}</div>
+                <div className="score-value">{result.score}점</div>
                 <div className="score-label">점수</div>
               </div>
               <div className="score-stats">
@@ -117,7 +117,7 @@ export function SubmissionResultModal({ submissionId, token, isOpen, onClose }: 
                 </CardBody>
               </Card>
             ) : result.questionResults.map((question, index) => {
-              const answerLabel = getSelectedOptionLabel(question.selectedOptionIndex)
+              const answerLabel = getSelectedOptionLabel(question.selectedOptionIndex, (question as { options?: string[] }).options)
               const explanation = question.explanation?.trim() || createFallbackExplanation(index + 1)
               const hasWrongAnswer = !question.correct
               const conceptTags = Array.isArray(question.conceptTags) ? question.conceptTags : []

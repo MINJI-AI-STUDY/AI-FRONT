@@ -11,9 +11,9 @@ import { getSubmissionResult } from '../../api/student'
 import type { StudentResultResponse } from '../../api/student'
 import './StudentPages.css'
 
-function getSelectedOptionLabel(selectedOptionIndex: number | null | undefined) {
+function getSelectedOptionLabel(selectedOptionIndex: number | null | undefined, options?: string[]) {
   return typeof selectedOptionIndex === 'number' && Number.isInteger(selectedOptionIndex) && selectedOptionIndex >= 0
-    ? String.fromCharCode(65 + selectedOptionIndex)
+    ? `${String.fromCharCode(65 + selectedOptionIndex)}${options?.[selectedOptionIndex] ? ` · ${options[selectedOptionIndex]}` : ''}`
     : '알 수 없음'
 }
 
@@ -112,7 +112,7 @@ export function SubmissionResultPage() {
       <Card className="score-card">
         <CardBody>
           <div className="score-display">
-            <div className="score-value">{result.score} / {totalQuestions}</div>
+            <div className="score-value">{result.score}점</div>
             <div className="score-label">점수</div>
           </div>
           <div className="score-stats">
@@ -125,7 +125,7 @@ export function SubmissionResultPage() {
       <div className="results-list">
         {result.questionResults.map((question, index) => {
           const conceptTags = Array.isArray(question.conceptTags) ? question.conceptTags : []
-          const answerLabel = getSelectedOptionLabel(question.selectedOptionIndex)
+          const answerLabel = getSelectedOptionLabel(question.selectedOptionIndex, (question as { options?: string[] }).options)
 
           return (
             <Card key={question.questionId} className={`result-card ${question.correct ? 'correct' : 'wrong'}`}>
