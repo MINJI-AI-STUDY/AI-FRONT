@@ -24,6 +24,7 @@ export interface CreateStudentSignupRequest {
   schoolId: string
   classroomId?: string | null
   realName: string
+  studentCode?: string | null
   pin: string
   consentTerms: boolean
   consentPrivacy: boolean
