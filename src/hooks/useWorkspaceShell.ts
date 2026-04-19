@@ -22,7 +22,7 @@ export interface WorkspaceShellState {
   viewportMode: ViewportMode
   /** True when viewport width ≤ COMPACT_VIEWPORT_MAX. */
   isCompactViewport: boolean
-  /** Left sidebar should render as an overlay (tablet/mobile). */
+  /** Left sidebar should render as an overlay on compact viewports. */
   leftPanelMode: PanelMode
   /** Right panel should render as overlay when viewport is too narrow for inline. */
   rightPanelMode: PanelMode
@@ -85,6 +85,10 @@ function getCanRightPanelInline(width: number): boolean {
   // It can be inline only if the remaining width after the panel is still readable.
   // On desktop (> COMPACT_VIEWPORT_MAX) there is always enough room.
   return width > COMPACT_VIEWPORT_MAX || width >= READABLE_PDF_MIN_WIDTH + 320
+}
+
+function getLeftPanelMode(width: number): PanelMode {
+  return width <= COMPACT_VIEWPORT_MAX ? 'overlay' : 'inline'
 }
 
 function getDefaultPageDisplayMode(width: number): PageDisplayMode {
@@ -163,7 +167,7 @@ export function useWorkspaceShell(
   const viewportMode = getViewportMode(viewportWidth)
   const canRightPanelInline = getCanRightPanelInline(viewportWidth)
   const rightPanelMode: PanelMode = canRightPanelInline ? 'inline' : 'overlay'
-  const leftPanelMode: PanelMode = 'overlay'
+  const leftPanelMode = getLeftPanelMode(viewportWidth)
   const defaultPageDisplayMode = getDefaultPageDisplayMode(viewportWidth)
 
   // --- Panel open state ------------------------------------------------
@@ -222,23 +226,23 @@ export function useWorkspaceShell(
   const toggleLeftSidebar = useCallback(
     (nextOpen: boolean) => {
       setLeftSidebarOpen(nextOpen)
-      if (nextOpen && isCompactViewport) {
+      if (nextOpen && leftPanelMode === 'overlay') {
         // Opening left overlay → close right overlay
         setRightPanelOpen(false)
       }
     },
-    [isCompactViewport, setLeftSidebarOpen, setRightPanelOpen],
+    [leftPanelMode, setLeftSidebarOpen, setRightPanelOpen],
   )
 
   const toggleRightPanel = useCallback(
     (nextOpen: boolean) => {
       setRightPanelOpen(nextOpen)
-      if (nextOpen && isCompactViewport) {
+      if (nextOpen && rightPanelMode === 'overlay') {
         // Opening right overlay → close left overlay
         setLeftSidebarOpen(false)
       }
     },
-    [isCompactViewport, setLeftSidebarOpen, setRightPanelOpen],
+    [rightPanelMode, setLeftSidebarOpen, setRightPanelOpen],
   )
 
   // --- Return ----------------------------------------------------------

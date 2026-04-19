@@ -40,7 +40,7 @@ describe('MaterialDocumentViewer', () => {
       expect(screen.getByText('2 페이지')).toBeInTheDocument()
     })
 
-    rerender(<MaterialDocumentViewer materialId="m-2" token="t-2" />)
+    rerender(<MaterialDocumentViewer materialId="m-3" token="t-2" />)
     await waitFor(() => {
       expect(screen.getByText('1 페이지')).toBeInTheDocument()
     })

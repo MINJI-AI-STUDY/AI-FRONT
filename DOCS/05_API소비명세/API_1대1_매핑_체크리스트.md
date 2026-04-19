@@ -4,9 +4,17 @@
 
 ### 인증 (Auth)
 - `POST /api/auth/login`: `{ loginId, password }` → `{ accessToken, refreshToken, role, displayName }`
+- `POST /api/auth/student/login`: `{ schoolId, studentCode, pin }` → `{ accessToken, refreshToken, role, displayName, schoolId, classroomId, studentCode }`
 - `POST /api/auth/refresh`: `{ refreshToken }` → `{ accessToken, refreshToken, role, displayName }`
 - `POST /api/auth/logout`: `{ refreshToken }` → `204/200 empty`
-- `GET /api/auth/me`: Authorization header → `{ userId, schoolId, classroomId, role, displayName }`
+- `GET /api/auth/me`: Authorization header → `{ userId, schoolId, classroomId, role, displayName, studentCode }`
+
+### 가입/승인 (Signup)
+- `GET /api/signup/schools?keyword=`
+- `POST /api/signup/teacher`
+- `POST /api/signup/student`: `{ schoolId, classroomId?, realName, studentCode?, pin, consentTerms, consentPrivacy, consentStudentNotice }`
+- `GET /api/signup/requests/pending?schoolId=`
+- `PATCH /api/signup/requests/{signupRequestId}`: `{ approve, rejectionReason?, studentCode? }`
 
 ### 자료 (Material)
 - `POST /api/teacher/materials`: multipart/form-data `{ file, channelId, title, description }` → `{ materialId, docNo, schoolId, channelId, title, description, status, failureReason }`
@@ -51,9 +59,13 @@
 | 기능 | 프론트 경로 | 백엔드 API | 상태 | 비고 |
 |---|---|---|---|---|
 | F1 로그인 | `/login` | `POST /api/auth/login` | 완료 | accessToken + refreshToken |
+| F1 학생 로그인 | `/login` | `POST /api/auth/student/login` | 완료 | schoolId + studentCode + pin |
 | F1 토큰 재발급 | 앱 초기화 | `POST /api/auth/refresh` | 완료 | 401 시 refresh token 사용 |
 | F1 로그아웃 | 전역 | `POST /api/auth/logout` | 완료 | refresh token revoke |
 | F1 현재 사용자 | 앱 초기화 | `GET /api/auth/me` | 완료 | userId, schoolId, classroomId |
+| F1-A 교직원 가입 요청 | `/signup/teacher` | `POST /api/signup/teacher` | 완료 | 학교 이메일 기반 |
+| F1-A 학생 가입 요청 | `/signup/student` | `POST /api/signup/student` | 완료 | 실명 + 선택 studentCode + pin |
+| F1-A 가입 승인 | `/operator/signup-requests` | `GET/PATCH /api/signup/requests/*` | 완료 | 학교 운영자 승인/반려 |
 | F2 업로드 | `/teacher/materials/new` | `POST /api/teacher/materials` | 완료 | multipart/form-data |
 | F2 교사 목록 | `/teacher` | `GET /api/teacher/materials` | 완료 | 업로드 자료 재진입 |
 | F2 학생 자료 자동 노출 | `/student` | `GET /api/student/materials` | 완료 | 같은 학교 READY 자료 노출 |
@@ -68,6 +80,20 @@
 | F5 교사 대시보드 | `/teacher/question-sets/:questionSetId/dashboard` | `GET /api/teacher/question-sets/{questionSetId}/dashboard` | 완료 | studentScores, questionAccuracy, weakConceptTags |
 | F5 운영자 대시보드 | `/operator` | `GET /api/operator/overview` | 완료 | averageScore, participationRate, completionRate |
 | F6 질의응답 | `/student/materials/:materialId/qa` | `POST /api/student/materials/{materialId}/qa` | 완료 | evidenceSnippets (string[]) |
+
+## 현재 MVP 노출 범위와 latent API
+
+- 현재 UI로 노출된 운영자 범위
+  - `/operator`
+  - `/operator/signup-requests`
+- 백엔드/API에는 이미 존재하지만 현재 기본 MVP 화면에는 크게 노출하지 않은 범위
+  - `/api/operator/schools`
+  - `/api/operator/schools/{schoolId}/classrooms`
+  - `/api/operator/users`
+  - `/api/operator/schools/sync-master`
+- 해석:
+  - operator 영역은 백엔드 capability가 UI보다 넓다.
+  - 포트폴리오와 current 문서에서는 “현재 shipped UX”와 “차기 웨이브용 API”를 분리해서 설명해야 한다.
 
 ## 주요 변경사항 (백엔드 계약 정렬)
 
