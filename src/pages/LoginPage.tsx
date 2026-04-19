@@ -27,7 +27,7 @@ export function LoginPage() {
   // Student PIN login states
   const [schoolId, setSchoolId] = useState('')
   const [selectedSchoolName, setSelectedSchoolName] = useState('')
-  const [studentName, setStudentName] = useState('')
+  const [studentCode, setStudentCode] = useState('')
   const [pin, setPin] = useState('')
   const [schoolError, setSchoolError] = useState<string | null>(null)
 
@@ -92,7 +92,7 @@ export function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await studentPinLogin({ schoolId, studentName: studentName.trim(), pin: pin.trim() })
+      const response = await studentPinLogin({ schoolId, studentCode: studentCode.trim(), pin: pin.trim() })
       await login(response.accessToken, response.refreshToken)
       const homePath = roleHomePaths[response.role]
       navigate(from || homePath, { replace: true })
@@ -161,7 +161,7 @@ export function LoginPage() {
             <form onSubmit={handleStudentPinSubmit} className="login-form">
               <div className="login-flow-helper student-helper">
                 <strong>학생 PIN 로그인</strong>
-                <p>학교를 검색해서 선택한 뒤, 실명과 PIN 번호를 입력하세요. 학교를 입력만 하면 로그인되지 않고 꼭 선택해야 합니다.</p>
+                <p>학교를 검색해서 선택한 뒤, 학교에서 받은 학생 코드와 PIN 번호를 입력하세요. 학교를 입력만 하면 로그인되지 않고 꼭 선택해야 합니다.</p>
               </div>
               <SchoolSearchInput
                 onChange={(id, schoolName) => {
@@ -172,11 +172,12 @@ export function LoginPage() {
                 error={schoolError || undefined}
               />
               <Input
-                label="학생 이름"
+                label="학생 코드"
                 type="text"
-                value={studentName}
-                onChange={(e) => setStudentName(e.target.value)}
-                placeholder="실명을 입력하세요"
+                value={studentCode}
+                onChange={(e) => setStudentCode(e.target.value)}
+                placeholder="예: S001"
+                helperText="학교에서 발급한 고유 학생 코드를 입력하세요."
                 required
               />
               <Input
@@ -186,10 +187,9 @@ export function LoginPage() {
                 onChange={(e) => setPin(e.target.value)}
                 placeholder="PIN 번호를 입력하세요"
                 required
-                maxLength={6}
               />
               <p className="login-hint">
-                승인된 학교와 실명, 본인이 정한 PIN 번호로 로그인합니다.
+                승인된 학교와 학생 코드, 본인이 정한 PIN 번호로 로그인합니다.
               </p>
               <Button type="submit" loading={loading} className="login-button">
                 PIN으로 로그인

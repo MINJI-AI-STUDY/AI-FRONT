@@ -58,6 +58,7 @@ export interface MeResponse {
   classroomId: string | null
   role: Role
   displayName: string
+  studentCode: string | null
   active: boolean
   createdAt: string
   privacyConsents: PrivacyConsentResponse[]
@@ -114,7 +115,7 @@ export async function logout(refreshToken: string): Promise<void> {
  */
 export interface StudentPinLoginRequest {
   schoolId: string
-  studentName: string
+  studentCode: string
   pin: string
 }
 
@@ -126,6 +127,9 @@ export interface StudentPinLoginResponse {
   refreshToken: string
   role: 'STUDENT'
   displayName: string
+  schoolId: string
+  classroomId: string | null
+  studentCode: string
 }
 
 /**

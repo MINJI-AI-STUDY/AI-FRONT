@@ -7,6 +7,7 @@ export interface User {
   classroomId: string | null
   role: Role
   displayName: string
+  studentCode: string | null
   active: boolean
   createdAt: string
   privacyConsents: PrivacyConsentResponse[]
